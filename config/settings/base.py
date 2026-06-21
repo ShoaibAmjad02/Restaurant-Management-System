@@ -48,13 +48,13 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'restaurant',
-        'USER': 'Your-User',
-        'PASSWORD': 'Your-Password',
-        'HOST': 'localhost',
-        'PORT': '3306',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "railway",
+        "USER": "root",
+        "PASSWORD": "nmXTFRcsgCcgqLuQilcqMultTQhCLULK",
+        "HOST": "mysql.railway.internal",
+        "PORT": "3306",
     }
 }
 
@@ -96,6 +96,7 @@ LOCAL_APPS = [
 
     # Food Delivery Apps
     "menu",
+    "orders",
 
     # Your stuff: custom apps go here
 ]
@@ -154,6 +155,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "megaone.users.middleware.KeepMultipleSessionsMiddleware",
+    "megaone.users.middleware.UserTimezoneMiddleware",
 ]
 
 # STATIC
@@ -221,6 +224,8 @@ FIXTURE_DIRS = (str(APPS_DIR / "fixtures"),)
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-httponly
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_NAME = "restaurant_sessionid"
+SESSION_SAVE_EVERY_REQUEST = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-httponly
 CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options

@@ -290,11 +290,11 @@ function searchInvoice() {
             return;
         }
 
-        data.invoices.forEach(inv => {
+            data.invoices.forEach(inv => {
 
             box.innerHTML += `
                 <div class="card invoice-card p-2 mb-2"
-                     onclick="openInvoice(${inv.id})">
+                     onclick="openInvoice('${inv.uuid_token}')">
 
                     <div class="d-flex justify-content-between">
                         <b>#${inv.invoice_number}</b>
@@ -310,9 +310,9 @@ function searchInvoice() {
 }
 
 /* OPEN */
-function openInvoice(id) {
+function openInvoice(uuidToken) {
 
-    const url = `/users/invoice/${id}/`;
+    const url = `/users/invoice/${uuidToken}/details/`;
 
     document.getElementById("invoiceFrame").src = url;
     document.getElementById("downloadBtn").href = url;

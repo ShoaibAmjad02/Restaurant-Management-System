@@ -6,6 +6,7 @@ from django.urls import include
 from django.urls import path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
+from megaone.users.views import qr_menu_view
 
 
 urlpatterns = [
@@ -17,9 +18,13 @@ urlpatterns = [
     path("users/", include("megaone.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    
+
     path("food-delivery/", include("apps.food_delivery.urls", namespace="food-delivery")),
-    path("404-1/", TemplateView.as_view(template_name="404-1.html"), name="404-1"),   
+
+    # QR Menu Access (root level)
+    path("menu/", qr_menu_view, name="qr_menu_view"),
+
+    path("404-1/", TemplateView.as_view(template_name="404-1.html"), name="404-1"),
     path("404-2/", TemplateView.as_view(template_name="404-2.html"), name="404-2"),
     path("404-3/", TemplateView.as_view(template_name="404-3.html"), name="404-3"),
     # Media cals

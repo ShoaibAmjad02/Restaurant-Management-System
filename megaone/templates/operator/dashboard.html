@@ -297,7 +297,7 @@ function searchProducts(){
 
     let q = document.getElementById("productSearch").value;
 
-    fetch(`/users/operator/search-products/?q=${q}`)
+    fetch("{% url 'users:operator_search_products' %}?q=" + encodeURIComponent(q))
     .then(r=>r.json())
     .then(data=>{
 
@@ -401,7 +401,7 @@ function renderCart(){
 ========================= */
 function createInvoice(){
 
-    fetch("/users/operator/create-invoice/",{
+    fetch("{% url 'users:operator_create_invoice' %}",{
         method:"POST",
         headers:{
             "Content-Type":"application/json",
@@ -420,7 +420,7 @@ function createInvoice(){
             saveCart();
             renderCart();
 
-            window.open(`/users/invoice/${data.invoice_id}/`,"_blank");
+            window.open(`/users/invoice/${data.uuid_token}/details/`,"_blank");
         }
     });
 }
@@ -561,7 +561,7 @@ function searchInvoice() {
         return;
     }
 
-    fetch("/users/operator/search-invoice/", {
+    fetch("{% url 'users:operator_search_invoice' %}", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -586,7 +586,7 @@ function searchInvoice() {
         data.invoices.forEach(inv => {
             box.innerHTML += `
 <div class="invoice-card"
-     onclick="openInvoice(${inv.id})">
+     onclick="openInvoice('${inv.uuid_token}')">
 
     <div class="invoice-top">
         <div>
@@ -622,8 +622,8 @@ function searchInvoice() {
 
     });
 }
-function openInvoice(id){
-    window.open(`/users/invoice/${id}/`, "_blank");
+function openInvoice(uuidToken){
+    window.open(`/users/invoice/${uuidToken}/details/`, "_blank");
 }
 /* INIT */
 document.addEventListener("DOMContentLoaded", function(){

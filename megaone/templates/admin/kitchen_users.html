@@ -1,0 +1,288 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kitchen Users - Restaurant Management</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<style>
+:root{--sidebar-w:260px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);z-index:1000;border-right:1px solid rgba(255,255,255,.05)}
+.sidebar-brand{padding:20px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+.sidebar-brand h4{color:#f59e0b;font-weight:700;margin:0}
+.sidebar-brand small{color:#64748b;font-size:11px}
+.sidebar-menu{padding:10px 0}
+.sidebar-menu a{display:flex;align-items:center;gap:12px;padding:12px 20px;color:#94a3b8;text-decoration:none;transition:.2s;border-left:3px solid transparent;font-size:14px}
+.sidebar-menu a i{width:20px;font-size:16px}
+.sidebar-menu a:hover,.sidebar-menu a.active{background:rgba(245,158,11,.08);color:#f59e0b;border-left-color:#f59e0b}
+.sidebar-menu .menu-label{padding:15px 20px 5px;font-size:11px;text-transform:uppercase;color:#475569;letter-spacing:1px;font-weight:600}
+.main-content{margin-left:var(--sidebar-w);padding:20px 30px;min-height:100vh}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px}
+.top-bar h2{font-weight:700;font-size:24px}
+.top-bar h2 span{color:#f59e0b}
+.content-card{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.05);padding:24px;margin-bottom:24px}
+.content-card h5{font-size:14px;color:#94a3b8;font-weight:600;margin-bottom:15px;text-transform:uppercase;letter-spacing:.5px}
+.table-card{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.05);overflow:hidden}
+.table-card .table{margin:0;color:#e2e8f0}
+.table-card .table thead th{background:rgba(255,255,255,.03);color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(255,255,255,.05);padding:12px 16px}
+.table-card .table td{padding:12px 16px;vertical-align:middle;border-color:rgba(255,255,255,.05)}
+.form-control{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:10px;padding:10px 14px}
+.form-control:focus{border-color:#f59e0b;outline:none;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.form-control::placeholder{color:#64748b}
+.btn-action{border-radius:10px;padding:8px 16px}
+.dataTables_wrapper .dataTables_filter input{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:8px;padding:6px 12px}
+.dataTables_wrapper .dataTables_filter input:focus{border-color:#f59e0b}
+.dataTables_wrapper .dataTables_length select{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:8px}
+.dataTables_wrapper .dataTables_info{color:#64748b;font-size:13px}
+.dataTables_wrapper .dataTables_paginate .paginate_button{color:#94a3b8!important;border-radius:8px!important;border:1px solid rgba(255,255,255,.05)!important}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{background:#f59e0b!important;border-color:#f59e0b!important;color:#000!important}
+@media(max-width:768px){.sidebar{width:60px}.sidebar .sidebar-brand h4,.sidebar .sidebar-brand small,.sidebar .sidebar-menu a span,.sidebar .sidebar-menu .menu-label{display:none}.sidebar .sidebar-menu a{padding:12px;justify-content:center}.sidebar .sidebar-menu a i{margin:0}.main-content{margin-left:60px;padding:15px}}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>Restaurant</h4>
+        <small>Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main</div>
+        <a href="{% url 'users:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="{% url 'users:product_list' %}"><i class="bi bi-box-seam"></i><span>Products</span></a>
+        <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
+        <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+        <div class="menu-label">Operations</div>
+        <a href="{% url 'users:kitchen_users_page' %}" class="active"><i class="bi bi-people"></i><span>Kitchen Users</span></a>
+        <a href="{% url 'users:mysql_backup' %}"><i class="bi bi-database"></i><span>Backup</span></a>
+        <div class="menu-label">Account</div>
+        <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="top-bar" data-aos="fade-down">
+        <div>
+            <h2>Kitchen <span>Users</span></h2>
+            <p style="color:#64748b;margin:0;font-size:14px">Manage kitchen staff accounts</p>
+        </div>
+        <div>
+            <a href="{% url 'users:admin_dashboard' %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Add Kitchen User Form -->
+    <div class="content-card" data-aos="fade-up">
+        <h5><i class="bi bi-person-plus me-2"></i>Add New Kitchen User</h5>
+        <form id="kitchenForm" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" id="kName" class="form-control" placeholder="Full Name" required>
+            </div>
+            <div class="col-md-4">
+                <input type="email" id="kEmail" class="form-control" placeholder="Email Address" required>
+            </div>
+            <div class="col-md-4">
+                <input type="password" id="kPassword" class="form-control" placeholder="Password" required>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-warning btn-action px-4"><i class="bi bi-plus-lg me-1"></i>Create Kitchen User</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Kitchen Users Table -->
+    <div class="table-card" data-aos="fade-up">
+        <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05)">
+            <h5 style="margin:0;font-size:14px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.5px"><i class="bi bi-people me-2"></i>All Kitchen Users</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="kitchenTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Created Date</th>
+                        <th width="180">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="kitchenTableBody">
+                    <tr><td colspan="4" class="text-center text-muted py-4">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#1e293b;border:1px solid rgba(255,255,255,.05);color:#e2e8f0">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Kitchen User</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Name</label>
+                    <input type="text" id="editName" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small">Email</label>
+                    <input type="email" id="editEmail" class="form-control" readonly style="opacity:.6">
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-warning" onclick="updateKitchen()"><i class="bi bi-check-lg me-1"></i>Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+AOS.init({duration:800,once:true});
+let kitchenTable;
+
+function getCSRF() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
+
+// Load kitchen users
+function loadKitchenUsers() {
+    fetch("{% url 'users:kitchen_list' %}")
+    .then(r => r.json())
+    .then(data => {
+        const tbody = document.getElementById('kitchenTableBody');
+        if (!data.kitchens || data.kitchens.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">No kitchen users found</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.kitchens.map(k => `
+            <tr>
+                <td><strong>${k.name}</strong></td>
+                <td>${k.email}</td>
+                <td>N/A</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-warning me-1" onclick="editKitchen(${k.id},'${k.name.replace(/'/g,"\\'")}','${k.email}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteKitchen(${k.id},'${k.name.replace(/'/g,"\\'")}')"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+
+        if (kitchenTable) { kitchenTable.destroy(); }
+        kitchenTable = $('#kitchenTable').DataTable({
+            pageLength: 10,
+            language: {
+                search: '', searchPlaceholder: 'Search users...',
+                emptyTable: 'No kitchen users found',
+                info: 'Showing _START_ to _END_ of _TOTAL_ users',
+            },
+            dom: '<"row g-2 mb-3"<"col-sm-6"f><"col-sm-6 text-end"l>>rtip',
+        });
+    });
+}
+
+// Create kitchen user
+document.getElementById('kitchenForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('kName').value.trim();
+    const email = document.getElementById('kEmail').value.trim();
+    const password = document.getElementById('kPassword').value;
+
+    if (!name || !email || !password) {
+        Swal.fire({icon:'warning',title:'Validation Error',text:'All fields are required',background:'#1e293b',color:'#e2e8f0'});
+        return;
+    }
+
+    fetch("{% url 'users:create_kitchen' %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify({name, email, password})
+    })
+    .then(r => r.json().then(d => ({status: r.status, data: d})))
+    .then(({status, data}) => {
+        if (status === 200) {
+            Swal.fire({icon:'success',title:'Created!',text:data.message,background:'#1e293b',color:'#e2e8f0',timer:2000,showConfirmButton:false});
+            document.getElementById('kitchenForm').reset();
+            loadKitchenUsers();
+        } else {
+            Swal.fire({icon:'error',title:'Error',text:data.message,background:'#1e293b',color:'#e2e8f0'});
+        }
+    });
+});
+
+// Edit kitchen user
+function editKitchen(id, name, email) {
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editEmail').value = email;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function updateKitchen() {
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('editName').value.trim();
+
+    if (!name) {
+        Swal.fire({icon:'warning',title:'Validation Error',text:'Name is required',background:'#1e293b',color:'#e2e8f0'});
+        return;
+    }
+
+    fetch(`/users/edit-kitchen/${id}/`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify({name})
+    })
+    .then(r => r.json())
+    .then(data => {
+        Swal.fire({icon:'success',title:'Updated!',text:data.message,background:'#1e293b',color:'#e2e8f0',timer:2000,showConfirmButton:false});
+        const mEl = document.getElementById('editModal');
+        if (mEl) { const m = new bootstrap.Modal(mEl); m.hide(); }
+        loadKitchenUsers();
+    });
+}
+
+// Delete kitchen user
+function deleteKitchen(id, name) {
+    Swal.fire({
+        title: 'Delete User?',
+        text: `${name} will be permanently deleted.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, delete',
+        background: '#1e293b',
+        color: '#e2e8f0',
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(`/users/delete-kitchen/${id}/`, {
+                method: "POST",
+                headers: {"X-CSRFToken": "{{ csrf_token }}"},
+            })
+            .then(r => r.json())
+            .then(data => {
+                Swal.fire({icon:'success',title:'Deleted!',text:data.message,background:'#1e293b',color:'#e2e8f0',timer:2000,showConfirmButton:false});
+                loadKitchenUsers();
+            });
+        }
+    });
+}
+
+loadKitchenUsers();
+</script>
+</body>
+</html>

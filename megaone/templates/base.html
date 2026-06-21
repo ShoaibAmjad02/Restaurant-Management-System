@@ -26,5 +26,41 @@
 {% block modal %}{% endblock modal %}
 
 {% block javascript %}{% endblock javascript %}
+
+<audio id="clickSound" preload="auto">
+    <source src="{% static 'audio/click.mp3' %}" type="audio/mpeg">
+</audio>
+
+<script>
+(function() {
+    var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.cookie = "user_timezone=" + encodeURIComponent(tz) + "; path=/; max-age=" + (365*24*60*60);
+    fetch("{% url 'users:set_timezone' %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}"},
+        body: JSON.stringify({timezone: tz})
+    });
+})();
+</script>
+
+<script>
+document.body.addEventListener("click", function(){
+    var s = document.getElementById("clickSound");
+    if(s){ s.load(); }
+}, {once:true});
+
+document.addEventListener("click", function(event){
+    var clickable = event.target.closest("button, a, .btn, input[type='button'], input[type='submit'], .card, .dropdown-item");
+    if(!clickable) return;
+    var clickSound = document.getElementById("clickSound");
+    if(clickSound){
+        clickSound.volume = 0.5;
+        clickSound.currentTime = 0;
+        clickSound.play().catch(function(error){
+            console.log("Click sound blocked:", error);
+        });
+    }
+});
+</script>
 </body>
 </html>
