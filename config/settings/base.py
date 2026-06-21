@@ -47,14 +47,18 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
+import os
+
+HOST = os.environ.get("MYSQLHOST")
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "railway",
-        "USER": "root",
-        "PASSWORD": "nmXTFRcsgCcgqLuQilcqMultTQhCLULK",
-        "HOST": "mysql.railway.internal",
-        "PORT": "3306",
+        "NAME": os.environ.get("MYSQLDATABASE", "railway"),
+        "USER": os.environ.get("MYSQLUSER", "root"),
+        "PASSWORD": os.environ.get("123456"),
+        "HOST": HOST,
+        "PORT": os.environ.get("MYSQLPORT", "3306"),
     }
 }
 
