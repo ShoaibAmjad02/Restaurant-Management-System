@@ -159,9 +159,8 @@ else:
         default="django.core.mail.backends.console.EmailBackend",
     )
 
-# Collectfasta
-# ------------------------------------------------------------------------------
-INSTALLED_APPS = ["collectfasta", *INSTALLED_APPS]
+# Note: collectfasta removed from INSTALLED_APPS to avoid DB dependency during collectstatic.
+# Standard Django collectstatic works without a database connection.
 
 # WhiteNoise Middleware (add after SecurityMiddleware)
 # ------------------------------------------------------------------------------
