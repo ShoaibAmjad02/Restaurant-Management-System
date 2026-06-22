@@ -52,7 +52,7 @@ DATABASES = {
         "ENGINE": env("DB_ENGINE", default="django.db.backends.mysql"),
         "NAME": env("MYSQLDATABASE", default="railway"),
         "USER": env("MYSQLUSER", default="root"),
-        "PASSWORD": env("MYSQLPASSWORD", default=""),
+        "PASSWORD": env("MYSQLPASSWORD", default="123456"),
         "HOST": env("MYSQLHOST", default="localhost"),
         "PORT": env("MYSQLPORT", default="3306"),
     }
