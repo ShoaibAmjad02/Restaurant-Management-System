@@ -69,61 +69,23 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
 
 # STATIC & MEDIA - WhiteNoise for static files
 # ------------------------------------------------------------------------------
+STATIC_ROOT = str(BASE_DIR / "staticfiles")
+MEDIA_ROOT = str(APPS_DIR / "media")
+
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_AUTO_REFRESH = True
 
-# Use WhiteNoise for static files unless AWS S3 is configured
-USE_AWS_S3 = env.bool("USE_AWS_S3", default=False)
-
-if USE_AWS_S3:
-    # AWS S3 Configuration (only if enabled)
-    AWS_ACCESS_KEY_ID = env("DJANGO_AWS_ACCESS_KEY_ID", default=None)
-    AWS_SECRET_ACCESS_KEY = env("DJANGO_AWS_SECRET_ACCESS_KEY", default=None)
-    AWS_STORAGE_BUCKET_NAME = env("DJANGO_AWS_STORAGE_BUCKET_NAME", default=None)
-    AWS_QUERYSTRING_AUTH = False
-    _AWS_EXPIRY = 60 * 60 * 24 * 7
-    AWS_S3_OBJECT_PARAMETERS = {
-        "CacheControl": f"max-age={_AWS_EXPIRY}, s-maxage={_AWS_EXPIRY}, must-revalidate",
-    }
-    AWS_S3_MAX_MEMORY_SIZE = env.int(
-        "DJANGO_AWS_S3_MAX_MEMORY_SIZE",
-        default=100_000_000,
-    )
-    AWS_S3_REGION_NAME = env("DJANGO_AWS_S3_REGION_NAME", default=None)
-    AWS_S3_CUSTOM_DOMAIN = env("DJANGO_AWS_S3_CUSTOM_DOMAIN", default=None)
-    aws_s3_domain = AWS_S3_CUSTOM_DOMAIN or f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
-
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3.S3Storage",
-            "OPTIONS": {
-                "location": "media",
-                "file_overwrite": False,
-            },
-        },
-        "staticfiles": {
-            "BACKEND": "storages.backends.s3.S3Storage",
-            "OPTIONS": {
-                "location": "static",
-                "default_acl": "public-read",
-            },
-        },
-    }
-    MEDIA_URL = f"https://{aws_s3_domain}/media/"
-    STATIC_URL = f"https://{aws_s3_domain}/static/"
-else:
-    # Local storage with WhiteNoise (default for Railway)
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
-    }
-    STATIC_URL = "/static/"
-    MEDIA_URL = "/media/"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+STATIC_URL = "/static/"
+MEDIA_URL = "/media/"
 
 # EMAIL
 # ------------------------------------------------------------------------------

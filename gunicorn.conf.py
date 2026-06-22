@@ -4,6 +4,7 @@ import os
 bind = f"0.0.0.0:{os.environ.get('PORT', '8000')}"
 
 # Worker processes
+# Render Free Plan has 512MB RAM, use fewer workers
 workers = int(os.environ.get("WEB_CONCURRENCY", 2))
 worker_class = "sync"
 worker_connections = 1000
@@ -26,7 +27,3 @@ proc_name = "megaone"
 preload_app = True
 daemon = False
 tmp_upload_dir = None
-
-# SSL (if needed)
-# certfile = "/path/to/cert.pem"
-# keyfile = "/path/to/key.pem"
