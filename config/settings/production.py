@@ -1,19 +1,15 @@
-from .base import *
-from .base import DATABASES
-from .base import env
+from .base import *  # noqa: F401, F403
+from .base import DATABASES  # noqa: F401
+from .base import env  # noqa: F401
 
-<<<<<<< HEAD
-
-SECRET_KEY = env(
-    "DJANGO_SECRET_KEY",
-    default="temporary-secret-key-change-later"
-=======
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
+
+DEBUG = False
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -57,7 +53,6 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_NAME = "__Secure-csrftoken"
 # https://docs.djangoproject.com/en/dev/topics/security/#ssl-https
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-seconds
-# TODO: set this to 60 seconds first and then to 518400 once you prove the former works
 SECURE_HSTS_SECONDS = 60
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-hsts-include-subdomains
 SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
@@ -70,21 +65,10 @@ SECURE_HSTS_PRELOAD = env.bool("DJANGO_SECURE_HSTS_PRELOAD", default=True)
 SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF",
     default=True,
->>>>>>> b0909f8 (Restaurant)
 )
 
-DEBUG = False
-
-<<<<<<< HEAD
-ALLOWED_HOSTS = [
-    "*"
-]
-
-DATABASES["default"]["CONN_MAX_AGE"] = 60
-=======
 # STATIC & MEDIA - WhiteNoise for static files
 # ------------------------------------------------------------------------------
-# WhiteNoise serves static files efficiently in production
 WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_AUTO_REFRESH = True
@@ -143,14 +127,11 @@ else:
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
     default="megaone <noreply@example.com>",
 )
-# https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env(
     "DJANGO_EMAIL_SUBJECT_PREFIX",
     default="[megaone] ",
@@ -159,7 +140,6 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = EMAIL_SUBJECT_PREFIX
 
 # ADMIN
 # ------------------------------------------------------------------------------
-# Django Admin URL regex.
 ADMIN_URL = env("DJANGO_ADMIN_URL", default="admin/")
 
 # Anymail (Mailgun) - Optional, only if configured
@@ -174,7 +154,6 @@ if USE_MAILGUN:
         "MAILGUN_API_URL": env("MAILGUN_API_URL", default="https://api.mailgun.net/v3"),
     }
 else:
-    # Use console email backend for development/testing
     EMAIL_BACKEND = env(
         "DJANGO_EMAIL_BACKEND",
         default="django.core.mail.backends.console.EmailBackend",
@@ -182,17 +161,14 @@ else:
 
 # Collectfasta
 # ------------------------------------------------------------------------------
-# https://github.com/jasongi/collectfasta#installation
 INSTALLED_APPS = ["collectfasta", *INSTALLED_APPS]
 
 # WhiteNoise Middleware (add after SecurityMiddleware)
 # ------------------------------------------------------------------------------
-# Insert WhiteNoise middleware right after SecurityMiddleware
 MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 
 # LOGGING
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#logging
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -228,8 +204,3 @@ LOGGING = {
         },
     },
 }
-
-
-# Your stuff...
-# ------------------------------------------------------------------------------
->>>>>>> b0909f8 (Restaurant)
