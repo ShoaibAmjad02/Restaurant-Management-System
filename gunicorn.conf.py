@@ -4,7 +4,6 @@ import os
 bind = f"0.0.0.0:{os.environ.get('PORT', '8000')}"
 
 # Worker processes
-# Render Free Plan has 512MB RAM, use fewer workers
 workers = int(os.environ.get("WEB_CONCURRENCY", 2))
 worker_class = "sync"
 worker_connections = 1000
