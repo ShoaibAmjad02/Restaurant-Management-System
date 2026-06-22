@@ -1,7 +1,0 @@
-[phases]
-setup = [
-  "apt-get update && apt-get install -y libmysqlclient-dev pkg-config",
-]
-
-[variables]
-NIXPACKS_PKGS = "mysqlclient"
