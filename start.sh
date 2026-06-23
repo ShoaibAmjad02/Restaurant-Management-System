@@ -1,12 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "Starting Django application..."
-
 echo "Running migrations..."
 python manage.py migrate --noinput
 
-echo "Collecting static..."
+echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
 echo "Starting Gunicorn..."

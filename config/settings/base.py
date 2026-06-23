@@ -47,26 +47,17 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 # Railway provides MySQL env vars: MYSQLHOST, MYSQLPORT, MYSQLDATABASE,
-# MYSQLUSER, MYSQLPASSWORD.
-# For Railway private networking, SSL is required — we add it via OPTIONS.
-
-_db_ssl_ca = env.str("MYSQL_SSL_CA", default="")
-_db_options = {
-    "charset": "utf8mb4",
-}
-# Enable SSL for Railway private networking when a CA cert path is provided
-# or when connecting to a Railway internal host.
-if _db_ssl_ca:
-    _db_options["ssl"] = {"ca": _db_ssl_ca}
+# MYSQLUSER, MYSQLPASSWORD. PyMySQL is used as the MySQL driver via
+# pymysql.install_as_MySQLdb() in config/__init__.py.
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("MYSQLDATABASE"),
-        "USER": env("MYSQLUSER"),
-        "PASSWORD": env("MYSQLPASSWORD"),
-        "HOST": env("MYSQLHOST"),
-        "PORT": env("MYSQLPORT", default="3306"),
+        "NAME": env.str("MYSQLDATABASE", default="railway"),
+        "USER": env.str("MYSQLUSER", default="root"),
+        "PASSWORD": env.str("MYSQLPASSWORD", default=""),
+        "HOST": env.str("MYSQLHOST", default="localhost"),
+        "PORT": env.str("MYSQLPORT", default="3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
         },
