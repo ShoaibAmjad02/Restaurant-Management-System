@@ -62,12 +62,14 @@ if _db_ssl_ca:
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env.str("MYSQLDATABASE", default=""),
-        "USER": env.str("MYSQLUSER", default=""),
-        "PASSWORD": env.str("MYSQLPASSWORD", default=""),
-        "HOST": env.str("MYSQLHOST", default=""),
-        "PORT": env.str("MYSQLPORT", default="3306"),
-        "OPTIONS": _db_options,
+        "NAME": env("MYSQLDATABASE"),
+        "USER": env("MYSQLUSER"),
+        "PASSWORD": env("MYSQLPASSWORD"),
+        "HOST": env("MYSQLHOST"),
+        "PORT": env("MYSQLPORT", default="3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+        },
     }
 }
 
