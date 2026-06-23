@@ -47,19 +47,23 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
 
+import os
+
 DATABASES = {
     "default": {
-        "ENGINE": env("DB_ENGINE", default="django.db.backends.mysql"),
-        "NAME": env("MYSQLDATABASE", default="railway"),
-        "USER": env("MYSQLUSER", default="root"),
-        "PASSWORD": env("MYSQLPASSWORD", default="123456"),
-        "HOST": env("MYSQLHOST", default="localhost"),
-        "PORT": env("MYSQLPORT", default="3306"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-        },
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.environ.get("MYSQLDATABASE"),
+        "USER": os.environ.get("MYSQLUSER"),
+        "PASSWORD": os.environ.get("MYSQLPASSWORD"),
+        "HOST": os.environ.get("MYSQLHOST"),
+        "PORT": os.environ.get("MYSQLPORT", "3306"),
+        "ATOMIC_REQUESTS": True,
     }
 }
+print("DB_NAME =", os.environ.get("MYSQLDATABASE"))
+print("DB_HOST =", os.environ.get("MYSQLHOST"))
+print("DB_USER =", os.environ.get("MYSQLUSER"))
+
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/stable/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
