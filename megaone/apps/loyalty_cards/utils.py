@@ -17,13 +17,37 @@ CARD_WIDTH = 86 * mm
 CARD_HEIGHT = 54 * mm
 
 
-def _generate_qr_for_card(card):
-    data = json.dumps(card.generate_qr_data())
-    qr = qrcode.make(data, box_size=6)
+def generate_qr_code_image(card):
+    """Generate a standalone QR code image and save it to the card."""
+    qr_data = json.dumps(card.generate_qr_data())
+    qr = qrcode.make(qr_data, box_size=10)
+    qr = qr.convert("RGB")
     buf = BytesIO()
     qr.save(buf, format="PNG")
     buf.seek(0)
-    return Image.open(buf)
+
+    filename = f"qr_{card.card_number}.png"
+    card.qr_code_image.save(filename, ContentFile(buf.getvalue()), save=False)
+    card.save(update_fields=['qr_code_image'])
+    return card
+
+
+def _get_qr_pil_image(card):
+    """Return a PIL Image of the QR code, generating it if needed."""
+    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
+        try:
+            return Image.open(card.qr_code_image)
+        except Exception:
+            pass
+    generate_qr_code_image(card)
+    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
+        try:
+            return Image.open(card.qr_code_image)
+        except Exception:
+            pass
+    data = json.dumps(card.generate_qr_data())
+    qr = qrcode.make(data, box_size=6)
+    return qr.convert("RGB")
 
 
 def generate_loyalty_card_pdf(card):
@@ -61,9 +85,10 @@ def generate_loyalty_card_pdf(card):
         c.drawString(6*mm, y, f"{label}: {val}")
         y -= 3.5*mm
 
-    qr_img = _generate_qr_for_card(card)
+    # Embed QR image directly from saved file or generate
+    qr_pil = _get_qr_pil_image(card)
     qr_path = BytesIO()
-    qr_img.save(qr_path, format="PNG")
+    qr_pil.save(qr_path, format="PNG")
     qr_path.seek(0)
     c.drawImage(qr_path, CARD_WIDTH - 22*mm, 6*mm, width=16*mm, height=16*mm)
 
@@ -107,9 +132,12 @@ def generate_loyalty_card_image(card):
         draw.text((65, y), val, fill="white", font=value_font)
         y += 14
 
-    qr_img = _generate_qr_for_card(card)
-    qr_x = CARD_WIDTH - 48
-    img.paste(qr_img, (int(qr_x), 12))
+    # Paste QR image onto card canvas
+    qr_pil = _get_qr_pil_image(card)
+    qr_resized = qr_pil.resize((48, 48))
+    qr_x = int(CARD_WIDTH) - 56
+    qr_y = 8
+    img.paste(qr_resized, (qr_x, qr_y))
 
     buf = BytesIO()
     img.save(buf, format="PNG")

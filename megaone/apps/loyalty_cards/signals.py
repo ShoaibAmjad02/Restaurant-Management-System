@@ -16,8 +16,9 @@ def create_loyalty_card_on_registration(sender, instance, created, **kwargs):
                 user=instance,
                 status='ACTIVE',
             )
-            from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image
+            from .utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
             try:
+                generate_qr_code_image(card)
                 generate_loyalty_card_pdf(card)
                 generate_loyalty_card_image(card)
             except Exception:
@@ -31,9 +32,10 @@ def create_loyalty_card_for_existing_users(sender, instance, **kwargs):
             user=instance,
             defaults={'status': 'ACTIVE'}
         )
-        if created or not card.card_pdf:
-            from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image
+        if created or not card.card_pdf or not card.qr_code_image:
+            from .utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
             try:
+                generate_qr_code_image(card)
                 generate_loyalty_card_pdf(card)
                 generate_loyalty_card_image(card)
             except Exception:

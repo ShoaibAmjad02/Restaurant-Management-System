@@ -22,6 +22,7 @@ class LoyaltyCard(models.Model):
     used_points = models.IntegerField(default=0)
     remaining_points = models.IntegerField(default=0)
     qr_token = models.CharField(max_length=64, unique=True, blank=True)
+    qr_code_image = models.ImageField(upload_to='loyalty_qr/', blank=True, null=True)
     card_pdf = models.FileField(upload_to='loyalty_cards/pdf/', blank=True, null=True)
     card_image = models.ImageField(upload_to='loyalty_cards/images/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
@@ -74,8 +75,9 @@ class LoyaltyCard(models.Model):
 
     def generate_qr_data(self):
         return {
-            "card_token": self.qr_token,
-            "customer_id": self.user.id if self.user else 0,
+            "token": self.qr_token,
+            "card": self.card_number,
+            "customer": self.user.id if self.user else 0,
         }
 
     def __str__(self):

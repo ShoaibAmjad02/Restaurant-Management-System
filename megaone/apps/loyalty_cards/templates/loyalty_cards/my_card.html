@@ -78,6 +78,25 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-heig
     </div>
     {% endif %}
 
+    {% if show_welcome %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-success d-flex align-items-center justify-content-between" style="border-radius:16px;background:linear-gradient(135deg,#064e3b,#047857);border:none;padding:20px 24px">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-check-circle-fill" style="font-size:28px;color:#22c55e"></i>
+                    <div>
+                        <h5 style="color:#fff;font-weight:700;margin:0;font-size:18px">Welcome! Your Loyalty Card has been generated successfully.</h5>
+                        <p style="color:#a7f3d0;margin:4px 0 0;font-size:13px">You can download your card below or continue browsing the menu.</p>
+                    </div>
+                </div>
+                <a href="{% url 'users:food_delivery_restaurant_detail' %}" class="btn btn-light" style="border-radius:12px;font-weight:600;padding:10px 20px;white-space:nowrap">
+                    <i class="bi bi-shop me-1"></i>Browse Menu
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card-section">
         <h4 class="section-title"><i class="bi bi-star-fill me-2" style="color:#f59e0b"></i>My Loyalty Card</h4>
 
@@ -96,10 +115,12 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-heig
             <div class="card-detail"><span class="card-label">Issue Date</span><span class="card-value">{{ card.created_at|date:"d-m-Y" }}</span></div>
 
             <div class="qr-section">
-                {% if card.card_image %}
-                <img src="{{ card.card_image.url }}" alt="Loyalty Card QR">
+                {% if card.qr_code_image %}
+                <img src="{{ card.qr_code_image.url }}" alt="Loyalty Card QR Code">
                 {% else %}
-                <div style="width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto;color:#64748b;font-size:11px">QR Code</div>
+                <div style="width:100px;height:100px;background:rgba(255,255,255,.05);border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto;color:#64748b;font-size:11px">
+                    <i class="bi bi-qr-code fs-1"></i>
+                </div>
                 {% endif %}
             </div>
         </div>

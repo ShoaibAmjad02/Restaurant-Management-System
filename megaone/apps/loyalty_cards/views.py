@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone as tz_utils
 from django.db.models import Sum, Q
 from .models import LoyaltyCard, LoyaltyTransaction
-from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image
+from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image, generate_qr_code_image
 
 
 @login_required
@@ -17,23 +17,39 @@ def my_loyalty_card(request):
     card = LoyaltyCard.objects.filter(user=request.user).first()
     if not card:
         card = LoyaltyCard.objects.create(user=request.user, status='ACTIVE')
-    # Ensure PDF and PNG exist; generate if missing
+    # Ensure QR code image exists; generate if missing
+    qr_ok = card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name)
+    if not qr_ok:
+        try:
+            generate_qr_code_image(card)
+        except Exception:
+            pass
+    # Ensure PDF and PNG exist; generate if missing (regenerates with current QR)
     if not card.card_pdf or not card.card_image:
         try:
             generate_loyalty_card_pdf(card)
             generate_loyalty_card_image(card)
         except Exception:
             pass
+    # Show welcome message only on first visit, then set flag
+    show_welcome = not card.first_card_popup_shown
+    if show_welcome:
+        card.first_card_popup_shown = True
+        card.save(update_fields=['first_card_popup_shown'])
     transactions = LoyaltyTransaction.objects.filter(card=card).order_by('-created_at')
     return render(request, 'loyalty_cards/my_card.html', {
         'card': card,
         'transactions': transactions,
+        'show_welcome': show_welcome,
     })
 
 
 @login_required
 def download_card_pdf(request, card_number):
     card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+    # Ensure QR exists before generating PDF
+    if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+        generate_qr_code_image(card)
     if not card.card_pdf:
         generate_loyalty_card_pdf(card)
     return FileResponse(card.card_pdf, as_attachment=True, filename=f"loyalty_card_{card.card_number}.pdf")
@@ -42,6 +58,8 @@ def download_card_pdf(request, card_number):
 @login_required
 def download_card_image(request, card_number):
     card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+    if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+        generate_qr_code_image(card)
     if not card.card_image:
         generate_loyalty_card_image(card)
     return FileResponse(card.card_image, as_attachment=True, filename=f"loyalty_card_{card.card_number}.png")
