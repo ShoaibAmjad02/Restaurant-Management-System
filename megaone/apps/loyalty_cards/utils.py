@@ -9,6 +9,7 @@ from django.utils import timezone
 from reportlab.lib.pagesizes import landscape
 from reportlab.lib.units import mm
 from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from PIL import Image, ImageDraw, ImageFont
 
@@ -92,7 +93,7 @@ def generate_loyalty_card_pdf(card):
     qr_path = BytesIO()
     qr_pil.save(qr_path, format="PNG")
     qr_path.seek(0)
-    c.drawImage(qr_path, CARD_WIDTH - 22*mm, 6*mm, width=16*mm, height=16*mm)
+    c.drawImage(ImageReader(qr_path), CARD_WIDTH - 22*mm, 6*mm, width=16*mm, height=16*mm)
 
     c.save()
     buffer.seek(0)
