@@ -99,6 +99,23 @@ def food_delivery_login(request):
 
         if user is not None:
             login(request, user)
+            # Auto-create loyalty card for any customer who doesn't have one
+            if not user.is_staff and not getattr(user, "is_kitchen", False):
+                from apps.loyalty_cards.models import LoyaltyCard
+                from apps.loyalty_cards.utils import generate_loyalty_card_pdf, generate_loyalty_card_image
+                card, created = LoyaltyCard.objects.get_or_create(
+                    user=user,
+                    defaults={'status': 'ACTIVE'}
+                )
+                if created or not card.card_pdf:
+                    try:
+                        generate_loyalty_card_pdf(card)
+                        generate_loyalty_card_image(card)
+                    except Exception:
+                        pass
+                # First-time redirect to loyalty card page (using DB flag)
+                if not card.first_card_popup_shown:
+                    return redirect("loyalty_cards:my_card")
             if user.is_staff:
                 return redirect("users:admin_dashboard")
             elif getattr(user, "is_kitchen", False):
@@ -396,6 +413,12 @@ def invoice_pdf(request, uuid_token):
 
     width = 60 * mm
 
+    loyalty_height = 0
+    if invoice.user:
+        from apps.loyalty_cards.models import LoyaltyCard
+        if LoyaltyCard.objects.filter(user=invoice.user).exists():
+            loyalty_height = 35 * mm
+
     header_height = 65 * mm
     item_per_height = 9 * mm
     summary_height = 40 * mm
@@ -408,6 +431,7 @@ def invoice_pdf(request, uuid_token):
         + summary_height
         + qr_height
         + footer_height
+        + loyalty_height
     )
 
     buffer = io.BytesIO()
@@ -508,28 +532,6 @@ def invoice_pdf(request, uuid_token):
     pdf.line(MARGIN, y, right, y)
 
     # ==========================
-    # LOYALTY INFO
-    # ==========================
-    if invoice.is_loyalty_payment or invoice.loyalty_points_processed:
-        y -= 5 * mm
-        pdf.setFont("Helvetica-Bold", 7)
-        pdf.setFillColor(HexColor("#f59e0b"))
-        pdf.drawCentredString(w / 2, y, "LOYALTY CARD INFO")
-        pdf.setFillColor(DARK)
-        y -= 4 * mm
-        pdf.setFont("Helvetica", 6)
-        if invoice.is_loyalty_payment:
-            pdf.drawString(MARGIN, y, "Payment: Loyalty Points")
-            pdf.drawRightString(right, y, f"-{int(invoice.loyalty_points_used)} pts")
-            y -= 3.5 * mm
-        if invoice.loyalty_points_earned > 0:
-            pdf.drawString(MARGIN, y, "Points Earned This Order")
-            pdf.drawRightString(right, y, f"+{invoice.loyalty_points_earned} pts")
-            y -= 3.5 * mm
-        pdf.line(MARGIN, y, right, y)
-        y -= 5 * mm
-
-    # ==========================
     # ITEMS
     # ==========================
     y -= 5 * mm
@@ -589,6 +591,41 @@ def invoice_pdf(request, uuid_token):
     pdf.setFillColor(GREEN)
     pdf.drawCentredString(w / 2, y, f"STATUS : {status.upper()}")
     pdf.setFillColor(DARK)
+
+    # ==========================
+    # LOYALTY CARD INFO
+    # ==========================
+    if invoice.user:
+        from apps.loyalty_cards.models import LoyaltyCard
+        lcard = LoyaltyCard.objects.filter(user=invoice.user).first()
+        if lcard:
+            y -= 5 * mm
+            pdf.setFont("Helvetica-Bold", 7)
+            pdf.setFillColor(HexColor("#f59e0b"))
+            pdf.drawCentredString(w / 2, y, "LOYALTY CARD")
+            pdf.setFillColor(DARK)
+            y -= 4 * mm
+            pdf.setFont("Helvetica", 6)
+            loyalty_fields = [
+                ("Card #", lcard.card_number),
+                ("Total Points", str(lcard.total_points)),
+                ("Used Points", str(lcard.used_points)),
+                ("Remaining Points", str(lcard.remaining_points)),
+            ]
+            for label, val in loyalty_fields:
+                pdf.drawString(MARGIN, y, label)
+                pdf.drawRightString(right, y, val)
+                y -= 3.5 * mm
+            if invoice.loyalty_points_earned > 0:
+                pdf.drawString(MARGIN, y, "This Order Earned")
+                pdf.drawRightString(right, y, f"+{invoice.loyalty_points_earned} pts")
+                y -= 3.5 * mm
+            if invoice.is_loyalty_payment and invoice.loyalty_points_used > 0:
+                pdf.drawString(MARGIN, y, "This Order Used")
+                pdf.drawRightString(right, y, f"-{int(invoice.loyalty_points_used)} pts")
+                y -= 3.5 * mm
+            pdf.line(MARGIN, y, right, y)
+            y -= 4 * mm
 
     # ==========================
     # QR CODE (Bottom Center)

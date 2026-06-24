@@ -25,6 +25,7 @@ class LoyaltyCard(models.Model):
     card_pdf = models.FileField(upload_to='loyalty_cards/pdf/', blank=True, null=True)
     card_image = models.ImageField(upload_to='loyalty_cards/images/', blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
+    first_card_popup_shown = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def save(self, *args, **kwargs):

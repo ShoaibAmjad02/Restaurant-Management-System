@@ -17,6 +17,8 @@ def my_loyalty_card(request):
     card = LoyaltyCard.objects.filter(user=request.user).first()
     if not card:
         card = LoyaltyCard.objects.create(user=request.user, status='ACTIVE')
+    # Ensure PDF and PNG exist; generate if missing
+    if not card.card_pdf or not card.card_image:
         try:
             generate_loyalty_card_pdf(card)
             generate_loyalty_card_image(card)

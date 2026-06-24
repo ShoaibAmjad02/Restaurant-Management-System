@@ -27,7 +27,14 @@ def create_loyalty_card_on_registration(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def create_loyalty_card_for_existing_users(sender, instance, **kwargs):
     if not instance.is_staff and not instance.is_superuser:
-        LoyaltyCard.objects.get_or_create(
+        card, created = LoyaltyCard.objects.get_or_create(
             user=instance,
             defaults={'status': 'ACTIVE'}
         )
+        if created or not card.card_pdf:
+            from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image
+            try:
+                generate_loyalty_card_pdf(card)
+                generate_loyalty_card_image(card)
+            except Exception:
+                pass

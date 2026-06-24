@@ -127,6 +127,7 @@
                                 <div class="menu-links link">
                                     <ul>
                                         {% if user.is_authenticated %}
+                                        <li><a href="{% url 'loyalty_cards:my_card' %}"><i class="lni lni-star"></i>My Loyalty Card</a></li>
                                         <li><a href="{% url 'users:logout' %}"><i class="lni lni-lock"></i>Logout</a></li>
                                         {% else %}
                                         <li><a href="{% url 'food-delivery:food_delivery_login' %}"><i class="lni lni-key"></i>Login</a></li>
