@@ -26,6 +26,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
 from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable
+from apps.loyalty_cards.models import LoyaltyCard
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
@@ -175,9 +176,21 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
         price = float(item["price"])
         subtotal_amount += qty * price
 
-    tax_pct = 5 if payment_method == "card" else 18
+    is_loyalty = payment_method == "loyalty"
+    tax_pct = 0 if is_loyalty else (5 if payment_method == "card" else 18)
     tax_amount = round(subtotal_amount * tax_pct / 100, 2)
     grand_total = subtotal_amount + tax_amount
+
+    loyalty_points_used = 0
+    loyalty_card = None
+    if is_loyalty and user:
+        try:
+            loyalty_card = LoyaltyCard.objects.get(user=user, status='ACTIVE')
+            if loyalty_card.remaining_points >= grand_total:
+                points_needed = int(grand_total)
+                loyalty_points_used = points_needed
+        except LoyaltyCard.DoesNotExist:
+            pass
 
     invoice = Invoice.objects.create(
         user=user,
@@ -190,6 +203,8 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
         total_amount=grand_total,
         table_no=table_no,
         customer_session_id=customer_session,
+        is_loyalty_payment=is_loyalty,
+        loyalty_points_used=loyalty_points_used,
     )
 
     for item in cart:
@@ -207,6 +222,12 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
     )
     order.order_number = f"ORD-{order.id}"
     order.save()
+
+    if loyalty_card and loyalty_points_used > 0:
+        try:
+            loyalty_card.redeem_points(loyalty_points_used, order_number=order.order_number)
+        except ValueError:
+            pass
 
     for item in cart:
         KitchenOrderItem.objects.create(
@@ -487,6 +508,28 @@ def invoice_pdf(request, uuid_token):
     pdf.line(MARGIN, y, right, y)
 
     # ==========================
+    # LOYALTY INFO
+    # ==========================
+    if invoice.is_loyalty_payment or invoice.loyalty_points_processed:
+        y -= 5 * mm
+        pdf.setFont("Helvetica-Bold", 7)
+        pdf.setFillColor(HexColor("#f59e0b"))
+        pdf.drawCentredString(w / 2, y, "LOYALTY CARD INFO")
+        pdf.setFillColor(DARK)
+        y -= 4 * mm
+        pdf.setFont("Helvetica", 6)
+        if invoice.is_loyalty_payment:
+            pdf.drawString(MARGIN, y, "Payment: Loyalty Points")
+            pdf.drawRightString(right, y, f"-{int(invoice.loyalty_points_used)} pts")
+            y -= 3.5 * mm
+        if invoice.loyalty_points_earned > 0:
+            pdf.drawString(MARGIN, y, "Points Earned This Order")
+            pdf.drawRightString(right, y, f"+{invoice.loyalty_points_earned} pts")
+            y -= 3.5 * mm
+        pdf.line(MARGIN, y, right, y)
+        y -= 5 * mm
+
+    # ==========================
     # ITEMS
     # ==========================
     y -= 5 * mm
@@ -633,6 +676,14 @@ def admin_dashboard(request):
     kitchen_users_count = User.objects.filter(is_kitchen=True).count()
     customers_count = User.objects.filter(is_staff=False, is_kitchen=False, is_superuser=False).count()
 
+    # Loyalty stats
+    from apps.loyalty_cards.models import LoyaltyCard
+    from django.db.models import Sum
+    loyalty_cards_count = LoyaltyCard.objects.count()
+    loyalty_active = LoyaltyCard.objects.filter(status='ACTIVE').count()
+    loyalty_points_earned = LoyaltyCard.objects.aggregate(total=Sum('total_points'))['total'] or 0
+    loyalty_points_redeemed = LoyaltyCard.objects.aggregate(total=Sum('used_points'))['total'] or 0
+
     pending_count = KitchenOrder.objects.filter(status="pending").count()
     preparing_count = KitchenOrder.objects.filter(status="preparing").count()
     ready_count = KitchenOrder.objects.filter(status="ready").count()
@@ -683,6 +734,10 @@ def admin_dashboard(request):
         "total_orders": invoices_count,
         "recent_orders": recent_orders,
         "table_reports": table_reports,
+        "loyalty_cards_count": loyalty_cards_count,
+        "loyalty_active": loyalty_active,
+        "loyalty_points_earned": loyalty_points_earned,
+        "loyalty_points_redeemed": loyalty_points_redeemed,
     })
 
 
@@ -767,6 +822,7 @@ def add_product(request):
             category=category, name=request.POST.get("name"),
             description=request.POST.get("description"),
             price=request.POST.get("price"),
+            reward_points=request.POST.get("reward_points", 0),
             image=request.FILES.get("image"),
             available=request.POST.get("available") == "on",
         )
@@ -783,6 +839,7 @@ def edit_product(request, pk):
         product.name = request.POST.get("name")
         product.description = request.POST.get("description")
         product.price = request.POST.get("price")
+        product.reward_points = request.POST.get("reward_points", 0)
         product.category = get_object_or_404(Category, id=request.POST.get("category_id"))
         product.available = request.POST.get("available") == "on"
         if request.FILES.get("image"):
@@ -880,6 +937,23 @@ def update_order_status(request, order_id):
             invoice = order.invoice
             invoice.generate_qr_code(request)
             invoice.save()
+
+            # Auto-earn loyalty points for delivered orders
+            if invoice.user and not invoice.loyalty_points_processed:
+                from apps.loyalty_cards.models import LoyaltyCard
+                card = LoyaltyCard.objects.filter(user=invoice.user, status='ACTIVE').first()
+                if card:
+                    total_points = 0
+                    for inv_item in invoice.items.all():
+                        from menu.models import Food
+                        food = Food.objects.filter(name=inv_item.product_name).first()
+                        if food and food.reward_points > 0:
+                            total_points += food.reward_points * inv_item.quantity
+                    if total_points > 0:
+                        card.add_points(total_points, order.order_number)
+                        invoice.loyalty_points_earned = total_points
+                        invoice.loyalty_points_processed = True
+                        invoice.save()
         except Exception:
             pass
 

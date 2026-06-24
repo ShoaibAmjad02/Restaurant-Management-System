@@ -297,6 +297,15 @@
                             <div style="font-size:13px;color:#f59e0b;font-weight:600;margin-top:6px"><i class="fas fa-hand-holding-usd me-1"></i>Pay at Table</div>
                         </div>
                     </div>
+                    <div class="col-6">
+                        <div class="payment-option" data-method="loyalty" onclick="selectPayment('loyalty')" style="background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:.2s;height:100%">
+                            <div style="font-size:40px;margin-bottom:10px;color:#f59e0b"><i class="fas fa-star"></i></div>
+                            <h6 class="fw-bold mb-1" style="color:#f1f5f9">Loyalty Points</h6>
+                            <div style="font-size:13px;color:#94a3b8">Tax: 0%</div>
+                            <div id="loyaltyPointsDisplay" style="font-size:13px;color:#22c55e;font-weight:600;margin-top:4px"><i class="fas fa-coins me-1"></i>Checking...</div>
+                            <div id="loyaltyInsufficient" style="display:none;font-size:12px;color:#ef4444;font-weight:600;margin-top:4px">Insufficient points</div>
+                        </div>
+                    </div>
                 </div>
                 <div id="paymentError" class="mt-3" style="display:none"></div>
             </div>
@@ -396,6 +405,7 @@ renderCart();
 
 // Payment flow
 let selectedPayment = null;
+let loyaltyPointsData = null;
 
 document.getElementById("checkout-btn").addEventListener("click", function(e) {
     e.preventDefault();
@@ -415,6 +425,39 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
         el.style.background = "rgba(255,255,255,.04)";
     });
 
+    // Fetch loyalty card info
+    const loyaltyDisplay = document.getElementById("loyaltyPointsDisplay");
+    const loyaltyInsufficient = document.getElementById("loyaltyInsufficient");
+    loyaltyDisplay.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
+    loyaltyInsufficient.style.display = "none";
+
+    fetch("{% url 'loyalty_cards:checkout_info' %}")
+    .then(r => r.json())
+    .then(data => {
+        loyaltyPointsData = data;
+        if (data.has_card) {
+            if (data.remaining_points > 0) {
+                loyaltyDisplay.innerHTML = '<i class="fas fa-coins me-1"></i>You have ' + data.remaining_points + ' pts';
+                if (data.remaining_points >= subtotal) {
+                    loyaltyDisplay.style.color = "#22c55e";
+                } else {
+                    loyaltyDisplay.style.color = "#f59e0b";
+                }
+            } else {
+                loyaltyDisplay.innerHTML = '<i class="fas fa-coins me-1"></i>0 points available';
+                loyaltyDisplay.style.color = "#94a3b8";
+            }
+        } else {
+            loyaltyDisplay.innerHTML = '<i class="fas fa-times me-1"></i>No loyalty card';
+            loyaltyDisplay.style.color = "#ef4444";
+        }
+    })
+    .catch(() => {
+        loyaltyPointsData = null;
+        loyaltyDisplay.innerHTML = '<i class="fas fa-times me-1"></i>Unavailable';
+        loyaltyDisplay.style.color = "#94a3b8";
+    });
+
     new bootstrap.Modal(document.getElementById("paymentModal")).show();
 });
 
@@ -425,16 +468,35 @@ function selectPayment(method) {
         el.style.background = "rgba(255,255,255,.04)";
     });
     const el = document.querySelector(`.payment-option[data-method="${method}"]`);
-    el.style.borderColor = method === "card" ? "#3b82f6" : "#22c55e";
-    el.style.background = method === "card" ? "rgba(59,130,246,.1)" : "rgba(34,197,94,.1)";
+    const borderColor = method === "card" ? "#3b82f6" : method === "cash" ? "#22c55e" : "#f59e0b";
+    const bgColor = method === "card" ? "rgba(59,130,246,.1)" : method === "cash" ? "rgba(34,197,94,.1)" : "rgba(245,158,11,.1)";
+    el.style.borderColor = borderColor;
+    el.style.background = bgColor;
 
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const pct = method === "card" ? 5 : 18;
+    let pct = method === "card" ? 5 : method === "cash" ? 18 : 0;
     const tax = subtotal * pct / 100;
-    const total = subtotal + tax;
+    let total = subtotal + tax;
+
     document.getElementById("paymentTaxDisplay").style.display = "flex";
     document.getElementById("paymentTaxDisplay").querySelector("span:first-child").innerText = "Tax (" + pct + "%)";
     document.getElementById("paymentTaxAmount").innerText = "Rs " + tax.toFixed(0);
+
+    const loyaltyInsufficient = document.getElementById("loyaltyInsufficient");
+    if (method === "loyalty") {
+        if (loyaltyPointsData && loyaltyPointsData.remaining_points < subtotal) {
+            total = subtotal;
+            document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0) + " (shortfall)";
+            loyaltyInsufficient.style.display = "block";
+            document.getElementById("payNowBtn").disabled = true;
+            return;
+        } else {
+            loyaltyInsufficient.style.display = "none";
+        }
+    } else {
+        loyaltyInsufficient.style.display = "none";
+    }
+
     document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0);
     document.getElementById("payNowBtn").disabled = false;
 }
@@ -450,10 +512,15 @@ function processPayment() {
         : "{% url 'users:checkout_invoice' %}";
 
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const body = { cart: cart, payment_method: selectedPayment, timezone: tz };
+    if (selectedPayment === "loyalty" && loyaltyPointsData && loyaltyPointsData.has_card) {
+        body.use_loyalty_points = loyaltyPointsData.remaining_points;
+        body.loyalty_card_number = loyaltyPointsData.card_number;
+    }
     fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-        body: JSON.stringify({ cart: cart, payment_method: selectedPayment, timezone: tz })
+        body: JSON.stringify(body)
     })
     .then(res => res.json())
     .then(data => {

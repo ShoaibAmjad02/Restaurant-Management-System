@@ -86,6 +86,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <a href="{% url 'users:product_list' %}"><i class="bi bi-box-seam"></i><span>Products</span></a>
         <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
         <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+        <a href="{% url 'loyalty_cards:admin_loyalty_list' %}"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
         <div class="menu-label">Operations</div>
         <a href="{% url 'users:kitchen_users_page' %}"><i class="bi bi-people"></i><span>Kitchen Users</span></a>
         <a href="{% url 'users:mysql_backup' %}"><i class="bi bi-database"></i><span>Backup</span></a>
@@ -184,6 +185,34 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
                 <i class="bi bi-cash stat-icon"></i>
             </div>
         </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1100">
+            <div class="stat-card gradient-active" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+                <div class="stat-value">{{ loyalty_cards_count }}</div>
+                <div class="stat-label">Total Loyalty Cards</div>
+                <i class="bi bi-star stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1200">
+            <div class="stat-card gradient-delivered" style="background:linear-gradient(135deg,#22c55e,#16a34a)">
+                <div class="stat-value">{{ loyalty_points_earned }}</div>
+                <div class="stat-label">Total Points Earned</div>
+                <i class="bi bi-graph-up-arrow stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1300">
+            <div class="stat-card gradient-orders" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+                <div class="stat-value">{{ loyalty_points_redeemed }}</div>
+                <div class="stat-label">Total Points Redeemed</div>
+                <i class="bi bi-graph-down-arrow stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1400">
+            <div class="stat-card gradient-kitchen" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
+                <div class="stat-value">{{ loyalty_active }}</div>
+                <div class="stat-label">Active Cards</div>
+                <i class="bi bi-check2-circle stat-icon"></i>
+            </div>
+        </div>
     </div>
 
     <!-- Recent Orders Table -->
@@ -261,6 +290,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <div class="col-md-3 col-6"><a href="{% url 'users:table_list' %}" class="quick-action-btn"><i class="bi bi-table"></i><span>Tables</span></a></div>
         <div class="col-md-3 col-6"><a href="{% url 'users:invoice_search_page' %}" class="quick-action-btn"><i class="bi bi-receipt"></i><span>Invoices</span></a></div>
         <div class="col-md-3 col-6"><a href="{% url 'users:kitchen_users_page' %}" class="quick-action-btn"><i class="bi bi-people"></i><span>Kitchen Staff</span></a></div>
+        <div class="col-md-3 col-6"><a href="{% url 'loyalty_cards:admin_loyalty_list' %}" class="quick-action-btn"><i class="bi bi-star"></i><span>Loyalty Cards</span></a></div>
+        <div class="col-md-3 col-6"><a href="{% url 'loyalty_cards:admin_reports' %}" class="quick-action-btn"><i class="bi bi-bar-chart"></i><span>Loyalty Reports</span></a></div>
     </div>
 </div>
 

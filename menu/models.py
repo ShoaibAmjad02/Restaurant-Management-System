@@ -17,6 +17,7 @@ class Food(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    reward_points = models.IntegerField(default=0, help_text="Points earned when customer orders this item")
 
     image = models.ImageField(
         upload_to="foods/",

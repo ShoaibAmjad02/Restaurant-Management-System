@@ -74,6 +74,10 @@ class Invoice(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     customer_timezone = models.CharField(max_length=100, default="UTC")
     qr_code_image = models.ImageField(upload_to="invoice_qrcodes/", blank=True, null=True)
+    is_loyalty_payment = models.BooleanField(default=False, help_text="Paid using loyalty points")
+    loyalty_points_used = models.IntegerField(default=0, help_text="Loyalty points used for payment")
+    loyalty_points_earned = models.IntegerField(default=0, help_text="Loyalty points earned from this order")
+    loyalty_points_processed = models.BooleanField(default=False, help_text="Prevent duplicate point processing")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

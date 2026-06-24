@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loyalty Cards - Admin</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<style>
+:root{--sidebar-w:260px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);z-index:1000;border-right:1px solid rgba(255,255,255,.05);overflow-y:auto}
+.sidebar-brand{padding:20px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+.sidebar-brand h4{color:#f59e0b;font-weight:700;margin:0}
+.sidebar-menu{padding:10px 0}
+.sidebar-menu a{display:flex;align-items:center;gap:12px;padding:12px 20px;color:#94a3b8;text-decoration:none;transition:.2s;border-left:3px solid transparent;font-size:14px}
+.sidebar-menu a i{width:20px;font-size:16px}
+.sidebar-menu a:hover,.sidebar-menu a.active{background:rgba(245,158,11,.08);color:#f59e0b;border-left-color:#f59e0b}
+.sidebar-menu .menu-label{padding:15px 20px 5px;font-size:11px;text-transform:uppercase;color:#475569;letter-spacing:1px;font-weight:600}
+.main-content{margin-left:var(--sidebar-w);padding:20px 30px;min-height:100vh}
+.table-card{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.05);overflow:hidden}
+.table-card .table{margin:0;color:#e2e8f0}
+.table-card .table thead th{background:rgba(255,255,255,.03);color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.05);padding:12px 16px}
+.table-card .table td{padding:12px 16px;vertical-align:middle;border-color:rgba(255,255,255,.05);font-size:13px}
+.status-active{background:rgba(34,197,94,.15);color:#22c55e;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+.status-blocked{background:rgba(239,68,68,.15);color:#ef4444;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+.btn-action{border-radius:10px;padding:8px 16px;font-weight:600;font-size:13px}
+.filter-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.filter-form input,.filter-form select{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:10px;padding:8px 14px;font-size:13px}
+@media(max-width:768px){.sidebar{width:60px}.sidebar-brand h4,.sidebar-menu a span,.sidebar-menu .menu-label{display:none}.main-content{margin-left:60px;padding:15px}}
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-brand"><h4>Restaurant</h4></div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main</div>
+        <a href="{% url 'users:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="{% url 'users:product_list' %}"><i class="bi bi-box-seam"></i><span>Products</span></a>
+        <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
+        <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+        <a href="{% url 'loyalty_cards:admin_loyalty_list' %}" class="active"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
+        <a href="{% url 'loyalty_cards:admin_reports' %}"><i class="bi bi-bar-chart"></i><span>Loyalty Reports</span></a>
+        <div class="menu-label" style="margin-top:20px">Account</div>
+        <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+</div>
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h4 style="font-weight:700"><i class="bi bi-star me-2" style="color:#f59e0b"></i>Loyalty Card Management</h4>
+            <p style="color:#64748b;margin:0;font-size:14px">Manage all customer loyalty cards</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'loyalty_cards:admin_reports' %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-bar-chart me-1"></i> Reports</a>
+            <a href="{% url 'loyalty_cards:admin_export_csv' %}" class="btn btn-sm btn-outline-info"><i class="bi bi-download me-1"></i> Export CSV</a>
+        </div>
+    </div>
+
+    <form method="GET" class="filter-form">
+        <input type="text" name="search" placeholder="Search by name, email, or card number..." value="{{ search }}" style="min-width:250px">
+        <select name="status">
+            <option value="">All Status</option>
+            <option value="ACTIVE" {% if status_filter == 'ACTIVE' %}selected{% endif %}>Active</option>
+            <option value="BLOCKED" {% if status_filter == 'BLOCKED' %}selected{% endif %}>Blocked</option>
+        </select>
+        <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-search me-1"></i>Search</button>
+        <a href="{% url 'loyalty_cards:admin_loyalty_list' %}" class="btn btn-secondary btn-sm">Clear</a>
+    </form>
+
+    <div class="table-card">
+        <table class="table" id="loyaltyTable">
+            <thead>
+                <tr>
+                    <th>Card #</th>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Total Points</th>
+                    <th>Used</th>
+                    <th>Remaining</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for card in cards %}
+                <tr>
+                    <td><strong>{{ card.card_number }}</strong></td>
+                    <td>{{ card.user.name|default:"N/A" }}</td>
+                    <td>{{ card.user.email|default:"N/A" }}</td>
+                    <td>{{ card.total_points }}</td>
+                    <td>{{ card.used_points }}</td>
+                    <td>{{ card.remaining_points }}</td>
+                    <td><span class="status-{{ card.status|lower }}">{{ card.get_status_display }}</span></td>
+                    <td style="color:#64748b;font-size:12px">{{ card.created_at|date:"d-m-Y" }}</td>
+                    <td>
+                        <a href="{% url 'loyalty_cards:admin_loyalty_detail' card.card_number %}" class="btn btn-sm btn-outline-warning btn-action"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center py-4" style="color:#64748b">No loyalty cards found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+$('#loyaltyTable').DataTable({
+    pageLength:10,
+    lengthMenu:[[10,25,50,-1],[10,25,50,'All']],
+    order:[[7,'desc']],
+    language:{search:'',searchPlaceholder:'Search table...',emptyTable:'No cards'},
+});
+</script>
+</body>
+</html>

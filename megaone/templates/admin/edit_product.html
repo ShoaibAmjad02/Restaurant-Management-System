@@ -49,6 +49,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <a href="{% url 'users:product_list' %}" class="active"><i class="bi bi-box-seam"></i><span>Products</span></a>
         <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
         <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+        <a href="{% url 'loyalty_cards:admin_loyalty_list' %}"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
         <div class="menu-label">Account</div>
         <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
     </div>
@@ -87,6 +88,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
                     <option value="{{ c.id }}" {% if product.category.id == c.id %}selected{% endif %}>{{ c.name }}</option>
                     {% endfor %}
                 </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Reward Points</label>
+                <input type="number" name="reward_points" value="{{ product.reward_points|default:0 }}" class="form-control" min="0">
+                <small style="color:#64748b;font-size:11px">Points customer earns when this product is delivered</small>
             </div>
             <div class="mb-3">
                 <label class="form-label">Image</label>
