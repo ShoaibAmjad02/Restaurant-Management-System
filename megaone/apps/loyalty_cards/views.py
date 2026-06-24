@@ -46,23 +46,43 @@ def my_loyalty_card(request):
 
 @login_required
 def download_card_pdf(request, card_number):
-    card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
-    # Ensure QR exists before generating PDF
-    if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
-        generate_qr_code_image(card)
-    if not card.card_pdf:
-        generate_loyalty_card_pdf(card)
-    return FileResponse(card.card_pdf, as_attachment=True, filename=f"loyalty_card_{card.card_number}.pdf")
+    try:
+        card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+        # Ensure QR exists before PDF
+        if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+            generate_qr_code_image(card)
+            card.refresh_from_db()
+        # Generate PDF if missing or regenerate if file doesn't exist on storage
+        if not card.card_pdf or not card.card_pdf.storage.exists(card.card_pdf.name):
+            card = generate_loyalty_card_pdf(card)
+        # Open file and serve as attachment
+        card.card_pdf.open('rb')
+        response = FileResponse(card.card_pdf, as_attachment=True, filename=f"loyalty_card_{card.card_number}.pdf")
+        response['Content-Type'] = 'application/pdf'
+        response['Content-Disposition'] = f'attachment; filename="loyalty_card_{card.card_number}.pdf"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Could not generate PDF. Please try again. Error: {str(e)}")
+        return redirect('loyalty_cards:my_card')
 
 
 @login_required
 def download_card_image(request, card_number):
-    card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
-    if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
-        generate_qr_code_image(card)
-    if not card.card_image:
-        generate_loyalty_card_image(card)
-    return FileResponse(card.card_image, as_attachment=True, filename=f"loyalty_card_{card.card_number}.png")
+    try:
+        card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+        if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+            generate_qr_code_image(card)
+            card.refresh_from_db()
+        if not card.card_image or not card.card_image.storage.exists(card.card_image.name):
+            card = generate_loyalty_card_image(card)
+        card.card_image.open('rb')
+        response = FileResponse(card.card_image, as_attachment=True, filename=f"loyalty_card_{card.card_number}.png")
+        response['Content-Type'] = 'image/png'
+        response['Content-Disposition'] = f'attachment; filename="loyalty_card_{card.card_number}.png"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Could not generate card image. Please try again. Error: {str(e)}")
+        return redirect('loyalty_cards:my_card')
 
 
 @csrf_exempt
