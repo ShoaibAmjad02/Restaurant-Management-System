@@ -36,12 +36,14 @@ def _get_qr_pil_image(card):
     """Return a PIL Image of the QR code, generating it if needed."""
     if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
         try:
+            card.qr_code_image.open('rb')
             return Image.open(card.qr_code_image)
         except Exception:
             pass
     generate_qr_code_image(card)
     if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
         try:
+            card.qr_code_image.open('rb')
             return Image.open(card.qr_code_image)
         except Exception:
             pass
