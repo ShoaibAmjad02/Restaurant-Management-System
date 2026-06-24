@@ -80,32 +80,3 @@ class OrderItem(models.Model):
     @property
     def subtotal(self):
         return self.price * self.quantity
-    
-    
-import uuid
-
-class Invoice(models.Model):
-
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE
-    )
-
-    invoice_no = models.CharField(
-        max_length=50,
-        unique=True
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-    def save(self, *args, **kwargs):
-
-        if not self.invoice_no:
-            self.invoice_no = f"INV-{uuid.uuid4().hex[:8].upper()}"
-
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.invoice_no

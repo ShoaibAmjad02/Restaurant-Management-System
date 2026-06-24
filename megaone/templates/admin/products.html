@@ -1,395 +1,155 @@
-```
-
 {% load static i18n %}
-
-{% block html_attributes %}{% endblock html_attributes %}
-
-{% block title %}Product Management{% endblock title %}
-
-{% block css %}<!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet">
-
-<link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Management - Restaurant Management</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <style>
-    body{
-    background:#000000;
-}
-
-.page-header{
-    background:linear-gradient(135deg,#4f46e5,#7c3aed);
-    color:white;
-    border-radius:25px;
-    padding:35px;
-}
-
-.table-card{
-    border:none;
-    border-radius:25px;
-    overflow:hidden;
-}
-
-.table thead{
-    background:linear-gradient(135deg,#0ea5e9,#2563eb);
-    color:white;
-}
-
-.table tbody tr{
-    transition:.3s;
-}
-
-.table tbody tr:hover{
-    background:#f8fafc;
-    transform:translateY(-2px);
-}
-
-.btn-success{
-    background:linear-gradient(135deg,#10b981,#059669);
-    border:none;
-}
-
-.btn-light{
-    background:linear-gradient(135deg,  #0ec72c);
-    border:none;
-}
-.btn-warning{
-    background:linear-gradient(135deg,#f59e0b,#f97316);
-    border:none;
-    color:white;
-}
-
-.btn-danger{
-    background:linear-gradient(135deg,#ef4444,#dc2626);
-    border:none;
-}
-
-.btn-primary{
-    background:linear-gradient(135deg,#3b82f6,#2563eb);
-    border:none;
-}
-
-.product-img{
-    width:70px;
-    height:70px;
-    object-fit:cover;
-    border-radius:15px;
-    border:3px solid #fff;
-    box-shadow:0 5px 15px rgba(0,0,0,.15);
-}
-
-.badge.bg-success{
-    background:linear-gradient(135deg,#22c55e,#16a34a)!important;
-}
-
-.badge.bg-danger{
-    background:linear-gradient(135deg,#ef4444,#b91c1c)!important;
-}
+:root{--sidebar-w:260px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow-x:hidden}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);z-index:1000;border-right:1px solid rgba(255,255,255,.05)}
+.sidebar-brand{padding:20px;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+.sidebar-brand h4{color:#f59e0b;font-weight:700;margin:0}
+.sidebar-brand small{color:#64748b;font-size:11px}
+.sidebar-menu{padding:10px 0}
+.sidebar-menu a{display:flex;align-items:center;gap:12px;padding:12px 20px;color:#94a3b8;text-decoration:none;transition:.2s;border-left:3px solid transparent;font-size:14px}
+.sidebar-menu a i{width:20px;font-size:16px}
+.sidebar-menu a:hover,.sidebar-menu a.active{background:rgba(245,158,11,.08);color:#f59e0b;border-left-color:#f59e0b}
+.sidebar-menu .menu-label{padding:15px 20px 5px;font-size:11px;text-transform:uppercase;color:#475569;letter-spacing:1px;font-weight:600}
+.main-content{margin-left:var(--sidebar-w);padding:20px 30px;min-height:100vh}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px}
+.top-bar h2{font-weight:700;font-size:24px}
+.top-bar h2 span{color:#f59e0b}
+.content-card{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.05);padding:24px;margin-bottom:24px}
+.table-card{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.05);overflow:hidden}
+.table-card .table{margin:0;color:#e2e8f0}
+.table-card .table thead th{background:rgba(255,255,255,.03);color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(255,255,255,.05);padding:12px 16px}
+.table-card .table td{padding:12px 16px;vertical-align:middle;border-color:rgba(255,255,255,.05)}
+.product-img{width:60px;height:60px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,.1)}
+.badge-available{background:rgba(34,197,94,.15);color:#22c55e;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+.badge-outofstock{background:rgba(239,68,68,.15);color:#ef4444;padding:4px 12px;border-radius:50px;font-size:12px;font-weight:600}
+.btn-action{border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600}
+.form-control{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:10px;padding:10px 14px}
+.form-control:focus{border-color:#f59e0b;outline:none}
+.dataTables_wrapper .dataTables_filter input{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:8px;padding:6px 12px}
+.dataTables_wrapper .dataTables_filter input:focus{border-color:#f59e0b}
+.dataTables_wrapper .dataTables_length select{background:#0f172a;border:1px solid rgba(255,255,255,.1);color:#e2e8f0;border-radius:8px}
+.dataTables_wrapper .dataTables_info{color:#64748b;font-size:13px}
+.dataTables_wrapper .dataTables_paginate .paginate_button{color:#94a3b8!important;border-radius:8px!important;border:1px solid rgba(255,255,255,.05)!important}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{background:#f59e0b!important;border-color:#f59e0b!important;color:#000!important}
+@media(max-width:768px){.sidebar{width:60px}.sidebar .sidebar-brand h4,.sidebar .sidebar-brand small,.sidebar .sidebar-menu a span,.sidebar .sidebar-menu .menu-label{display:none}.sidebar .sidebar-menu a{padding:12px;justify-content:center}.sidebar .sidebar-menu a i{margin:0}.main-content{margin-left:60px;padding:15px}}
 </style>
-<link href="{% static 'food-delivery/css/style.css' %}" rel="stylesheet">
-{% endblock css %}
+</head>
+<body>
 
-{% block body_attributes %}data-spy="scroll" data-target=".navbar" data-offset="90"{% endblock body_attributes %}
-
-{% block content %}
-
-<!-- Preloader -->
-<div class="preloader">
-    <div class="center">
-        <div class="spinner">
-            <div class="blob top"></div>
-            <div class="blob bottom"></div>
-            <div class="blob left"></div>
-            <div class="blob move-blob"></div>
-        </div>
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <h4>Restaurant</h4>
+        <small>Management System</small>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-label">Main</div>
+        <a href="{% url 'users:admin_dashboard' %}"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+        <a href="{% url 'users:product_list' %}" class="active"><i class="bi bi-box-seam"></i><span>Products</span></a>
+        <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
+        <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+        <div class="menu-label">Operations</div>
+        <a href="{% url 'users:kitchen_users_page' %}"><i class="bi bi-people"></i><span>Kitchen Users</span></a>
+        <a href="{% url 'users:mysql_backup' %}"><i class="bi bi-database"></i><span>Backup</span></a>
+        <div class="menu-label">Account</div>
+        <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
     </div>
 </div>
-<!-- Preloader End -->
 
-<!--Banner Sec start-->
-<section class="main-banner cursor-light bg-1" id="main-banner">
-    <div id="rev_slider_1_1_wrapper" class="rev_slider_wrapper fullscreen-container" data-alias="megaone-food-slider1"
-        data-source="gallery" style="background:transparent;padding:0px;">
-        <!-- START REVOLUTION SLIDER 5.4.8.1 fullscreen mode -->
-        <div id="rev_slider_1_1" class="rev_slider fullscreenbanner" style="display:none;" data-version="5.4.8.1">
-            <ul> <!-- SLIDE  -->
-                <li data-index="rs-1" data-transition="fade" data-slotamount="default" data-hideafterloop="0"
-                    data-hideslideonmobile="off" data-easein="default" data-easeout="default" data-masterspeed="300"
-                    data-rotate="0" data-saveperformance="off" data-title="Slide" data-param1="" data-param2=""
-                    data-param3="" data-param4="" data-param5="" data-param6="" data-param7="" data-param8=""
-                    data-param9="" data-param10="" data-description="">
-                    <!-- MAIN IMAGE -->
-                    <!--<img src="img/transparent.png' %}" data-bgcolor='#ffffff' style='background:#ffffff' alt=""  data-bgposition="center center" data-bgfit="cover" data-bgrepeat="no-repeat" data-bgparallax="off" class="rev-slidebg" data-no-retina>-->
-                    <!-- LAYERS -->
-
-                    <!-- LAYER NR. 5 -->
-                    <!--                    ele 1-->
-
-                    <!-- LAYER NR. 6 -->
-                    <!--                    //ele 3-->
-                    <div class="tp-caption   tp-resizeme" id="slide-1-layer-8"
-                        data-x="['right','right','right','right']" data-hoffset="['-230','-144','-100','-50']"
-                        data-y="['middle','top','bottom','bottom']" data-voffset="['40','100','112','80']"
-                        data-width="none" data-height="none" data-whitespace="normal"
-                        data-visibility="['on','on','off','off']" data-type="image" data-basealign="slide"
-                        data-responsive_offset="on"
-                        data-frames='[{"delay":359.9609375,"speed":1500,"frame":"0","from":"x:[100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;s:inherit;e:inherit;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"opacity:0;","ease":"Power3.easeInOut"}]'
-                        data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]"
-                        data-paddingright="[0,0,0,0]" data-paddingbottom="[0,0,0,0]" data-paddingleft="[0,0,0,0]"
-                        style="z-index: 10;"><img data-depth="0.03" src="{% static 'food-delivery/img/slider-ele3.png' %}" alt=""
-                            data-ww="['445px','327px','264px','174px']" data-hh="['298px','299px','251px','161px']"
-                            data-no-retina> </div>
-                          
-                            <!-- Header -->
-
-<div class="p
-age-header shadow mb-4">
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap">
-
-        <div >
-            <h1 class="fw-bold" style = "color: #ffff">
-                <i class="bi bi-box-seam"></i>
-                Product Management
-            </h1>
-
-            <p class="mb-0" style = "color: #ffff">
-                Manage all food products from one place.
-            </p>
+<div class="main-content">
+    <div class="top-bar" data-aos="fade-down">
+        <div>
+            <h2>Product <span>Management</span></h2>
+            <p style="color:#64748b;margin:0;font-size:14px">Manage all food products from one place</p>
         </div>
-
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-
-            <a href="{% url 'users:add_product' %}"
-               class="btn btn-light">
-                <i class="bi bi-plus-circle"></i>
-                Add Product
-            </a>
-
-            <a href="{% url 'users:admin_dashboard' %}"
-               class="btn btn-warning">
-                <i class="bi bi-speedometer2"></i>
-                Dashboard
-            </a>
-
-            <a href="{% url 'users:logout' %}"
-               class="btn btn-danger">
-                <i class="bi bi-box-arrow-right"></i>
-                Logout
-            </a>
-
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'users:add_product' %}" class="btn btn-warning btn-action px-3"><i class="bi bi-plus-circle me-1"></i> Add Product</a>
+            <a href="{% url 'users:admin_dashboard' %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-speedometer2"></i> Dashboard</a>
         </div>
-
     </div>
 
-</div>
-
-<!-- Search -->
-
-<div class="card table-card shadow mb-4">
-
-    <div class="card-body">
-
-        <div class="row">
-
-            <div class="col-md-4">
-
-                <input type="text"
-                       id="searchInput"
-                       class="form-control search-box"
-                       placeholder="Search products...">
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- Products Table -->
-
-<div class="card table-card shadow">
-
-    <div class="card-body p-0">
-
+    <div class="table-card" data-aos="fade-up">
         <div class="table-responsive">
-
-            <table class="table align-middle mb-0" id="productsTable">
-
+            <table class="table" id="productsTable">
                 <thead>
-
-                <tr>
-                    <th>ID</th>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th width="150">Actions</th>
-                </tr>
-
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th width="140">Actions</th>
+                    </tr>
                 </thead>
-
                 <tbody>
-
-                {% for product in products %}
-
-                <tr>
-
-                    <td>#{{ product.id }}</td>
-
-                    <td>
-
-                        {% if product.image %}
-                            <img src="{{ product.image.url }}"
-                                 class="product-img">
-                        {% else %}
-                            <span class="text-muted">
-                                No Image
-                            </span>
-                        {% endif %}
-
-                    </td>
-
-                    <td class="fw-semibold">
-                        {{ product.name }}
-                    </td>
-
-                    <td>
-                        {{ product.category.name }}
-                    </td>
-
-                    <td class="fw-bold text-success">
-                        Rs {{ product.price }}
-                    </td>
-
-                    <td>
-
-                        {% if product.available %}
-
-                            <span class="badge bg-success">
-                                Available
-                            </span>
-
-                        {% else %}
-
-                            <span class="badge bg-danger">
-                                Out of Stock
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-                    <td>
-
-                        <a href="{% url 'users:edit_product' product.id %}"
-                           class="btn btn-primary btn-sm action-btn">
-
-                            <i class="bi bi-pencil"></i>
-
-                        </a>
-
-                        <form action="{% url 'users:delete_product' product.id %}"
-                              method="POST"
-                              class="d-inline">
-
-                            {% csrf_token %}
-
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm action-btn"
-                                    onclick="return confirm('Delete this product?')">
-
-                                <i class="bi bi-trash"></i>
-
-                            </button>
-
-                        </form>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
+                    {% for product in products %}
+                    <tr>
+                        <td>#{{ product.id }}</td>
+                        <td>
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="product-img">
+                            {% else %}
+                            <div class="product-img d-flex align-items-center justify-content-center bg-secondary text-white">
+                                <i class="bi bi-image"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="fw-semibold">{{ product.name }}</td>
+                        <td>{{ product.category.name }}</td>
+                        <td class="fw-bold" style="color:#22c55e">Rs {{ product.price }}</td>
+                        <td>
+                            {% if product.available %}
+                            <span class="badge-available">Available</span>
+                            {% else %}
+                            <span class="badge-outofstock">Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'users:edit_product' product.id %}" class="btn btn-sm btn-outline-warning me-1"><i class="bi bi-pencil"></i></a>
+                            <form action="{% url 'users:delete_product' product.id %}" method="POST" class="d-inline" onsubmit="return confirm('Delete {{ product.name }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No products found</td></tr>
+                    {% endfor %}
                 </tbody>
-
             </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-                    
-
-                    <!-- LAYER NR. 11 -->
-                    <!--                    ele 4-->
-                    <div class="tp-caption   tp-resizeme" id="slide-1-layer-15" data-x="['left','left','left','left']"
-                        data-hoffset="['-1','-1','0','0']" data-y="['bottom','bottom','bottom','bottom']"
-                        data-voffset="['10','0','0','0']" data-width="none" data-height="none" data-whitespace="normal"
-                        data-visibility="['on','on','off','off']" data-type="image" data-basealign="slide"
-                        data-responsive_offset="on"
-                        data-frames='[{"delay":9.9609375,"speed":1500,"frame":"0","from":"x:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;","mask":"x:0px;y:0px;s:inherit;e:inherit;","to":"o:1;","ease":"Power3.easeInOut"},{"delay":"wait","speed":300,"frame":"999","to":"opacity:0;","ease":"Power3.easeInOut"}]'
-                        data-textAlign="['inherit','inherit','inherit','inherit']" data-paddingtop="[0,0,0,0]"
-                        data-paddingright="[0,0,0,0]" data-paddingbottom="[0,0,0,0]" data-paddingleft="[0,0,0,0]"
-                        style="z-index: 15;"><img data-depth="0.05" src="{% static 'food-delivery/img/slider-ele4.png' %}" alt=""
-                            data-ww="['199px','191px','200px','150px']" data-hh="['270px','301px','259px','200px']"
-                            data-no-retina> </div>
-                </li>
-            </ul>
-            <div class="tp-bannertimer tp-bottom" style="visibility: hidden !important;"></div>
         </div>
     </div>
-    <!-- END REVOLUTION SLIDER -->
-     
-</section>
-<!--Banner Sec End-->
-
-<!--Animated Cursor-->
-<div class="aimated-cursor">
-    <div class="cursor">
-        <div class="cursor-loader"></div>
-    </div>
 </div>
-<!--Animated Cursor End-->
 
-<!--Scroll Top Start-->
-<span class="scroll-top-arrow"><i class="fas fa-angle-up"></i></span>
-<!--Scroll Top End-->
-
-{% endblock content %}
-
-
-{% block javascript %}
-<script src="{% static 'vendor/js/bundle.min.js' %}"></script>
-<!-- Plugin Js -->
-<script src="{% static 'vendor/js/jquery.fancybox.min.js' %}"></script>
-<script src="{% static 'vendor/js/owl.carousel.min.js' %}"></script>
-<script src="{% static 'vendor/js/parallaxie.min.js' %}"></script>
-<script src="{% static 'vendor/js/wow.min.js' %}"></script>
-<!-- REVOLUTION JS FILES -->
-<script src="{% static 'vendor/js/jquery.themepunch.tools.min.js' %}"></script>
-<script src="{% static 'vendor/js/jquery.themepunch.revolution.min.js' %}"></script>
-<!-- SLIDER REVOLUTION EXTENSIONS -->
-<script src="{% static 'vendor/js/extensions/revolution.extension.actions.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.carousel.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.kenburn.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.layeranimation.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.migration.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.navigation.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.parallax.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.slideanims.min.js' %}"></script>
-<script src="{% static 'vendor/js/extensions/revolution.extension.video.min.js' %}"></script>
-<!--Tilt Js-->
-<script src="{% static 'vendor/js/TweenMax.min.js' %}"></script>
-<!-- custom script-->
-<script src="{% static 'food-delivery/js/slick.min.js' %}"></script>
-<script src="{% static 'food-delivery/js/select2.min.js' %}"></script>
-<script src="{% static 'food-delivery/js/notify.min.js' %}"></script>
-<script src="{% static 'vendor/js/contact_us.js' %}"></script>
-<script src="{% static 'food-delivery/js/script.js' %}"></script>
-{% endblock javascript %}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+AOS.init({duration:800,once:true});
+$('#productsTable').DataTable({
+    pageLength:10,
+    order:[[0,'desc']],
+    language:{
+        search:'',searchPlaceholder:'Search products...',
+        emptyTable:'No products found',
+        info:'Showing _START_ to _END_ of _TOTAL_ products',
+    },
+    dom:'<"row g-2 mb-3"<"col-sm-6"f><"col-sm-6 text-end"l>>rtip',
+});
+</script>
+</body>
+</html>

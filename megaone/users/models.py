@@ -1,10 +1,14 @@
+import uuid
+import io
+import qrcode
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.core.files.base import ContentFile
 from django.db import models
-from django.utils import timezone
-from .managers import UserManager
+from django.utils import timezone as tz_utils
+from django.utils.crypto import get_random_string
 from django.conf import settings
-import uuid
+from .managers import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -16,7 +20,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_operator = models.BooleanField(default=False)
     is_kitchen = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(default=timezone.now)
+    timezone = models.CharField(max_length=100, default="UTC")
+    date_joined = models.DateTimeField(default=tz_utils.now)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -24,180 +29,109 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
 
-class Invoice(models.Model):
+class RestaurantTable(models.Model):
+    table_no = models.IntegerField(unique=True)
+    qr_code_image = models.ImageField(upload_to="table_qrcodes/", blank=True, null=True)
+    qr_token = models.CharField(max_length=64, unique=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if not self.qr_token:
+            self.qr_token = get_random_string(32)
+        super().save(*args, **kwargs)
+
+    def generate_qr_code(self, request=None):
+        domain = "http://localhost:8000"
+        if request:
+            domain = f"{request.scheme}://{request.get_host()}"
+        url = f"{domain}/menu/?table={self.table_no}&token={self.qr_token}"
+        qr = qrcode.make(url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        filename = f"table_{self.table_no}_qr.png"
+        self.qr_code_image.save(filename, ContentFile(buffer.getvalue()), save=False)
+
+    def __str__(self):
+        return f"Table {self.table_no}"
+
+
+class Invoice(models.Model):
+    uuid_token = models.CharField(max_length=64, unique=True, blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True, blank=True
     )
+    customer_name = models.CharField(max_length=255, blank=True, null=True)
+    customer_email = models.EmailField(blank=True, null=True)
+    table_no = models.IntegerField(null=True, blank=True)
+    customer_session_id = models.CharField(max_length=100, blank=True, null=True)
+    invoice_number = models.CharField(max_length=50, unique=True, default=uuid.uuid4)
+    payment_method = models.CharField(max_length=20, blank=True, null=True)
+    tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    subtotal_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    customer_timezone = models.CharField(max_length=100, default="UTC")
+    qr_code_image = models.ImageField(upload_to="invoice_qrcodes/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    customer_name = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True
-    )
+    def save(self, *args, **kwargs):
+        if not self.uuid_token:
+            self.uuid_token = uuid.uuid4().hex
+        super().save(*args, **kwargs)
 
-    customer_email = models.EmailField(
-        blank=True,
-        null=True
-    )
-
-    invoice_number = models.CharField(
-        max_length=50,
-        unique=True,
-        default=uuid.uuid4
-    )
-
-    total_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    def generate_qr_code(self, request=None):
+        domain = "http://localhost:8000"
+        if request:
+            domain = f"{request.scheme}://{request.get_host()}"
+        secure_url = f"{domain}/users/invoice/{self.uuid_token}/verify/"
+        qr = qrcode.make(secure_url)
+        buffer = io.BytesIO()
+        qr.save(buffer, format="PNG")
+        filename = f"invoice_{self.invoice_number}_qr.png"
+        self.qr_code_image.save(filename, ContentFile(buffer.getvalue()), save=False)
 
     def __str__(self):
         return self.invoice_number
 
 
 class InvoiceItem(models.Model):
-
-    invoice = models.ForeignKey(
-        Invoice,
-        related_name="items",
-        on_delete=models.CASCADE
-    )
-
+    invoice = models.ForeignKey(Invoice, related_name="items", on_delete=models.CASCADE)
     product_name = models.CharField(max_length=255)
-
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
-
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField()
-
-    subtotal = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return self.product_name
 
-class KitchenOrder(models.Model):
 
+class KitchenOrder(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
         ("preparing", "Preparing"),
-        ("served", "Served"),
+        ("ready", "Ready"),
+        ("delivered", "Delivered"),
     )
 
-    invoice = models.OneToOneField(
-        Invoice,
-        on_delete=models.CASCADE,
-        related_name="kitchen_order"
-    )
+    uuid_token = models.CharField(max_length=64, unique=True, blank=True)
+    invoice = models.OneToOneField(Invoice, on_delete=models.CASCADE, related_name="kitchen_order")
+    order_number = models.CharField(max_length=30, unique=True)
+    table_no = models.IntegerField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    order_number = models.CharField(
-        max_length=30,
-        unique=True
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default="pending"
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
+    def save(self, *args, **kwargs):
+        if not self.uuid_token:
+            self.uuid_token = uuid.uuid4().hex
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.order_number
 
 
 class KitchenOrderItem(models.Model):
-
-    order = models.ForeignKey(
-        KitchenOrder,
-        on_delete=models.CASCADE,
-        related_name="items"
-    )
-
+    order = models.ForeignKey(KitchenOrder, on_delete=models.CASCADE, related_name="items")
     product_name = models.CharField(max_length=255)
-
     quantity = models.IntegerField()
-
-
-class InventoryRequest(models.Model):
-
-    kitchen_user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="inventory_requests"
-    )
-
-    item_name = models.CharField(
-        max_length=100
-    )
-
-    quantity = models.CharField(
-        max_length=50
-    )
-
-    description = models.TextField(
-        blank=True
-    )
-
-    status = models.CharField(
-        max_length=20,
-        default="Pending"
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True
-    )
-
-
-    def __str__(self):
-        return self.item_name
-
-class InventoryIssue(models.Model):
-
-    kitchen_user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="received_inventory"
-    )
-
-
-    item_name=models.CharField(
-        max_length=100
-    )
-
-
-    quantity=models.CharField(
-        max_length=50
-    )
-
-
-    description=models.TextField(
-        blank=True
-    )
-
-
-    issued_by=models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="issued_inventory"
-    )
-
-
-    created_at=models.DateTimeField(
-        auto_now_add=True
-    )
-

@@ -143,7 +143,11 @@
     background:#0d6efd;
 }
 
-.status-completed{
+.status-ready{
+    background:#ffc107;color:#000;
+}
+
+.status-delivered{
     background:#28a745;
 }
 
@@ -216,14 +220,12 @@
 
     <!-- Orders Icon -->
     <li class="header-orders">
-        <a href="javascript:void(0);" class="line-icon position-relative" >
-            <i class="las la-clipboard-list"></i>
+        <a href="javascript:void(0);" class="line-icon position-relative link">
+            <i class="las la-receipt"></i>
         </a>
-
-        <div class="orders-dropdown" id="orders-dropdown">
-            <div class="text-center p-3" style="color:red">
-                Please Login ...
-            </div>
+        <div class="orders-dropdown">
+            <div class="dropdown-title">My Orders</div>
+            <div id="myOrdersList"></div>
         </div>
     </li>
 
@@ -914,61 +916,33 @@
 {% block javascript %}
 
 <script>
-function loadOrders(){
-
+function loadMyOrders() {
     fetch("{% url 'users:my_orders' %}")
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-
-        let html = `
-        <div class="dropdown-title">
-            My Orders
-        </div>
-        `;
-
-        if(data.orders.length === 0){
-            html += `
-            <div class="text-center p-4 text-white">
-                No Orders Found
-            </div>`;
+        const list = document.getElementById("myOrdersList");
+        if (!list) return;
+        if (!data.orders || data.orders.length === 0) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b">No orders yet</div>';
+            return;
         }
-
-        data.orders.forEach(order => {
-
-            let cls = "status-pending";
-
-            if(order.status === "preparing"){
-                cls = "status-preparing";
-            }
-
-            if(order.status === "served"){
-                cls = "status-completed";
-                order.status = "Completed";
-            }
-
-            html += `
+        list.innerHTML = data.orders.map(o => {
+            const statusColors = {pending:'status-pending',preparing:'status-preparing',ready:'status-ready',delivered:'status-delivered'};
+            const badgeClass = statusColors[o.status] || 'status-pending';
+            return `
             <div class="order-item">
-
-                <div class="order-no">
-                    #${order.order_no}
+                <div class="order-no">${o.invoice}</div>
+                <div class="order-date">${o.order_no} | ${o.created_at}</div>
+                <span class="status-badge ${badgeClass}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+                <div style="margin-top:8px;display:flex;gap:6px">
+                    <a href="/users/order-tracking/${o.invoice}/" class="btn btn-sm btn-outline-warning" style="flex:1;font-size:11px;padding:4px 8px;border-radius:8px;text-decoration:none;color:#f59e0b;border:1px solid #f59e0b">View Status</a>
+                    <a href="/users/invoice/${o.uuid_token}/" target="_blank" class="btn btn-sm btn-success" style="flex:1;font-size:11px;padding:4px 8px;border-radius:8px;text-decoration:none">Open Invoice</a>
                 </div>
-
-                <div class="order-date">
-                    ${order.created_at}
-                </div>
-
-                <span class="status-badge ${cls}">
-                    ${order.status}
-                </span>
-
             </div>`;
-        });
-
-        document.getElementById("orders-dropdown").innerHTML = html;
+        }).join('');
     });
 }
-
-document.querySelector('.header-orders').addEventListener('mouseenter', loadOrders);
+document.addEventListener("DOMContentLoaded", loadMyOrders);
 </script>
 
 <script src="{% static 'vendor/js/bundle.min.js' %}"></script>

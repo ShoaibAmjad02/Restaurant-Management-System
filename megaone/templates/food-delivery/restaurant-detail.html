@@ -3,12 +3,10 @@
 
 {% block html_attributes %}{% endblock html_attributes %}
 
-{% block title %}Food Delivery | Restaurant Detail{% endblock title %}
+{% block title %}Our Menu{% endblock title %}
 
 {% block css %}
 <link href="{% static '/vendor/css/bundle.min.css' %}" rel="stylesheet">
-<!-- Plugin Css -->
-
 <link href="{% static 'food-delivery/css/line-awesome.min.css' %}" rel="stylesheet">
 <link href="{% static '/vendor/css/revolution-settings.min.css' %}" rel="stylesheet">
 <link href="{% static '/vendor/css/jquery.fancybox.min.css' %}" rel="stylesheet">
@@ -19,183 +17,36 @@
 <link href="{% static 'food-delivery/css/slick.css' %}" rel="stylesheet">
 <link href="{% static '/vendor/css/wow.css' %}" rel="stylesheet">
 <link href="{% static '/vendor/css/swiper.min.css' %}" rel="stylesheet">
-
-<!-- Style Sheet -->
 <link href="{% static 'food-delivery/css/nouislider.min.css' %}" rel="stylesheet">
 <link href="{% static 'food-delivery/css/range-slider.css' %}" rel="stylesheet">
 <link href="{% static 'food-delivery/css/style.css' %}" rel="stylesheet">
 <style>
-.food-list{
-    position: relative;
-    min-height: 90px;
-    padding-bottom: 60px;
-}
-
-.add-to-cart-btn{
-    position:absolute;
-    bottom:30px;
-    right:195px;
-    background:#28a745;
-    color:#fff;
-    border:none;
-    padding:8px 18px;
-    border-radius:25px;
-    font-size:14px;
-    cursor:pointer;
-    transition:.3s;
-    z-index:99;
-}
-
-.add-to-cart-btn:hover{
-    background:#218838;
-}
-
-.minicart-content{
-    max-height:350px;
-    overflow-y:auto;
-}
-.order-modal{
-    display:none;
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.6);
-    z-index:9999;
-}
-
-.order-box{
-    width:350px;
-    background:#fff;
-    padding:20px;
-    margin:10% auto;
-    border-radius:10px;
-}
-
-.header-orders{
-    position:relative;
-    list-style:none;
-    margin-right:15px;
-}
-
-.header-orders > a{
-    color:#fff;
-    font-size:30px;
-    display:block;
-    padding:10px;
-    transition:.3s;
-}
-
-.header-orders > a:hover{
-    color:#ffcc00;
-    transform:scale(1.08);
-}
-
-.orders-dropdown{
-    position:absolute;
-    top:100%;          /* icon ke bilkul niche */
-    right:50%;
-    transform:translateX(50%);
-    margin-top:8px;
-    width:360px;
-    background:#111;
-    border:1px solid #ff7b00;
-    border-radius:15px;
-    display:none;
-    max-height:420px;
-    overflow-y:auto;
-    z-index:9999;
-
-    box-shadow:
-    0 0 15px rgba(255, 133, 20, 0.66),
-    0 0 35px rgba(255,204,0,.15);
-
-    animation:fadeIn .3s ease;
-}
-
-.header-orders:hover .orders-dropdown{
-    display:block;
-}
-
-.orders-dropdown::-webkit-scrollbar{
-    width:6px;
-}
-
-.orders-dropdown::-webkit-scrollbar-thumb{
-    background:#ff7b00;
-    border-radius:20px;
-}
-
-.order-item{
-    padding:15px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    transition:.3s;
-}
-
-.order-item:hover{
-    background:#1c1c1c;
-    padding-left:20px;
-}
-
-.order-item:last-child{
-    border-bottom:none;
-}
-
-.order-no{
-    color:#fff;
-    font-size:15px;
-    font-weight:700;
-}
-
-.order-date{
-    color:#aaa;
-    font-size:16px;
-    margin-top:5px;
-}
-
-.status-badge{
-    display:inline-block;
-    margin-top:10px;
-    padding:6px 12px;
-    border-radius:20px;
-    color:#fff;
-    font-size:12px;
-    font-weight:600;
-}
-
-.status-pending{
-    background:#dc3545;
-}
-
-.status-preparing{
-    background:#0d6efd;
-}
-
-.status-completed{
-    background:#28a745;
-}
-
-.dropdown-title{
-    padding:15px;
-    color:#ff7b00;
-    font-size:18px;
-    font-weight:700;
-    border-bottom:1px solid rgba(255,255,255,.08);
-    text-align:center;
-    letter-spacing:1px;
-}
-
-@keyframes fadeIn{
-    from{
-        opacity:0;
-        transform:translateY(10px);
-    }
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-}
+.food-list{position:relative;min-height:90px;padding-bottom:60px;}
+.add-to-cart-btn{position:absolute;bottom:30px;right:195px;background:#28a745;color:#fff;border:none;padding:8px 18px;border-radius:25px;font-size:14px;cursor:pointer;transition:.3s;z-index:99;}
+.add-to-cart-btn:hover{background:#218838;}
+.minicart-content{max-height:350px;overflow-y:auto;}
+.order-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;}
+.order-box{width:350px;background:#fff;padding:20px;margin:10% auto;border-radius:10px;}
+.header-orders{position:relative;list-style:none;margin-right:15px;}
+.header-orders > a{color:#fff;font-size:30px;display:block;padding:10px;transition:.3s;}
+.header-orders > a:hover{color:#ffcc00;transform:scale(1.08);}
+.orders-dropdown{position:absolute;top:100%;right:50%;transform:translateX(50%);margin-top:8px;width:360px;background:#111;border:1px solid #ff7b00;border-radius:15px;display:none;max-height:420px;overflow-y:auto;z-index:9999;box-shadow:0 0 15px rgba(255,133,20,.66),0 0 35px rgba(255,204,0,.15);animation:fadeIn .3s ease;}
+.header-orders:hover .orders-dropdown{display:block;}
+.orders-dropdown::-webkit-scrollbar{width:6px;}
+.orders-dropdown::-webkit-scrollbar-thumb{background:#ff7b00;border-radius:20px;}
+.order-item{padding:15px;border-bottom:1px solid rgba(255,255,255,.08);transition:.3s;}
+.order-item:hover{background:#1c1c1c;padding-left:20px;}
+.order-item:last-child{border-bottom:none;}
+.order-no{color:#fff;font-size:15px;font-weight:700;}
+.order-date{color:#aaa;font-size:16px;margin-top:5px;}
+.status-badge{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:20px;color:#fff;font-size:12px;font-weight:600;}
+.status-pending{background:#dc3545;}
+.status-preparing{background:#0d6efd;}
+.status-ready{background:#ffc107;color:#000;}
+.status-delivered{background:#28a745;}
+.dropdown-title{padding:15px;color:#ff7b00;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;letter-spacing:1px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.table-badge{background:#ff7b00;color:#fff;padding:10px 25px;border-radius:50px;font-size:18px;font-weight:700;display:inline-block;margin-bottom:20px;}
 </style>
 {% endblock css %}
 
@@ -203,8 +54,6 @@
 
 {% block content %}
 
-</style>
-<!-- Preloader -->
 <div class="preloader">
     <div class="center">
         <div class="spinner">
@@ -215,69 +64,40 @@
         </div>
     </div>
 </div>
-<!-- Preloader End -->
 
-<!--Header Start-->
 <header id="home" class="cursor-light">
-
     <div class="inner-header nav-icon">
         <div class="main-navigation">
             <div class="container">
                 <div class="row">
                     <div class="col-6 col-lg-3">
                         <a class="navbar-brand link" href="/">
-                            <img src="{% static 'food-delivery/img/logo.png' %}" class="" alt="logo">
-                            <!--                            <img src="{% static 'food-delivery/img/logo-white-small.png' %}" class="logo-fixed" alt="logo">-->
+                            <img src="{% static 'food-delivery/img/logo.png' %}" alt="logo">
                         </a>
                     </div>
                     <div class="col-lg-6 simple-navbar d-none d-lg-flex align-items-center justify-content-center">
                         <nav class="navbar navbar-expand-lg">
                             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                                 <div class="navbar-nav ml-auto mr-auto">
-                                    <a class="nav-link link"
-                                        href="{% url 'users:food_delivery_restaurant_detail' %}">Browse
-                                        Food</a>
-                                    <a class="nav-link link"
-                                        href="/#app-sec">Download
-                                        App</a>
-                                    <a class="nav-link link" href="/#about-sec">About
-                                        Us</a>
+                                    <a class="nav-link link" href="{% url 'users:food_delivery_restaurant_detail' %}">Browse Food</a>
+                                    <a class="nav-link link" href="/#app-sec">Download App</a>
+                                    <a class="nav-link link" href="/#about-sec">About Us</a>
                                 </div>
                             </div>
                         </nav>
                     </div>
                     <div class="col-6 col-lg-3 d-flex align-items-center justify-content-end">
                         <ul class="user-links">
-
-    <!-- Orders Icon -->
-    <li class="header-orders">
-        <a href="javascript:void(0);" class="line-icon position-relative" style="margin-right: -33px">
-            <i class="las la-clipboard-list"></i>
-        </a>
-
-        <div class="orders-dropdown" id="orders-dropdown">
-            <div class="text-center p-3" style="color:red">
-                Please Login ...
-            </div>
-        </div>
-    </li>
-
-    <!-- Cart Icon -->
-    <li class="header-shop-cart">
-        ....
-    </li>
-
-</ul>
-                        <ul class="user-links">
-                            <li class="header-shop-cart"><a href="javascript:void(0);"
-                                    class="line-icon position-relative link"><i class="las la-shopping-bag"></i><span class="badge rounded-circle cart-count">0</span></a>
+                            <li class="header-shop-cart">
+                                <a href="javascript:void(0);" class="line-icon position-relative link">
+                                    <i class="las la-shopping-bag"></i>
+                                    <span class="badge rounded-circle cart-count">0</span>
+                                </a>
                                 <div class="minicart link">
-                                    <div class="minicart-content"  id="cart-items">
-                                    </div>
+                                    <div class="minicart-content" id="cart-items"></div>
                                     <ul class="ml-0">
                                         <li>
                                             <div class="total-price">
-                                                <!--                                                <span class="f-left">Total:</span>-->
                                                 <span class="f-right">Rs: 0.00</span>
                                             </div>
                                         </li>
@@ -289,29 +109,29 @@
                                     </ul>
                                 </div>
                             </li>
-                            <li class="user-menu-cart"><a href="javascript:void(0);" class="fa-icon link"><i
-                                        class="far fa-user"></i><span><i class="las la-angle-down ml-1"></i></span></a>
+                            {% if user.is_authenticated %}
+                            <li class="header-orders">
+                                <a href="javascript:void(0);" class="line-icon position-relative link">
+                                    <i class="las la-receipt"></i>
+                                </a>
+                                <div class="orders-dropdown">
+                                    <div class="dropdown-title">My Orders</div>
+                                    <div id="myOrdersList"></div>
+                                </div>
+                            </li>
+                            {% endif %}
+                            <li class="user-menu-cart">
+                                <a href="javascript:void(0);" class="fa-icon link">
+                                    <i class="far fa-user"></i><span><i class="las la-angle-down ml-1"></i></span>
+                                </a>
                                 <div class="menu-links link">
                                     <ul>
-                                        <li>
-                                            <div class="overlay-link"></div>
-                                            <a href="{% url 'food-delivery:food_delivery_login' %}"><i
-                                                    class="lni lni-key"></i>Login</a>
-                                        </li>
-                                        <li>
-                                            <div class="overlay-link"></div>
-                                            <a href="{% url 'food-delivery:food_delivery_registration' %}"><i
-                                                    class="lni lni-pointer-right"></i>Register</a>
-                                        </li>
-                                        <li>
-                                            <div class="overlay-link"></div>
-                                            <a href="{% url 'food-delivery:food_delivery_accounts' %}"><i
-                                                    class="lni lni-user"></i>Account</a>
-                                        </li>
-                                        <li>
-                                            <div class="overlay-link"></div>
-                                            <a href="{% url 'users:logout' %}"><i class="lni lni-lock"></i>Logout</a>
-                                        </li>
+                                        {% if user.is_authenticated %}
+                                        <li><a href="{% url 'users:logout' %}"><i class="lni lni-lock"></i>Logout</a></li>
+                                        {% else %}
+                                        <li><a href="{% url 'food-delivery:food_delivery_login' %}"><i class="lni lni-key"></i>Login</a></li>
+                                        <li><a href="{% url 'food-delivery:food_delivery_registration' %}"><i class="lni lni-pointer-right"></i>Register</a></li>
+                                        {% endif %}
                                     </ul>
                                 </div>
                             </li>
@@ -320,14 +140,10 @@
                 </div>
             </div>
         </div>
-        <!--toggle btn-->
         <a href="javascript:void(0)" class="sidemenu_btn link d-lg-none" id="sidemenu_toggle">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span></span><span></span><span></span>
         </a>
     </div>
-    <!--Side Nav-->
     <div class="side-menu hidden side-menu-opacity">
         <div class="bg-overlay"></div>
         <div class="inner-wrapper">
@@ -335,318 +151,172 @@
             <div class="container">
                 <div class="row w-100 side-menu-inner-content">
                     <div class="col-12 d-flex justify-content-center align-items-center">
-                        <a href="/" class="navbar-brand"><img
-                                src="{% static 'food-delivery/img/logo-white-small.png' %}" alt="logo"></a>
+                        <a href="/" class="navbar-brand"><img src="{% static 'food-delivery/img/logo-white-small.png' %}" alt="logo"></a>
                     </div>
                     <div class="col-12 col-lg-8">
                         <nav class="side-nav w-100">
                             <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                        href="{% url 'users:food_delivery_restaurant_detail' %}">Browse
-                                        Food</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/#app-sec">Download
-                                        App</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="/#about-sec">About
-                                        Us</a>
-                                </li>
+                                <li class="nav-item"><a class="nav-link" href="{% url 'users:food_delivery_restaurant_detail' %}">Browse Food</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/#app-sec">Download App</a></li>
+                                <li class="nav-item"><a class="nav-link" href="/#about-sec">About Us</a></li>
                             </ul>
                         </nav>
-                    </div>
-                    <div class="col-12 col-lg-4 d-flex align-items-center">
-                        <div class="side-footer text-white w-100">
-                            <div class="menu-company-details">
-                                <span>+1 631 123 4567</span>
-                                <span>email@website.com</span>
-                            </div>
-                            <ul class="social-icons-simple">
-                                <li><a class="facebook-text-hvr" href="javascript:void(0)"><i
-                                            class="fab fa-facebook-f"></i> </a> </li>
-                                <li><a class="instagram-text-hvr" href="javascript:void(0)"><i
-                                            class="fab fa-twitter"></i> </a> </li>
-                                <li><a class="instagram-text-hvr" href="javascript:void(0)"><i
-                                            class="fab fa-youtube"></i> </a> </li>
-                                <li><a class="instagram-text-hvr" href="javascript:void(0)"><i
-                                            class="fab fa-instagram"></i> </a> </li>
-                            </ul>
-                            <p class="text-white">&copy; 2026 Restaurant. Made for Restaurant</p>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <a id="close_side_menu" href="javascript:void(0);"></a>
-
 </header>
-<!--Header End-->
 
-<!--Banner Sec start-->
 <section class="secondary-pages-banner cursor-light bg-1" id="main-banner">
-    <!-- END REVOLUTION SLIDER -->
     <img src="{% static 'food-delivery/img/slider-ele3.png' %}" class="secondary-item1">
     <img src="{% static 'food-delivery/img/slider-ele1.png' %}" class="secondary-item2">
     <div class="banner-content text-center">
         <div class="heading-area">
-            <h4 class="heading">Restaurant Detail</h4>
+            {% if table_no %}
+            <div class="table-badge">Welcome &bull; Table No: {{ table_no }}</div>
+            {% endif %}
+            <h4 class="heading">Our Menu</h4>
             <div class="crumbs">
                 <nav aria-label="breadcrumb" class="breadcrumb-items">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/"
-                                class="link">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'users:food_delivery_restaurant_detail' %}"
-                                class="link">Restaurant
-                                Detail</a></li>
+                        <li class="breadcrumb-item"><a href="/" class="link">Home</a></li>
+                        <li class="breadcrumb-item">Menu</li>
                     </ol>
                 </nav>
             </div>
         </div>
     </div>
 </section>
-<!--Banner Sec End-->
 
-<!--Detail page-->
 <section class="detail-page-sec padding-top padding-bottom bg-2" id="detail-page-sec">
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <ul class="row nav nav-pills" id="pills-tab" role="tablist">
-                    <li class="col-6 col-lg-3 nav-item pr-1">
-                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab"
-                            aria-controls="pills-home" aria-selected="true">
-                            <i class="lni lni-fresh-juice pill-icon"></i>
-                            <span class="pill-name">Fast Food</span>
-                        </a>
-                    </li>
-                    <li class="col-6 col-lg-3 nav-item pl-1">
-                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab"
-                            aria-controls="pills-profile" aria-selected="false">
-                            <i class="lni lni-chef-hat pill-icon"></i>
-                            <span class="pill-name">Drinks</span>
-                        </a>
-                    </li>
-                    <li class="col-6 col-lg-3 nav-item pr-1">
-                        <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab"
-                            aria-controls="pills-contact" aria-selected="false">
-                            <i class="lni lni-dinner pill-icon"></i>
-                            <span class="pill-name">Desserts</span>
-                        </a>
-                    </li>
-                    <li class="col-6 col-lg-3 nav-item pl-1">
-                        <a class="nav-link" id="pills-deal-tab" data-toggle="pill" href="#pills-deal" role="tab"
-                            aria-controls="pills-contact" aria-selected="false">
-                            <i class="lni lni-gift pill-icon"></i>
-                            <span class="pill-name">Burgers</span>
-                        </a>
-                    </li>
-                </ul>
-                {% if user.is_authenticated %}
-{% else %}
-<a href="{% url 'food-delivery:food_delivery_login' %}">
-{% endif %}
                 <div class="tab-content" id="pills-tabContent">
-                    <div class="tab-pane fade show active" id="pills-home" role="tabpanel"
-                        aria-labelledby="pills-home-tab">
+                    <div class="tab-pane fade show active" id="pills-home" role="tabpanel">
                         <div class="row">
-
-    {% for product in products %}
-
-    <div class="col-md-6">
-
-        <div class="food-list ml-0">
-
-            <div class="list-overlay"></div>
-
-            <div class="rates d-flex justify-content-between">
-
-                <div class="info">
-
-                    <h6 class="main-heading">
-                        {{ product.name }}
-                    </h6>
-
-                    <p class="text">
-                        {{ product.description|truncatechars:80 }}
-                    </p>
-
-                </div>
-
-                <p class="rate">
-                    Rs {{ product.price }}
-                </p>
-
-            </div>
-        
-            <button
-    type="button"
-    class="add-to-cart-btn"
-    data-id="{{ product.id }}"
-    data-name="{{ product.name }}"
-    data-price="{{ product.price }}"
-    data-image="{% if product.image %}{{ product.image.url }}{% else %}{% static 'food-delivery/img/item1.png' %}{% endif %}">
-    Add To Cart
-</button>
-
-        </div>
-
-    </div>
-
-    {% empty %}
-
-    <div class="col-12 text-center">
-        <h4>No Products Available</h4>
-    </div>
-
-    {% endfor %}
-</div>
-
-                    </div>
-                    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                    </div>
-                    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                    </div>
-                    <div class="tab-pane fade" id="pills-deal" role="tabpanel" aria-labelledby="pills-deal-tab">
+                            {% for product in products %}
+                            <div class="col-md-6">
+                                <div class="food-list ml-0">
+                                    <div class="list-overlay"></div>
+                                    <div class="rates d-flex justify-content-between">
+                                        <div class="info">
+                                            <h6 class="main-heading">{{ product.name }}</h6>
+                                            <p class="text">{{ product.description|truncatechars:80 }}</p>
+                                        </div>
+                                        <p class="rate">Rs {{ product.price }}</p>
+                                    </div>
+                                    <button type="button" class="add-to-cart-btn"
+                                        data-id="{{ product.id }}"
+                                        data-name="{{ product.name }}"
+                                        data-price="{{ product.price }}"
+                                        data-image="{% if product.image %}{{ product.image.url }}{% else %}{% static 'food-delivery/img/item1.png' %}{% endif %}">
+                                        Add To Cart
+                                    </button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12 text-center">
+                                <h4>No Products Available</h4>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </section>
-<!--Detail ;page End-->
 
 <div class="foot-effect"></div>
-<!--Footer Start-->
 <footer class="footer-style-1 bg-1">
-
     <div class="container">
         <div class="row align-items-center">
-            <!--Social-->
             <div class="col-12">
                 <div class="footer-social text-center">
                     <ul class="list-unstyled">
-                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i aria-hidden="true"
-                                    class="fab fa-facebook-f"></i><span></span></a></li>
-                        <li><a class="wow fadeInDown" href="javascript:void(0);"><i aria-hidden="true"
-                                    class="fab fa-twitter"></i><span></span></a></li>
-                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i aria-hidden="true"
-                                    class="fab fa-google-plus-g"></i><span></span></a></li>
-                        <li><a class="wow fadeInDown" href="javascript:void(0);"><i aria-hidden="true"
-                                    class="fab fa-linkedin-in"></i><span></span></a></li>
-                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i aria-hidden="true"
-                                    class="fab fa-instagram"></i><span></span></a></li>
+                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i class="fab fa-facebook-f"></i></a></li>
+                        <li><a class="wow fadeInDown" href="javascript:void(0);"><i class="fab fa-twitter"></i></a></li>
+                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i class="fab fa-google-plus-g"></i></a></li>
+                        <li><a class="wow fadeInDown" href="javascript:void(0);"><i class="fab fa-linkedin-in"></i></a></li>
+                        <li><a class="wow fadeInUp" href="javascript:void(0);"><i class="fab fa-instagram"></i></a></li>
                     </ul>
                 </div>
             </div>
-            <!--Text-->
             <div class="col-12 text-center mt-3">
-                <p class="company-about fadeIn">&copy; 2026 Made for <a
-                        href="javascript:void(0);">Restaurant</a>
-                </p>
+                <p class="company-about fadeIn">&copy; 2026 Made for <a href="javascript:void(0);">Restaurant</a></p>
             </div>
         </div>
     </div>
 </footer>
-<!--Footer End-->
 
-<!--Animated Cursor-->
 <div class="aimated-cursor">
     <div class="cursor">
         <div class="cursor-loader"></div>
     </div>
 </div>
-<!--Animated Cursor End-->
-
-<!--Scroll Top Start-->
 <span class="scroll-top-arrow"><i class="fas fa-angle-up"></i></span>
-<!--Scroll Top End-->
+
+<div id="loading-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+    <div class="spinner-border text-warning" style="width:3rem;height:3rem;" role="status"></div>
+    <p class="text-white mt-3" style="font-size:20px;font-weight:600;">Processing your order...</p>
+</div>
+
+<!-- Payment Method Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#1e293b;border:1px solid rgba(255,255,255,.08);border-radius:20px;color:#e2e8f0">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" style="color:#f59e0b"><i class="fas fa-credit-card me-2"></i> Select Payment Method</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 py-3">
+                <div id="paymentCartSummary" class="mb-3 p-3" style="background:rgba(255,255,255,.03);border-radius:12px">
+                    <div class="d-flex justify-content-between mb-1"><span style="color:#94a3b8">Items in Cart</span><span id="paymentCartCount" class="fw-bold">0</span></div>
+                    <div class="d-flex justify-content-between mb-1"><span style="color:#94a3b8">Subtotal</span><span id="paymentSubtotal" class="fw-bold">Rs 0</span></div>
+                    <div id="paymentTaxDisplay" class="d-flex justify-content-between mb-1" style="display:none!important"><span style="color:#94a3b8">Tax</span><span id="paymentTaxAmount" class="fw-bold" style="color:#f59e0b">Rs 0</span></div>
+                    <hr style="border-color:rgba(255,255,255,.1)">
+                    <div class="d-flex justify-content-between"><span class="fw-bold">Total</span><span id="paymentGrandTotal" class="fw-bold" style="color:#22c55e;font-size:18px">Rs 0</span></div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="payment-option" data-method="card" onclick="selectPayment('card')" style="background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:.2s;height:100%">
+                            <div style="font-size:40px;margin-bottom:10px;color:#3b82f6"><i class="fas fa-credit-card"></i></div>
+                            <h6 class="fw-bold mb-1" style="color:#f1f5f9">Card Payment</h6>
+                            <div style="font-size:13px;color:#94a3b8">Tax: 5%</div>
+                            <div style="font-size:13px;color:#22c55e;font-weight:600;margin-top:6px"><i class="fas fa-check-circle me-1"></i>Instant</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="payment-option" data-method="cash" onclick="selectPayment('cash')" style="background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:.2s;height:100%">
+                            <div style="font-size:40px;margin-bottom:10px;color:#22c55e"><i class="fas fa-money-bill-wave"></i></div>
+                            <h6 class="fw-bold mb-1" style="color:#f1f5f9">Cash Payment</h6>
+                            <div style="font-size:13px;color:#94a3b8">Tax: 18%</div>
+                            <div style="font-size:13px;color:#f59e0b;font-weight:600;margin-top:6px"><i class="fas fa-hand-holding-usd me-1"></i>Pay at Table</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="paymentError" class="mt-3" style="display:none"></div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius:12px;padding:10px 24px">Cancel</button>
+                <button type="button" id="payNowBtn" class="btn btn-warning fw-bold" disabled style="border-radius:12px;padding:10px 24px;font-size:16px" onclick="processPayment()">
+                    <i class="fas fa-lock me-1"></i> Pay Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock content %}
 
-
 {% block javascript %}
-
 <script>
-function loadOrders(){
-
-    fetch("{% url 'users:my_orders' %}")
-    .then(response => response.json())
-    .then(data => {
-
-        let html = `
-<div class="dropdown-title">
-    My Orders
-</div>
-`;
-
-        if(data.orders.length === 0){
-    html += `
-    <div class="text-center p-4 text-white">
-        No Orders Found
-    </div>
-    `;
-}
-
-        data.orders.forEach(order => {
-
-            let cls = "status-pending";
-
-            if(order.status === "preparing"){
-                cls = "status-preparing";
-            }
-
-            if(order.status === "served"){
-    cls = "status-completed";
-    order.status = "Completed";
-}
-
-            let orderDate = "";
-
-if(order.created_at){
-    const d = new Date(order.created_at);
-
-    orderDate =
-        d.toLocaleDateString() +
-        " | " +
-        d.toLocaleTimeString();
-}
-
-html += `
-<div class="order-item">
-
-    <div class="order-no">
-        #${order.order_no}
-    </div>
-
-    <div class="order-date">
-        <i class="las la-calendar"></i>
-        ${order.created_at}
-    </div>
-
-    <span class="status-badge ${cls}">
-        ${order.status}
-    </span>
-
-</div>
-`;
-        });
-
-        document.getElementById(
-            "orders-dropdown"
-        ).innerHTML = html;
-
-    });
-}
-
-loadOrders();
-
-const userId = "{{ request.user.id }}";
-const cartKey = "cart_" + userId;
-
+const tableNo = {{ table_no|default:'null' }};
+const isQrCustomer = {{ is_qr_customer|yesno:'true,false' }};
+const cartKey = "qr_cart_" + (tableNo || "guest");
 let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
 function saveCart() {
@@ -655,133 +325,64 @@ function saveCart() {
 }
 
 function addToCart(id, name, price, image) {
-
     let item = cart.find(i => i.id === id);
-
-    if(item){
-        item.qty += 1;
-    }else{
-        cart.push({
-            id:id,
-            name:name,
-            price:price,
-            image:image,
-            qty:1
-        });
-    }
-
+    if (item) { item.qty += 1; }
+    else { cart.push({ id, name, price, image, qty: 1 }); }
     saveCart();
 }
 
-function removeItem(id){
+function removeItem(id) {
     cart = cart.filter(item => item.id !== id);
     saveCart();
 }
 
-function changeQty(id, qty){
-
+function changeQty(id, qty) {
     let item = cart.find(i => i.id === id);
-
-    if(item){
+    if (item) {
         item.qty = qty;
-
-        if(item.qty <= 0){
-            removeItem(id);
-            return;
-        }
+        if (item.qty <= 0) { removeItem(id); return; }
     }
-
     saveCart();
 }
 
-function renderCart(){
-
+function renderCart() {
     let container = document.getElementById("cart-items");
-
-    if(!container) return;
-
+    if (!container) return;
     container.innerHTML = "";
-
-    let total = 0;
-    let count = 0;
-
+    let total = 0, count = 0;
     cart.forEach(item => {
-
         total += item.price * item.qty;
         count += item.qty;
-
         container.innerHTML += `
         <div class="row mb-3">
-
             <div class="cart-img col-5">
                 <img src="${item.image}" width="70">
             </div>
-
             <div class="cart-content col-7">
-
-                <h4 style="color: #ffffff; font-size: 18px;">${item.name}</h4>
-
-                <div class="cart-price">
-                    <span class="new">Rs ${item.price}</span>
-                </div>
-
+                <h4 style="color:#ffffff;font-size:18px;">${item.name}</h4>
+                <div class="cart-price"><span class="new">Rs ${item.price}</span></div>
                 <div class="number">
-
-                    <span class="minus"
-                        onclick="changeQty(${item.id}, ${item.qty - 1})">
-                        -
-                    </span>
-
-                    <input type="text"
-                        value="${item.qty}"
-                        readonly>
-
-                    <span class="plus"
-                        onclick="changeQty(${item.id}, ${item.qty + 1})">
-                        +
-                    </span>
-
+                    <span class="minus" onclick="changeQty(${item.id}, ${item.qty - 1})">-</span>
+                    <input type="text" value="${item.qty}" readonly>
+                    <span class="plus" onclick="changeQty(${item.id}, ${item.qty + 1})">+</span>
                 </div>
-
                 <div class="del-icon">
-                    <a href="javascript:void(0)"
-                       onclick="removeItem(${item.id})">
-                        <i class="far fa-trash-alt"></i>
-                    </a>
+                    <a href="javascript:void(0)" onclick="removeItem(${item.id})"><i class="far fa-trash-alt"></i></a>
                 </div>
-
             </div>
-
-        </div>
-        `;
+        </div>`;
     });
-
-    if(cart.length === 0){
-
-        container.innerHTML = `
-        <div class="text-center p-3">
-            Cart is empty
-        </div>
-        `;
+    if (cart.length === 0) {
+        container.innerHTML = `<div class="text-center p-3">Cart is empty</div>`;
     }
-
-    const countBadge = document.querySelector(".cart-count");
-
-    if(countBadge){
-        countBadge.innerText = count;
-    }
-
-    const totalElement = document.querySelector(".f-right");
-
-    if(totalElement){
-        totalElement.innerText = "Rs " + total.toFixed(2);
-    }
+    const badge = document.querySelector(".cart-count");
+    if (badge) badge.innerText = count;
+    const totalEl = document.querySelector(".f-right");
+    if (totalEl) totalEl.innerText = "Rs " + total.toFixed(2);
 }
 
-document.addEventListener("click", function(e){
-
-    if(e.target.classList.contains("add-to-cart-btn")){
-
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains("add-to-cart-btn")) {
         addToCart(
             parseInt(e.target.dataset.id),
             e.target.dataset.name,
@@ -789,72 +390,135 @@ document.addEventListener("click", function(e){
             e.target.dataset.image
         );
     }
-
 });
 
 renderCart();
-document.getElementById("checkout-btn")
-.addEventListener("click", function(e){
 
+// Payment flow
+let selectedPayment = null;
+
+document.getElementById("checkout-btn").addEventListener("click", function(e) {
     e.preventDefault();
+    if (cart.length === 0) { alert("Cart is empty"); return; }
+    selectedPayment = null;
+    document.getElementById("payNowBtn").disabled = true;
+    document.getElementById("paymentError").style.display = "none";
 
-    if(cart.length === 0){
-        alert("Cart is empty");
-        return;
-    }
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById("paymentCartCount").innerText = cart.reduce((c, i) => c + i.qty, 0);
+    document.getElementById("paymentSubtotal").innerText = "Rs " + subtotal.toFixed(0);
+    document.getElementById("paymentTaxDisplay").style.display = "none";
+    document.getElementById("paymentGrandTotal").innerText = "Rs " + subtotal.toFixed(0);
 
-    fetch("{% url 'users:checkout_invoice' %}", {
-
-        method: "POST",
-
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-
-        body: JSON.stringify({
-            cart: cart
-        })
-
-    })
-    .then(response => response.json())
-    .then(data => {
-
-        if(data.success){
-
-            localStorage.removeItem(cartKey);
-
-            cart = [];
-
-            renderCart();
-
-            window.open(
-                `/users/invoice/${data.invoice_id}/`,
-                "_blank"
-            );
-
-        }else{
-            alert(data.message);
-        }
-
+    document.querySelectorAll(".payment-option").forEach(el => {
+        el.style.borderColor = "rgba(255,255,255,.1)";
+        el.style.background = "rgba(255,255,255,.04)";
     });
 
+    new bootstrap.Modal(document.getElementById("paymentModal")).show();
 });
 
+function selectPayment(method) {
+    selectedPayment = method;
+    document.querySelectorAll(".payment-option").forEach(el => {
+        el.style.borderColor = "rgba(255,255,255,.1)";
+        el.style.background = "rgba(255,255,255,.04)";
+    });
+    const el = document.querySelector(`.payment-option[data-method="${method}"]`);
+    el.style.borderColor = method === "card" ? "#3b82f6" : "#22c55e";
+    el.style.background = method === "card" ? "rgba(59,130,246,.1)" : "rgba(34,197,94,.1)";
 
-let selectedProduct = "";
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const pct = method === "card" ? 5 : 18;
+    const tax = subtotal * pct / 100;
+    const total = subtotal + tax;
+    document.getElementById("paymentTaxDisplay").style.display = "flex";
+    document.getElementById("paymentTaxDisplay").querySelector("span:first-child").innerText = "Tax (" + pct + "%)";
+    document.getElementById("paymentTaxAmount").innerText = "Rs " + tax.toFixed(0);
+    document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0);
+    document.getElementById("payNowBtn").disabled = false;
+}
+
+function processPayment() {
+    if (!selectedPayment) return;
+    document.getElementById("paymentError").style.display = "none";
+    document.getElementById("payNowBtn").disabled = true;
+    document.getElementById("payNowBtn").innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+    const endpoint = isQrCustomer || !{{ user.is_authenticated|yesno:'true,false' }}
+        ? "{% url 'users:guest_checkout' %}"
+        : "{% url 'users:checkout_invoice' %}";
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ cart: cart, payment_method: selectedPayment, timezone: tz })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const modalEl_ = document.getElementById("paymentModal");
+            if (modalEl_) { const m = new bootstrap.Modal(modalEl_); m.hide(); }
+            localStorage.removeItem(cartKey);
+            cart = [];
+            renderCart();
+            window.location.href = "/users/order-tracking/" + data.invoice_no + "/";
+        } else {
+            document.getElementById("payNowBtn").disabled = false;
+            document.getElementById("payNowBtn").innerHTML = '<i class="fas fa-lock me-1"></i> Pay Now';
+            document.getElementById("paymentError").style.display = "block";
+            document.getElementById("paymentError").className = "mt-3 alert alert-danger py-2";
+            document.getElementById("paymentError").innerText = data.message;
+        }
+    })
+    .catch(err => {
+        document.getElementById("payNowBtn").disabled = false;
+        document.getElementById("payNowBtn").innerHTML = '<i class="fas fa-lock me-1"></i> Pay Now';
+        document.getElementById("paymentError").style.display = "block";
+        document.getElementById("paymentError").className = "mt-3 alert alert-danger py-2";
+        document.getElementById("paymentError").innerText = "Error: " + err;
+    });
+}
+
+// My Orders - fetch and display
+{% if user.is_authenticated %}
+function loadMyOrders() {
+    fetch("{% url 'users:my_orders' %}")
+    .then(r => r.json())
+    .then(data => {
+        const list = document.getElementById("myOrdersList");
+        if (!list) return;
+        if (!data.orders || data.orders.length === 0) {
+            list.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b">No orders yet</div>';
+            return;
+        }
+        list.innerHTML = data.orders.map(o => {
+            const statusColors = {pending:'status-pending',preparing:'status-preparing',ready:'status-ready',delivered:'status-delivered'};
+            const badgeClass = statusColors[o.status] || 'status-pending';
+            return `
+            <div class="order-item">
+                <div class="order-no">${o.invoice}</div>
+                <div class="order-date">${o.order_no} | ${o.created_at}</div>
+                <span class="status-badge ${badgeClass}">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+                <div style="margin-top:8px;display:flex;gap:6px">
+                    <a href="/users/order-tracking/${o.invoice}/" class="btn btn-sm btn-outline-warning" style="flex:1;font-size:11px;padding:4px 8px;border-radius:8px;text-decoration:none;color:#f59e0b;border:1px solid #f59e0b">View Status</a>
+                    <a href="/users/invoice/${o.uuid_token}/" target="_blank" class="btn btn-sm btn-success" style="flex:1;font-size:11px;padding:4px 8px;border-radius:8px;text-decoration:none">Open Invoice</a>
+                </div>
+            </div>`;
+        }).join('');
+    });
+}
+document.addEventListener("DOMContentLoaded", loadMyOrders);
+{% endif %}
 </script>
-<!-- JavaScript -->
 <script src="{% static '/vendor/js/bundle.min.js' %}"></script>
-<!-- Plugin Js -->
 <script src="{% static '/vendor/js/jquery.fancybox.min.js' %}"></script>
 <script src="{% static '/vendor/js/owl.carousel.min.js' %}"></script>
 <script src="{% static '/vendor/js/parallaxie.min.js' %}"></script>
 <script src="{% static '/vendor/js/wow.min.js' %}"></script>
-<!-- REVOLUTION JS FILES -->
 <script src="{% static '/vendor/js/jquery.themepunch.tools.min.js' %}"></script>
 <script src="{% static '/vendor/js/jquery.themepunch.revolution.min.js' %}"></script>
-<!-- SLIDER REVOLUTION EXTENSIONS -->
 <script src="{% static '/vendor/js/extensions/revolution.extension.actions.min.js' %}"></script>
 <script src="{% static '/vendor/js/extensions/revolution.extension.carousel.min.js' %}"></script>
 <script src="{% static '/vendor/js/extensions/revolution.extension.kenburn.min.js' %}"></script>
@@ -864,14 +528,11 @@ let selectedProduct = "";
 <script src="{% static '/vendor/js/extensions/revolution.extension.parallax.min.js' %}"></script>
 <script src="{% static '/vendor/js/extensions/revolution.extension.slideanims.min.js' %}"></script>
 <script src="{% static '/vendor/js/extensions/revolution.extension.video.min.js' %}"></script>
-<!--Tilt Js-->
 <script src="{% static '/vendor/js/TweenMax.min.js' %}"></script>
-<!-- custom script-->
 <script src="{% static 'food-delivery/js/nouislider.min.js' %}"></script>
 <script src="{% static 'food-delivery/js/slick.min.js' %}"></script>
 <script src="{% static 'food-delivery/js/notify.min.js' %}"></script>
 <script src="{% static '/vendor/js/contact_us.js' %}"></script>
 <script src="{% static '/vendor/js/swiper.min.js' %}"></script>
 <script src="{% static 'food-delivery/js/script.js' %}"></script>
-
 {% endblock javascript %}
