@@ -102,6 +102,7 @@ urlpatterns = [
     path("loyalty-card/checkout-info/", views.loyalty_checkout_info, name="loyalty_checkout_info"),
     path("loyalty-card/checkout-validate/", views.loyalty_checkout_validate, name="loyalty_checkout_validate"),
     path("loyalty-card/verify-qr/<str:qr_token>/", views.verify_loyalty_qr, name="verify_loyalty_qr"),
+    path("loyalty-card/from-qr/<str:qr_token>/", views.qr_loyalty_redirect, name="qr_loyalty_redirect"),
 
     # Admin Loyalty
     path("loyalty-card/admin/list/", views.admin_loyalty_list, name="admin_loyalty_list"),

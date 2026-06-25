@@ -1371,13 +1371,35 @@ def verify_loyalty_qr(request, qr_token):
     if request.method == 'GET':
         card = LoyaltyCard.objects.filter(qr_token=qr_token).first()
         if not card:
-            return JsonResponse({'valid': False, 'error': 'Invalid QR token'}, status=404)
+            return JsonResponse({'valid': False, 'error': 'Invalid Loyalty Card'}, status=404)
+        if card.status != 'ACTIVE':
+            return JsonResponse({'valid': False, 'error': 'Loyalty Card is blocked'}, status=403)
+        user_name = card.user.name if card.user else 'Customer'
         return JsonResponse({
             'valid': True,
             'card_number': card.card_number,
-            'customer': card.user.name if card.user else 'Customer',
+            'customer': user_name,
+            'card_status': card.status,
         })
     return JsonResponse({'valid': False}, status=405)
+
+
+def qr_loyalty_redirect(request, qr_token):
+    card = LoyaltyCard.objects.filter(qr_token=qr_token).first()
+    if not card:
+        messages.error(request, "Invalid Loyalty Card")
+        return redirect("users:login")
+    if card.status != 'ACTIVE':
+        messages.error(request, "Loyalty Card is blocked")
+        return redirect("users:login")
+    if not request.user.is_authenticated:
+        login_url = reverse("users:login")
+        next_url = reverse("users:qr_loyalty_redirect", args=[qr_token])
+        return redirect(f"{login_url}?next={next_url}")
+    if card.user != request.user:
+        messages.error(request, "Invalid Loyalty Card")
+        return redirect("users:login")
+    return redirect("users:loyalty_card_view")
 
 
 @csrf_exempt
