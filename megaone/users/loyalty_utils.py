@@ -31,7 +31,7 @@ PNG_CARD_HEIGHT = 376
 
 
 def _build_qr_url(card, request=None):
-    path = reverse("users:verify_loyalty_qr", args=[card.qr_token])
+    path = reverse("users:qr_loyalty_redirect", args=[card.qr_token])
     if request:
         return request.build_absolute_uri(path)
     try:
