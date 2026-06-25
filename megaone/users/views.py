@@ -195,25 +195,27 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
         subtotal_amount += qty * price
 
     is_loyalty = payment_method == "loyalty"
-    tax_pct = 0 if is_loyalty else (5 if payment_method == "card" else 18)
-    tax_amount = round(subtotal_amount * tax_pct / 100, 2)
-    grand_total = subtotal_amount + tax_amount
-
     loyalty_points_used = 0
     loyalty_card = None
     if is_loyalty and user:
         try:
             loyalty_card = LoyaltyCard.objects.get(user=user, status='ACTIVE')
-            if loyalty_card.remaining_points >= grand_total:
-                points_needed = int(grand_total)
-                loyalty_points_used = points_needed
+            points_available = int(loyalty_card.remaining_points)
+            points_needed = int(subtotal_amount)
+            loyalty_points_used = min(points_available, points_needed)
         except LoyaltyCard.DoesNotExist:
-            pass
+            is_loyalty = False
+
+    tax_pct = 0 if is_loyalty else (5 if payment_method == "card" else 18)
+    tax_amount = round(subtotal_amount * tax_pct / 100, 2)
+    grand_total = subtotal_amount + tax_amount - loyalty_points_used
+    if grand_total < 0:
+        grand_total = 0
 
     invoice = Invoice.objects.create(
         user=user,
         invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
-        payment_method=payment_method,
+        payment_method=payment_method if not is_loyalty else "loyalty",
         customer_timezone=customer_timezone,
         tax_percentage=tax_pct,
         tax_amount=tax_amount,
@@ -976,7 +978,7 @@ def update_order_status(request, order_id):
             invoice.generate_qr_code(request)
             invoice.save()
 
-            # Auto-earn loyalty points for delivered orders
+            # Auto-earn loyalty points for delivered orders (online users only)
             if invoice.user and not invoice.loyalty_points_processed:
                 from apps.loyalty_cards.models import LoyaltyCard
                 card = LoyaltyCard.objects.filter(user=invoice.user, status='ACTIVE').first()
@@ -984,7 +986,10 @@ def update_order_status(request, order_id):
                     total_points = 0
                     for inv_item in invoice.items.all():
                         from menu.models import Food
-                        food = Food.objects.filter(name=inv_item.product_name).first()
+                        food = Food.objects.filter(
+                            Q(name__iexact=inv_item.product_name.strip()) |
+                            Q(name__icontains=inv_item.product_name.strip())
+                        ).first()
                         if food and food.reward_points > 0:
                             total_points += food.reward_points * inv_item.quantity
                     if total_points > 0:
