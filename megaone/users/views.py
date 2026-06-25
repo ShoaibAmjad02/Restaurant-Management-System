@@ -100,8 +100,7 @@ def food_delivery_login(request):
             login(request, user)
             # Auto-create loyalty card for online registered customers only
             if not user.is_staff and not getattr(user, "is_kitchen", False) and not user.is_superuser:
-                from apps.loyalty_cards.models import LoyaltyCard
-                from apps.loyalty_cards.utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
+                from .loyalty_utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
                 card, created = LoyaltyCard.objects.get_or_create(
                     user=user,
                     defaults={'status': 'ACTIVE'}
@@ -417,7 +416,6 @@ def invoice_pdf(request, uuid_token):
 
     loyalty_height = 0
     if invoice.user:
-        from apps.loyalty_cards.models import LoyaltyCard
         if LoyaltyCard.objects.filter(user=invoice.user).exists():
             loyalty_height = 45 * mm
 
@@ -598,7 +596,6 @@ def invoice_pdf(request, uuid_token):
     # LOYALTY CARD INFO (Previous Balance → Earned → Used → Final)
     # ==========================
     if invoice.user:
-        from apps.loyalty_cards.models import LoyaltyCard
         lcard = LoyaltyCard.objects.filter(user=invoice.user).first()
         if lcard:
             previous_balance = lcard.total_points - (invoice.loyalty_points_earned or 0)
@@ -724,7 +721,6 @@ def admin_dashboard(request):
     customers_count = User.objects.filter(is_staff=False, is_kitchen=False, is_superuser=False).count()
 
     # Loyalty stats
-    from apps.loyalty_cards.models import LoyaltyCard
     from django.db.models import Sum
     loyalty_cards_count = LoyaltyCard.objects.count()
     loyalty_active = LoyaltyCard.objects.filter(status='ACTIVE').count()
@@ -987,7 +983,6 @@ def update_order_status(request, order_id):
 
             # Auto-earn loyalty points for delivered orders (online users only)
             if invoice.user and not invoice.loyalty_points_processed:
-                from apps.loyalty_cards.models import LoyaltyCard
                 card = LoyaltyCard.objects.filter(user=invoice.user, status='ACTIVE').first()
                 if card:
                     total_points = 0
