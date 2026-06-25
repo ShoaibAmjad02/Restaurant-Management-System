@@ -31,7 +31,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-heig
 .stat-value{font-size:28px;font-weight:700;margin-bottom:5px}
 .stat-label{color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
 .stat-total{color:#3b82f6}
-.stat-used{color:#ef4444}
 .stat-remaining{color:#22c55e}
 .stat-earned{color:#f59e0b}
 .action-buttons{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center}
@@ -110,7 +109,6 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-heig
             <div class="card-detail"><span class="card-label">Email</span><span class="card-value">{{ card.user.email }}</span></div>
             <div class="card-detail"><span class="card-label">Card Number</span><span class="card-value">{{ card.card_number }}</span></div>
             <div class="card-detail"><span class="card-label">Total Points</span><span class="card-value">{{ card.total_points }}</span></div>
-            <div class="card-detail"><span class="card-label">Used Points</span><span class="card-value">{{ card.used_points }}</span></div>
             <div class="card-detail"><span class="card-label">Remaining Points</span><span class="card-value">{{ card.remaining_points }}</span></div>
             <div class="card-detail"><span class="card-label">Issue Date</span><span class="card-value">{{ card.created_at|date:"d-m-Y" }}</span></div>
 
