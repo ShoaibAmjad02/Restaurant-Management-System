@@ -26,6 +26,7 @@ from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
 from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction
+from .loyalty_utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
@@ -114,7 +115,7 @@ def food_delivery_login(request):
                         pass
                 # First-time redirect to loyalty card page (using DB flag)
                 if not card.first_card_popup_shown:
-                    return redirect("loyalty_cards:my_card")
+                    return redirect("users:loyalty_card_view")
             if user.is_staff:
                 return redirect("users:admin_dashboard")
             elif getattr(user, "is_kitchen", False):
