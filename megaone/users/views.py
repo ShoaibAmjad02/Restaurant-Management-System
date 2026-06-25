@@ -92,6 +92,7 @@ def register_view(request):
 
 
 def food_delivery_login(request):
+    next_url = request.GET.get("next") or request.POST.get("next") or ""
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -99,6 +100,8 @@ def food_delivery_login(request):
 
         if user is not None:
             login(request, user)
+            if next_url:
+                return redirect(next_url)
             # Auto-create loyalty card for online registered customers only
             if not user.is_staff and not getattr(user, "is_kitchen", False) and not user.is_superuser:
                 from .loyalty_utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
