@@ -197,7 +197,6 @@ function refreshCardData() {
     .then(data => {
         if (data.has_card) {
             document.querySelectorAll('.stat-total').forEach(el => el.innerText = data.total_points);
-            document.querySelectorAll('.stat-used').forEach(el => el.innerText = data.used_points);
             document.querySelectorAll('.stat-remaining').forEach(el => el.innerText = data.remaining_points);
             const details = document.querySelectorAll('.card-detail .card-value');
             details.forEach(el => {
@@ -205,7 +204,6 @@ function refreshCardData() {
                 if (!isNaN(parseInt(text))) {
                     const label = el.previousElementSibling ? el.previousElementSibling.innerText.trim() : '';
                     if (label === 'Total Points') el.innerText = data.total_points;
-                    if (label === 'Used Points') el.innerText = data.used_points;
                     if (label === 'Remaining Points') el.innerText = data.remaining_points;
                 }
             });
