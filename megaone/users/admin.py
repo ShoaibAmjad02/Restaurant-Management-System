@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import UserAdminChangeForm
 from .forms import UserAdminCreationForm
-from .models import User, RestaurantTable, Invoice, KitchenOrder
+from .models import User, RestaurantTable, Invoice, KitchenOrder, LoyaltyCard, LoyaltyTransaction
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -66,3 +66,17 @@ class InvoiceAdmin(admin.ModelAdmin):
 class KitchenOrderAdmin(admin.ModelAdmin):
     list_display = ["order_number", "table_no", "status", "created_at"]
     search_fields = ["order_number", "table_no"]
+
+
+@admin.register(LoyaltyCard)
+class LoyaltyCardAdmin(admin.ModelAdmin):
+    list_display = ["card_number", "user", "total_points", "used_points", "remaining_points", "status", "created_at"]
+    search_fields = ["card_number", "user__name", "user__email"]
+    list_filter = ["status"]
+
+
+@admin.register(LoyaltyTransaction)
+class LoyaltyTransactionAdmin(admin.ModelAdmin):
+    list_display = ["card", "transaction_type", "earned_points", "redeemed_points", "remaining_balance", "order_number", "created_at"]
+    search_fields = ["card__card_number", "order_number"]
+    list_filter = ["transaction_type"]
