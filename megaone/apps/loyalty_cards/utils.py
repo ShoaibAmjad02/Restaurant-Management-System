@@ -5,7 +5,6 @@ from io import BytesIO
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils import timezone
-from reportlab.lib.pagesizes import landscape
 from reportlab.lib.units import mm
 from reportlab.lib.colors import HexColor, white, black
 from reportlab.lib.utils import ImageReader
