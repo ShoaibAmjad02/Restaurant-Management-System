@@ -25,8 +25,7 @@ from django.utils.dateformat import DateFormat
 from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
-from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable
-from apps.loyalty_cards.models import LoyaltyCard
+from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
