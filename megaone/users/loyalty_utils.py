@@ -13,6 +13,14 @@ from PIL import Image, ImageDraw, ImageFont
 CARD_WIDTH = 86 * mm
 CARD_HEIGHT = 54 * mm
 
+BLACK_TOP = "#1a1a1a"
+BLACK_BOT = "#000000"
+ORANGE = "#ff6600"
+YELLOW = "#ffd700"
+WHITE = "#ffffff"
+GRAY = "#aaaaaa"
+DIM = "#666666"
+
 
 def _lerp_color(c1, c2, t):
     r1, g1, b1 = int(c1[1:3], 16), int(c1[3:5], 16), int(c1[5:7], 16)
@@ -75,75 +83,26 @@ def _get_qr_pil_image(card):
     return qr.convert("RGB")
 
 
+def _draw_card_border(c, w, h):
+    c.setStrokeColor(HexColor(ORANGE))
+    c.setLineWidth(0.5)
+    c.roundRect(3*mm, 3*mm, w - 6*mm, h - 6*mm, 4*mm, fill=0, stroke=1)
+    c.setStrokeColor(HexColor(YELLOW))
+    c.setLineWidth(0.2)
+    c.roundRect(3.5*mm, 3.5*mm, w - 7*mm, h - 7*mm, 3.5*mm, fill=0, stroke=1)
+
+
 def generate_loyalty_card_pdf(card):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=(CARD_WIDTH, CARD_HEIGHT))
 
-    GRADIENT_TOP = "#7c3aed"
-    GRADIENT_BOT = "#1e3a8a"
-    GOLD = "#f59e0b"
-    WHITE_HEX = "#ffffff"
-    LIGHT_HEX = "#cbd5e1"
-    DIM_HEX = "#94a3b8"
+    _draw_gradient_background_pdf(c, CARD_WIDTH, CARD_HEIGHT, BLACK_TOP, BLACK_BOT)
+    _draw_card_border(c, CARD_WIDTH, CARD_HEIGHT)
 
-    _draw_gradient_background_pdf(c, CARD_WIDTH, CARD_HEIGHT, GRADIENT_TOP, GRADIENT_BOT)
-
-    c.setStrokeColor(HexColor("#ffffff"))
-    c.setLineWidth(0.3)
-    c.roundRect(3*mm, 3*mm, CARD_WIDTH - 6*mm, CARD_HEIGHT - 6*mm, 4*mm, fill=0, stroke=1)
-
-    c.setFillColor(HexColor(GOLD))
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(8*mm, CARD_HEIGHT - 10*mm, "RESTAURANT")
-
-    c.setFillColor(HexColor(WHITE_HEX))
-    c.setFont("Helvetica-Bold", 6)
-    c.drawString(8*mm, CARD_HEIGHT - 15*mm, "PREMIUM LOYALTY CARD")
-
-    c.setFillColor(HexColor(GOLD))
-    c.setFont("Courier-Bold", 7)
-    c.drawString(8*mm, CARD_HEIGHT - 20*mm, card.card_number)
-
-    y = CARD_HEIGHT - 27*mm
-    c.setFillColor(HexColor(LIGHT_HEX))
-    c.setFont("Helvetica", 5)
-    lines = [
-        (card.user.name if card.user else "Customer", None),
-        (card.user.email if card.user else "", None),
-    ]
-    for val, _ in lines:
-        c.drawString(8*mm, y, val)
-        y -= 3.5*mm
-
-    c.setFillColor(HexColor(GOLD))
-    c.setFont("Helvetica", 4)
-    c.drawString(8*mm, y - 1*mm, "Points Summary")
-    y -= 5*mm
-
-    pts_data = [
-        ("Total", str(card.total_points), WHITE_HEX),
-        ("Used", str(card.used_points), "#f87171"),
-        ("Remaining", str(card.remaining_points), "#4ade80"),
-    ]
-    px = 8*mm
-    for label, val, col in pts_data:
-        c.setFillColor(HexColor(col))
-        c.setFont("Helvetica-Bold", 6)
-        c.drawString(px, y, val)
-        c.setFillColor(HexColor(DIM_HEX))
-        c.setFont("Helvetica", 4)
-        c.drawString(px, y - 2.5*mm, label)
-        px += 15*mm
-
-    qr_pil = _get_qr_pil_image(card)
-    qr_path = BytesIO()
-    qr_pil.save(qr_path, format="PNG")
-    qr_path.seek(0)
-    c.drawImage(ImageReader(qr_path), CARD_WIDTH - 20*mm, 8*mm, width=14*mm, height=14*mm)
-
-    c.setFillColor(HexColor(DIM_HEX))
-    c.setFont("Helvetica", 3.5)
-    c.drawString(CARD_WIDTH - 20*mm, 6*mm, timezone.now().strftime("%d-%m-%Y"))
+    _draw_pdf_logo_section(c)
+    _draw_pdf_customer_info(c, card)
+    _draw_pdf_points_section(c, card)
+    _draw_pdf_qr_section(c, card)
 
     c.save()
     buffer.seek(0)
@@ -154,67 +113,127 @@ def generate_loyalty_card_pdf(card):
     return card
 
 
-def generate_loyalty_card_image(card):
-    GRADIENT_TOP = "#7c3aed"
-    GRADIENT_BOT = "#1e3a8a"
+def _draw_pdf_logo_section(c):
+    c.setFillColor(HexColor(ORANGE))
+    c.setFont("Helvetica-Bold", 8)
+    c.drawString(6*mm, CARD_HEIGHT - 9*mm, "LOGO")
 
+    c.setFillColor(HexColor(WHITE))
+    c.setFont("Helvetica-Bold", 5)
+    c.drawString(6*mm, CARD_HEIGHT - 12.5*mm, "PREMIUM LOYALTY CARD")
+
+
+def _draw_pdf_customer_info(c, card):
+    c.setFillColor(HexColor(WHITE))
+    c.setFont("Helvetica-Bold", 5.5)
+    name = card.user.name if card.user else "Customer"
+    email = card.user.email if card.user else ""
+    c.drawString(6*mm, CARD_HEIGHT - 18*mm, name)
+    c.drawString(6*mm, CARD_HEIGHT - 22*mm, email)
+
+    c.setFillColor(HexColor(YELLOW))
+    c.setFont("Courier-Bold", 6)
+    c.drawString(6*mm, CARD_HEIGHT - 27*mm, card.card_number)
+
+
+def _draw_pdf_points_section(c, card):
+    y = CARD_HEIGHT - 34*mm
+    c.setFillColor(HexColor(ORANGE))
+    c.setFont("Helvetica-Bold", 4.5)
+    c.drawString(6*mm, y, "POINTS BALANCE")
+    y -= 5*mm
+
+    pts = [
+        ("TOTAL", str(card.total_points), YELLOW),
+        ("REMAINING", str(card.remaining_points), WHITE),
+    ]
+    px = 6*mm
+    for label, val, col in pts:
+        c.setFillColor(HexColor(col))
+        c.setFont("Helvetica-Bold", 6)
+        c.drawString(px, y, val)
+        c.setFillColor(HexColor(GRAY))
+        c.setFont("Helvetica", 3.5)
+        c.drawString(px, y - 2.5*mm, label)
+        px += 20*mm
+
+
+def _draw_pdf_qr_section(c, card):
+    qr_pil = _get_qr_pil_image(card)
+    qr_path = BytesIO()
+    qr_pil.save(qr_path, format="PNG")
+    qr_path.seek(0)
+    qr_x = CARD_WIDTH - 18*mm
+    qr_y = 8*mm
+    c.drawImage(ImageReader(qr_path), qr_x, qr_y, width=13*mm, height=13*mm)
+
+    c.setFillColor(HexColor(DIM))
+    c.setFont("Helvetica", 3)
+    c.drawString(qr_x, 6*mm, timezone.now().strftime("%d-%m-%Y"))
+
+
+def generate_loyalty_card_image(card):
     cw = int(CARD_WIDTH)
     ch = int(CARD_HEIGHT)
     img = Image.new("RGB", (cw, ch))
     draw = ImageDraw.Draw(img)
 
-    _draw_gradient_background_pil(draw, cw, ch, GRADIENT_TOP, GRADIENT_BOT)
-
-    draw.rounded_rectangle([6, 6, cw - 6, ch - 6], radius=12, outline="white", width=1)
+    _draw_gradient_background_pil(draw, cw, ch, BLACK_TOP, BLACK_BOT)
+    draw.rounded_rectangle([6, 6, cw - 6, ch - 6], radius=12, outline=ORANGE, width=2)
+    draw.rounded_rectangle([8, 8, cw - 8, ch - 8], radius=10, outline=YELLOW, width=1)
 
     try:
-        title_font = ImageFont.truetype("arial.ttf", 18)
-        subtitle_font = ImageFont.truetype("arial.ttf", 11)
-        cardno_font = ImageFont.truetype("arial.ttf", 13)
-        label_font = ImageFont.truetype("arial.ttf", 9)
+        title_font = ImageFont.truetype("arial.ttf", 14)
+        subtitle_font = ImageFont.truetype("arial.ttf", 9)
+        cardno_font = ImageFont.truetype("arial.ttf", 11)
+        customer_font = ImageFont.truetype("arial.ttf", 10)
+        email_font = ImageFont.truetype("arial.ttf", 8)
+        label_font = ImageFont.truetype("arial.ttf", 6)
         value_font = ImageFont.truetype("arial.ttf", 10)
-        small_font = ImageFont.truetype("arial.ttf", 7)
+        small_font = ImageFont.truetype("arial.ttf", 5)
+        points_label_font = ImageFont.truetype("arial.ttf", 8)
     except Exception:
         title_font = ImageFont.load_default()
         subtitle_font = ImageFont.load_default()
         cardno_font = ImageFont.load_default()
+        customer_font = ImageFont.load_default()
+        email_font = ImageFont.load_default()
         label_font = ImageFont.load_default()
         value_font = ImageFont.load_default()
         small_font = ImageFont.load_default()
+        points_label_font = ImageFont.load_default()
 
-    draw.text((16, 14), "RESTAURANT", fill="#f59e0b", font=title_font)
-    draw.text((16, 34), "PREMIUM LOYALTY CARD", fill="white", font=subtitle_font)
+    draw.text((14, 10), "LOGO", fill=ORANGE, font=title_font)
+    draw.text((14, 26), "PREMIUM LOYALTY CARD", fill=WHITE, font=subtitle_font)
 
-    card_no = card.card_number
-    draw.text((16, 52), card_no, fill="#f59e0b", font=cardno_font)
+    name = card.user.name if card.user else "Customer"
+    email = card.user.email if card.user else ""
+    draw.text((14, 42), name, fill=WHITE, font=customer_font)
+    draw.text((14, 54), email, fill=GRAY, font=email_font)
 
-    y = 74
-    draw.text((16, y), card.user.name if card.user else "Customer", fill="#cbd5e1", font=label_font)
+    draw.text((14, 68), card.card_number, fill=YELLOW, font=cardno_font)
+
+    y = 84
+    draw.text((14, y), "POINTS BALANCE", fill=ORANGE, font=points_label_font)
     y += 14
-    draw.text((16, y), card.user.email if card.user else "", fill="#cbd5e1", font=label_font)
-    y += 18
-
-    draw.text((16, y), "Points Summary", fill="#f59e0b", font=subtitle_font)
-    y += 16
 
     pts = [
-        ("Total", str(card.total_points), "#ffffff"),
-        ("Used", str(card.used_points), "#f87171"),
-        ("Remaining", str(card.remaining_points), "#4ade80"),
+        ("TOTAL", str(card.total_points), YELLOW),
+        ("REMAINING", str(card.remaining_points), WHITE),
     ]
-    px = 16
+    px = 14
     for label, val, col in pts:
         draw.text((px, y), val, fill=col, font=value_font)
-        draw.text((px, y + 12), label, fill="#94a3b8", font=small_font)
-        px += 40
+        draw.text((px, y + 12), label, fill=GRAY, font=small_font)
+        px += 36
 
     qr_pil = _get_qr_pil_image(card)
-    qr_resized = qr_pil.resize((48, 48))
-    qr_x = cw - 60
-    qr_y = 14
+    qr_resized = qr_pil.resize((42, 42))
+    qr_x = cw - 52
+    qr_y = 10
     img.paste(qr_resized, (qr_x, qr_y))
 
-    draw.text((cw - 60, 64), timezone.now().strftime("%d-%m-%Y"), fill="#94a3b8", font=small_font)
+    draw.text((qr_x, 54), timezone.now().strftime("%d-%m-%Y"), fill=DIM, font=small_font)
 
     buf = BytesIO()
     img.save(buf, format="PNG")
