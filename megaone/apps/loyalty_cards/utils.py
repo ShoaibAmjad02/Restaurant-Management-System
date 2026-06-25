@@ -1,6 +1,5 @@
 import io
 import json
-import pathlib
 import qrcode
 from io import BytesIO
 from django.conf import settings
