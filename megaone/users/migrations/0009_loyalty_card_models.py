@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
         ('users', '0008_invoice_is_loyalty_payment_and_more'),
     ]
 
-    operations = [
+    state_operations = [
         migrations.CreateModel(
             name='LoyaltyCard',
             fields=[
@@ -50,4 +50,8 @@ class Migration(migrations.Migration):
                 'db_table': 'loyalty_cards_loyaltytransaction',
             },
         ),
+    ]
+
+    operations = [
+        migrations.SeparateDatabaseAndState(state_operations=state_operations),
     ]
