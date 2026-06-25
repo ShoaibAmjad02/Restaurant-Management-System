@@ -182,15 +182,15 @@ class LoyaltyCard(models.Model):
         self.remaining_points = self.total_points - self.used_points
         super().save(*args, **kwargs)
         if is_new and self.total_points == 0:
-            self.total_points = 50
-            self.remaining_points = 50
+            self.total_points = 20
+            self.remaining_points = 20
             self.save(update_fields=['total_points', 'remaining_points'])
             LoyaltyTransaction.objects.create(
                 card=self,
                 order_number="WELCOME",
-                earned_points=50,
+                earned_points=20,
                 redeemed_points=0,
-                remaining_balance=50,
+                remaining_balance=20,
                 transaction_type='EARN'
             )
 
