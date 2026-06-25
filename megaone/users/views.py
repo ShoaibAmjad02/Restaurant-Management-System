@@ -186,7 +186,9 @@ def food_delivery_restaurant_detail(request):
 # =========================
 # CHECKOUT
 # =========================
-def _create_order_from_cart(cart, request, user=None, payment_method="card", customer_timezone="UTC"):
+def _create_order_from_cart(cart, request, user=None, payment_method="card",
+                            customer_timezone="UTC", use_loyalty_points=None,
+                            secondary_payment_method=None):
     table_no = request.session.get("table_no")
     customer_session = request.session.get("customer_session_id") or str(uuid.uuid4())
 
@@ -199,25 +201,39 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
     is_loyalty = payment_method == "loyalty"
     loyalty_points_used = 0
     loyalty_card = None
+    remaining_amount = subtotal_amount
     if is_loyalty and user:
         try:
             loyalty_card = LoyaltyCard.objects.get(user=user, status='ACTIVE')
-            points_available = int(loyalty_card.remaining_points)
-            points_needed = int(subtotal_amount)
-            loyalty_points_used = min(points_available, points_needed)
+            available = int(loyalty_card.remaining_points)
+            requested = int(use_loyalty_points) if use_loyalty_points else available
+            loyalty_points_used = max(0, min(requested, available, int(subtotal_amount)))
+            remaining_amount = subtotal_amount - loyalty_points_used
+            if remaining_amount < 0:
+                remaining_amount = 0
         except LoyaltyCard.DoesNotExist:
             is_loyalty = False
+            payment_method = secondary_payment_method or "card"
 
-    tax_pct = 0 if is_loyalty else (5 if payment_method == "card" else 18)
-    tax_amount = round(subtotal_amount * tax_pct / 100, 2)
-    grand_total = subtotal_amount + tax_amount - loyalty_points_used
+    if is_loyalty and remaining_amount > 0 and secondary_payment_method:
+        store_method = f"loyalty+{secondary_payment_method}"
+        tax_pct = 5 if secondary_payment_method == "card" else 18
+    elif is_loyalty and remaining_amount <= 0:
+        store_method = "loyalty"
+        tax_pct = 0
+    else:
+        store_method = payment_method
+        tax_pct = 5 if payment_method == "card" else 18
+
+    tax_amount = round(remaining_amount * tax_pct / 100, 2)
+    grand_total = remaining_amount + tax_amount
     if grand_total < 0:
         grand_total = 0
 
     invoice = Invoice.objects.create(
         user=user,
         invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
-        payment_method=payment_method if not is_loyalty else "loyalty",
+        payment_method=store_method,
         customer_timezone=customer_timezone,
         tax_percentage=tax_pct,
         tax_amount=tax_amount,
@@ -272,10 +288,18 @@ def guest_checkout(request):
         cart = data.get("cart", [])
         payment_method = data.get("payment_method", "card")
         customer_timezone = data.get("timezone", "UTC")
+        use_loyalty_points = data.get("use_loyalty_points")
+        secondary_payment_method = data.get("secondary_payment_method")
         if not cart:
             return JsonResponse({"success": False, "message": "Cart is empty"}, status=400)
 
-        invoice = _create_order_from_cart(cart, request, payment_method=payment_method, customer_timezone=customer_timezone)
+        invoice = _create_order_from_cart(
+            cart, request,
+            payment_method=payment_method,
+            customer_timezone=customer_timezone,
+            use_loyalty_points=use_loyalty_points,
+            secondary_payment_method=secondary_payment_method,
+        )
         return JsonResponse({
             "success": True,
             "invoice_no": invoice.invoice_number,
@@ -293,10 +317,19 @@ def checkout_invoice(request):
         cart = data.get("cart", [])
         payment_method = data.get("payment_method", "card")
         customer_timezone = data.get("timezone", "UTC")
+        use_loyalty_points = data.get("use_loyalty_points")
+        secondary_payment_method = data.get("secondary_payment_method")
         if not cart:
             return JsonResponse({"success": False, "message": "Cart is empty"}, status=400)
 
-        invoice = _create_order_from_cart(cart, request, user=request.user, payment_method=payment_method, customer_timezone=customer_timezone)
+        invoice = _create_order_from_cart(
+            cart, request,
+            user=request.user,
+            payment_method=payment_method,
+            customer_timezone=customer_timezone,
+            use_loyalty_points=use_loyalty_points,
+            secondary_payment_method=secondary_payment_method,
+        )
         return JsonResponse({
             "success": True,
             "invoice_no": invoice.invoice_number,
