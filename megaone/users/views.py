@@ -99,8 +99,8 @@ def food_delivery_login(request):
 
         if user is not None:
             login(request, user)
-            # Auto-create loyalty card for any customer who doesn't have one
-            if not user.is_staff and not getattr(user, "is_kitchen", False):
+            # Auto-create loyalty card for online registered customers only
+            if not user.is_staff and not getattr(user, "is_kitchen", False) and not user.is_superuser:
                 from apps.loyalty_cards.models import LoyaltyCard
                 from apps.loyalty_cards.utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
                 card, created = LoyaltyCard.objects.get_or_create(
