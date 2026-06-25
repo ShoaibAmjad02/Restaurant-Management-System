@@ -1,4 +1,3 @@
-import json
 import qrcode
 import qrcode.constants
 from io import BytesIO
