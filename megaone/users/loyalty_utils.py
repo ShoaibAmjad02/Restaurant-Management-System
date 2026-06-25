@@ -1,6 +1,8 @@
 import json
 import qrcode
+import qrcode.constants
 from io import BytesIO
+from django.urls import reverse
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from reportlab.lib.units import mm
@@ -20,6 +22,73 @@ YELLOW = "#ffd700"
 WHITE = "#ffffff"
 GRAY = "#aaaaaa"
 DIM = "#666666"
+
+QR_BOX_SIZE = 10
+QR_BORDER = 4
+PNG_QR_SIZE = 250
+PDF_QR_SIZE_MM = 25
+
+
+def _build_qr_url(card, request=None):
+    path = reverse("users:verify_loyalty_qr", args=[card.qr_token])
+    if request:
+        return request.build_absolute_uri(path)
+    try:
+        from django.conf import settings as django_settings
+        site_url = getattr(django_settings, "SITE_URL", None)
+        if site_url:
+            return site_url.rstrip("/") + path
+    except Exception:
+        pass
+    return f"https://loyalty/verify/{card.qr_token}"
+
+
+def _make_qr_image(data):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=QR_BOX_SIZE,
+        border=QR_BORDER,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    return img
+
+
+def generate_qr_code_image(card, request=None):
+    url = _build_qr_url(card, request)
+    img = _make_qr_image(url)
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+
+    filename = f"qr_{card.card_number}.png"
+    card.qr_code_image.save(filename, ContentFile(buf.getvalue()), save=False)
+    card.save(update_fields=['qr_code_image'])
+    return card
+
+
+def _get_qr_pil_image(card, request=None, target_size=PNG_QR_SIZE):
+    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
+        try:
+            card.qr_code_image.open('rb')
+            pil = Image.open(card.qr_code_image)
+            if pil.width >= target_size:
+                return pil
+        except Exception:
+            pass
+    generate_qr_code_image(card, request)
+    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
+        try:
+            card.qr_code_image.open('rb')
+            pil = Image.open(card.qr_code_image)
+            if pil.width >= target_size:
+                return pil
+        except Exception:
+            pass
+    url = _build_qr_url(card, request)
+    return _make_qr_image(url)
 
 
 def _lerp_color(c1, c2, t):
@@ -50,39 +119,6 @@ def _draw_gradient_background_pil(draw, w, h, color1, color2):
         draw.rectangle([0, i * strip_h, w, (i + 1) * strip_h], fill=color_hex)
 
 
-def generate_qr_code_image(card):
-    qr_data = json.dumps(card.generate_qr_data())
-    qr = qrcode.make(qr_data, box_size=10)
-    qr = qr.convert("RGB")
-    buf = BytesIO()
-    qr.save(buf, format="PNG")
-    buf.seek(0)
-
-    filename = f"qr_{card.card_number}.png"
-    card.qr_code_image.save(filename, ContentFile(buf.getvalue()), save=False)
-    card.save(update_fields=['qr_code_image'])
-    return card
-
-
-def _get_qr_pil_image(card):
-    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
-        try:
-            card.qr_code_image.open('rb')
-            return Image.open(card.qr_code_image)
-        except Exception:
-            pass
-    generate_qr_code_image(card)
-    if card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name):
-        try:
-            card.qr_code_image.open('rb')
-            return Image.open(card.qr_code_image)
-        except Exception:
-            pass
-    data = json.dumps(card.generate_qr_data())
-    qr = qrcode.make(data, box_size=6)
-    return qr.convert("RGB")
-
-
 def _draw_card_border(c, w, h):
     c.setStrokeColor(HexColor(ORANGE))
     c.setLineWidth(0.5)
@@ -92,7 +128,7 @@ def _draw_card_border(c, w, h):
     c.roundRect(3.5*mm, 3.5*mm, w - 7*mm, h - 7*mm, 3.5*mm, fill=0, stroke=1)
 
 
-def generate_loyalty_card_pdf(card):
+def generate_loyalty_card_pdf(card, request=None):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=(CARD_WIDTH, CARD_HEIGHT))
 
@@ -102,7 +138,7 @@ def generate_loyalty_card_pdf(card):
     _draw_pdf_logo_section(c)
     _draw_pdf_customer_info(c, card)
     _draw_pdf_points_section(c, card)
-    _draw_pdf_qr_section(c, card)
+    _draw_pdf_qr_section(c, card, request)
 
     c.save()
     buffer.seek(0)
@@ -158,21 +194,26 @@ def _draw_pdf_points_section(c, card):
         px += 20*mm
 
 
-def _draw_pdf_qr_section(c, card):
-    qr_pil = _get_qr_pil_image(card)
+def _draw_pdf_qr_section(c, card, request=None):
+    qr_pil = _get_qr_pil_image(card, request)
+    qr_size = PDF_QR_SIZE_MM * mm
+    qr_x = CARD_WIDTH - qr_size - 5*mm
+    qr_y = (CARD_HEIGHT - qr_size) / 2
+
+    c.setFillColor(HexColor(WHITE))
+    c.roundRect(qr_x - 0.5*mm, qr_y - 0.5*mm, qr_size + 1*mm, qr_size + 1*mm, 1*mm, fill=1, stroke=0)
+
     qr_path = BytesIO()
     qr_pil.save(qr_path, format="PNG")
     qr_path.seek(0)
-    qr_x = CARD_WIDTH - 18*mm
-    qr_y = 8*mm
-    c.drawImage(ImageReader(qr_path), qr_x, qr_y, width=13*mm, height=13*mm)
+    c.drawImage(ImageReader(qr_path), qr_x, qr_y, width=qr_size, height=qr_size)
 
     c.setFillColor(HexColor(DIM))
     c.setFont("Helvetica", 3)
-    c.drawString(qr_x, 6*mm, timezone.now().strftime("%d-%m-%Y"))
+    c.drawString(qr_x, qr_y - 2*mm, timezone.now().strftime("%d-%m-%Y"))
 
 
-def generate_loyalty_card_image(card):
+def generate_loyalty_card_image(card, request=None):
     cw = int(CARD_WIDTH)
     ch = int(CARD_HEIGHT)
     img = Image.new("RGB", (cw, ch))
@@ -227,13 +268,16 @@ def generate_loyalty_card_image(card):
         draw.text((px, y + 12), label, fill=GRAY, font=small_font)
         px += 36
 
-    qr_pil = _get_qr_pil_image(card)
-    qr_resized = qr_pil.resize((42, 42))
-    qr_x = cw - 52
-    qr_y = 10
-    img.paste(qr_resized, (qr_x, qr_y))
+    qr_pil = _get_qr_pil_image(card, request)
+    qr_resized = qr_pil.resize((PNG_QR_SIZE, PNG_QR_SIZE), Image.LANCZOS)
+    qr_x = cw - PNG_QR_SIZE - 14
+    qr_y = int((ch - PNG_QR_SIZE) / 2)
 
-    draw.text((qr_x, 54), timezone.now().strftime("%d-%m-%Y"), fill=DIM, font=small_font)
+    white_bg = Image.new("RGB", (PNG_QR_SIZE + 8, PNG_QR_SIZE + 8), "white")
+    white_bg.paste(qr_resized, (4, 4))
+    img.paste(white_bg, (qr_x - 4, qr_y - 4))
+
+    draw.text((qr_x, qr_y + PNG_QR_SIZE + 4), timezone.now().strftime("%d-%m-%Y"), fill=DIM, font=small_font)
 
     buf = BytesIO()
     img.save(buf, format="PNG")
