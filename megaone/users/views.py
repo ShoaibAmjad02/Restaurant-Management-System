@@ -630,13 +630,11 @@ def invoice_pdf(request, uuid_token):
     pdf.setFillColor(DARK)
 
     # ==========================
-    # LOYALTY CARD INFO (Previous Balance → Earned → Used → Final)
+    # LOYALTY CARD INFO (Order Total → Loyalty Used → Paid By Cash → Remaining Balance)
     # ==========================
     if invoice.user:
         lcard = LoyaltyCard.objects.filter(user=invoice.user).first()
         if lcard:
-            previous_balance = lcard.total_points - (invoice.loyalty_points_earned or 0)
-            final_balance = lcard.remaining_points
             y -= 5 * mm
             pdf.setFont("Helvetica-Bold", 7)
             pdf.setFillColor(HexColor("#f59e0b"))
@@ -644,30 +642,37 @@ def invoice_pdf(request, uuid_token):
             pdf.setFillColor(DARK)
             y -= 4 * mm
             pdf.setFont("Helvetica", 6)
-            loyalty_fields = [
-                ("Card #", lcard.card_number),
-                ("Previous Points", str(previous_balance)),
+
+            pay_method = invoice.payment_method or ""
+            is_hybrid = pay_method.startswith("loyalty+")
+            secondary_label = pay_method.split("+")[1].upper() if is_hybrid else "CASH"
+
+            total_for_display = float(invoice.subtotal_amount) if invoice.subtotal_amount else 0
+            pts_used = int(invoice.loyalty_points_used) if invoice.loyalty_points_used else 0
+            remaining_amt = float(invoice.total_amount) if invoice.total_amount else 0
+
+            display_lines = [
+                ("Order Total", f"Rs {total_for_display:.0f}"),
             ]
-            for label, val in loyalty_fields:
+            if pts_used > 0:
+                display_lines.append(("Loyalty Used", f"-Rs {pts_used}"))
+                display_lines.append((f"Paid By {secondary_label}", f"Rs {remaining_amt:.0f}"))
+            display_lines.append(("Card #", lcard.card_number))
+            display_lines.append(("Remaining Balance", f"{lcard.remaining_points} pts"))
+
+            for label, val in display_lines:
                 pdf.drawString(MARGIN, y, label)
                 pdf.drawRightString(right, y, val)
                 y -= 3.5 * mm
-            if invoice.loyalty_points_earned > 0:
+
+            if invoice.loyalty_points_earned and invoice.loyalty_points_earned > 0:
+                pdf.setFillColor(HexColor("#16a34a"))
                 pdf.drawString(MARGIN, y, "Earned This Order")
                 pdf.drawRightString(right, y, f"+{invoice.loyalty_points_earned} pts")
+                pdf.setFillColor(DARK)
                 y -= 3.5 * mm
-            if invoice.is_loyalty_payment and invoice.loyalty_points_used > 0:
-                pdf.drawString(MARGIN, y, "Used This Order")
-                pdf.drawRightString(right, y, f"-{int(invoice.loyalty_points_used)} pts")
-                y -= 3.5 * mm
-            pdf.setFont("Helvetica-Bold", 6)
-            pdf.drawString(MARGIN, y, "Final Balance")
-            pdf.drawRightString(right, y, f"{final_balance} pts")
-            pdf.setFont("Helvetica", 6)
-            pdf.setFillColor(GRAY)
-            pdf.drawString(MARGIN, y - 3 * mm, f"Total: {lcard.total_points} | Used: {lcard.used_points} | Remaining: {lcard.remaining_points}")
-            pdf.setFillColor(DARK)
-            y -= 5 * mm
+
+            y -= 2 * mm
             pdf.line(MARGIN, y, right, y)
             y -= 4 * mm
 
@@ -1445,21 +1450,39 @@ def loyalty_checkout_validate(request):
         try:
             data = json.loads(request.body)
             total_amount = float(data.get('total_amount', 0))
+            use_points = data.get('use_points')
+            if use_points is not None:
+                use_points = int(use_points)
             card = LoyaltyCard.objects.filter(user=request.user, status='ACTIVE').first()
             if not card:
                 return JsonResponse({'can_pay': False, 'error': 'No active loyalty card found'})
-            if card.remaining_points <= 0:
+            available = card.remaining_points
+            if available <= 0:
                 return JsonResponse({
                     'can_pay': False,
                     'error': 'No loyalty points available.',
                     'available_points': 0,
                 })
-            points_to_use = min(card.remaining_points, int(total_amount))
+            max_allowed = min(available, int(total_amount))
+            if use_points is None:
+                use_points = max_allowed
+            elif use_points < 0:
+                return JsonResponse({'can_pay': False, 'error': 'Points cannot be negative', 'available_points': available})
+            elif use_points > available:
+                return JsonResponse({
+                    'can_pay': False,
+                    'error': f'You only have {available} loyalty points available.',
+                    'available_points': available,
+                })
+            elif use_points > int(total_amount):
+                use_points = int(total_amount)
+            remaining_due = int(total_amount) - use_points
             return JsonResponse({
                 'can_pay': True,
-                'available_points': card.remaining_points,
-                'points_to_use': points_to_use,
-                'remaining_due': int(total_amount) - points_to_use,
+                'available_points': available,
+                'points_to_use': use_points,
+                'remaining_due': remaining_due if remaining_due > 0 else 0,
+                'needs_secondary': remaining_due > 0,
                 'card_number': card.card_number,
             })
         except Exception as e:
