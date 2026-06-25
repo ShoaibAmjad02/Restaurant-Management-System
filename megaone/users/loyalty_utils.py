@@ -27,6 +27,8 @@ QR_BOX_SIZE = 10
 QR_BORDER = 4
 PNG_QR_SIZE = 250
 PDF_QR_SIZE_MM = 25
+PNG_CARD_WIDTH = 600
+PNG_CARD_HEIGHT = 376
 
 
 def _build_qr_url(card, request=None):
