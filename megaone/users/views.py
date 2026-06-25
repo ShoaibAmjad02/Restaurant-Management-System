@@ -1261,3 +1261,267 @@ def mysql_backup(request):
     response = HttpResponse(result.stdout, content_type="application/sql")
     response["Content-Disposition"] = 'attachment; filename="database_backup.sql"'
     return response
+
+
+# =============================================================================
+# LOYALTY CARD VIEWS
+# =============================================================================
+
+@login_required
+def loyalty_card_view(request):
+    if request.user.is_staff or request.user.is_superuser or getattr(request.user, 'is_kitchen', False):
+        messages.error(request, "Loyalty cards are only available for customers.")
+        return redirect('/')
+    card = LoyaltyCard.objects.filter(user=request.user).first()
+    if not card:
+        card = LoyaltyCard.objects.create(user=request.user, status='ACTIVE')
+    qr_ok = card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name)
+    if not qr_ok:
+        try:
+            generate_qr_code_image(card)
+        except Exception:
+            pass
+    if not card.card_pdf or not card.card_image:
+        try:
+            generate_loyalty_card_pdf(card)
+            generate_loyalty_card_image(card)
+        except Exception:
+            pass
+    show_welcome = not card.first_card_popup_shown
+    if show_welcome:
+        card.first_card_popup_shown = True
+        card.save(update_fields=['first_card_popup_shown'])
+    transactions = LoyaltyTransaction.objects.filter(card=card).order_by('-created_at')
+    return render(request, 'users/loyalty_card.html', {
+        'card': card,
+        'transactions': transactions,
+        'show_welcome': show_welcome,
+    })
+
+
+@login_required
+def download_loyalty_pdf(request, card_number):
+    try:
+        card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+        if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+            generate_qr_code_image(card)
+            card.refresh_from_db()
+        if not card.card_pdf or not card.card_pdf.storage.exists(card.card_pdf.name):
+            card = generate_loyalty_card_pdf(card)
+        card.card_pdf.open('rb')
+        response = FileResponse(card.card_pdf, as_attachment=True, filename=f"loyalty_card_{card.card_number}.pdf")
+        response['Content-Type'] = 'application/pdf'
+        response['Content-Disposition'] = f'attachment; filename="loyalty_card_{card.card_number}.pdf"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Could not generate PDF. Please try again. Error: {str(e)}")
+        return redirect('users:loyalty_card_view')
+
+
+@login_required
+def download_loyalty_image(request, card_number):
+    try:
+        card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
+        if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
+            generate_qr_code_image(card)
+            card.refresh_from_db()
+        if not card.card_image or not card.card_image.storage.exists(card.card_image.name):
+            card = generate_loyalty_card_image(card)
+        card.card_image.open('rb')
+        response = FileResponse(card.card_image, as_attachment=True, filename=f"loyalty_card_{card.card_number}.png")
+        response['Content-Type'] = 'image/png'
+        response['Content-Disposition'] = f'attachment; filename="loyalty_card_{card.card_number}.png"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Could not generate card image. Please try again. Error: {str(e)}")
+        return redirect('users:loyalty_card_view')
+
+
+@login_required
+def loyalty_card_data(request):
+    card = LoyaltyCard.objects.filter(user=request.user).first()
+    if not card:
+        return JsonResponse({'has_card': False})
+    return JsonResponse({
+        'has_card': True,
+        'card_number': card.card_number,
+        'total_points': card.total_points,
+        'used_points': card.used_points,
+        'remaining_points': card.remaining_points,
+        'status': card.status,
+    })
+
+
+@login_required
+def loyalty_checkout_info(request):
+    card = LoyaltyCard.objects.filter(user=request.user, status='ACTIVE').first()
+    if card:
+        return JsonResponse({
+            'has_card': True,
+            'total_points': card.total_points,
+            'remaining_points': card.remaining_points,
+            'card_number': card.card_number,
+        })
+    return JsonResponse({'has_card': False})
+
+
+@csrf_exempt
+def verify_loyalty_qr(request, qr_token):
+    if request.method == 'GET':
+        card = LoyaltyCard.objects.filter(qr_token=qr_token).first()
+        if not card:
+            return JsonResponse({'valid': False, 'error': 'Invalid QR token'}, status=404)
+        return JsonResponse({
+            'valid': True,
+            'card_number': card.card_number,
+            'customer': card.user.name if card.user else 'Customer',
+        })
+    return JsonResponse({'valid': False}, status=405)
+
+
+@csrf_exempt
+@login_required
+def loyalty_checkout_validate(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            total_amount = float(data.get('total_amount', 0))
+            card = LoyaltyCard.objects.filter(user=request.user, status='ACTIVE').first()
+            if not card:
+                return JsonResponse({'can_pay': False, 'error': 'No active loyalty card found'})
+            if card.remaining_points <= 0:
+                return JsonResponse({
+                    'can_pay': False,
+                    'error': 'No loyalty points available.',
+                    'available_points': 0,
+                })
+            points_to_use = min(card.remaining_points, int(total_amount))
+            return JsonResponse({
+                'can_pay': True,
+                'available_points': card.remaining_points,
+                'points_to_use': points_to_use,
+                'remaining_due': int(total_amount) - points_to_use,
+                'card_number': card.card_number,
+            })
+        except Exception as e:
+            return JsonResponse({'can_pay': False, 'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+# Admin loyalty views
+@staff_member_required
+def admin_loyalty_list(request):
+    cards = LoyaltyCard.objects.select_related('user').all().order_by('-created_at')
+    search = request.GET.get('search', '')
+    if search:
+        cards = cards.filter(
+            Q(card_number__icontains=search) |
+            Q(user__name__icontains=search) |
+            Q(user__email__icontains=search)
+        )
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        cards = cards.filter(status=status_filter)
+    return render(request, 'users/admin_loyalty_list.html', {
+        'cards': cards,
+        'search': search,
+        'status_filter': status_filter,
+    })
+
+
+@staff_member_required
+def admin_loyalty_detail(request, card_number):
+    card = get_object_or_404(LoyaltyCard, card_number=card_number)
+    transactions = LoyaltyTransaction.objects.filter(card=card).order_by('-created_at')
+    return render(request, 'users/admin_loyalty_detail.html', {
+        'card': card,
+        'transactions': transactions,
+    })
+
+
+@staff_member_required
+def admin_toggle_card_status(request, card_number):
+    card = get_object_or_404(LoyaltyCard, card_number=card_number)
+    if request.method == 'POST':
+        card.status = 'BLOCKED' if card.status == 'ACTIVE' else 'ACTIVE'
+        card.save()
+        messages.success(request, f"Card {card.card_number} is now {card.get_status_display()}")
+    return redirect('users:admin_loyalty_detail', card_number=card.card_number)
+
+
+@staff_member_required
+def admin_reset_points(request, card_number):
+    card = get_object_or_404(LoyaltyCard, card_number=card_number)
+    if request.method == 'POST':
+        card.total_points = 0
+        card.used_points = 0
+        card.remaining_points = 0
+        card.save()
+        LoyaltyTransaction.objects.filter(card=card).delete()
+        messages.success(request, f"Points reset for card {card.card_number}")
+    return redirect('users:admin_loyalty_detail', card_number=card.card_number)
+
+
+@staff_member_required
+def admin_loyalty_reports(request):
+    total_cards = LoyaltyCard.objects.count()
+    active_cards = LoyaltyCard.objects.filter(status='ACTIVE').count()
+    blocked_cards = LoyaltyCard.objects.filter(status='BLOCKED').count()
+    total_earned = LoyaltyCard.objects.aggregate(total=models.Sum('total_points'))['total'] or 0
+    total_redeemed = LoyaltyCard.objects.aggregate(total=models.Sum('used_points'))['total'] or 0
+    total_remaining = LoyaltyCard.objects.aggregate(total=models.Sum('remaining_points'))['total'] or 0
+
+    loyalty_revenue = Invoice.objects.filter(is_loyalty_payment=True).aggregate(
+        total=Sum('total_amount')
+    )['total'] or 0
+
+    context = {
+        'total_cards': total_cards,
+        'active_cards': active_cards,
+        'blocked_cards': blocked_cards,
+        'total_earned': total_earned,
+        'total_redeemed': total_redeemed,
+        'total_remaining': total_remaining,
+        'loyalty_revenue': loyalty_revenue,
+    }
+    return render(request, 'users/admin_loyalty_reports.html', context)
+
+
+@staff_member_required
+def admin_export_loyalty_csv(request):
+    import csv
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="loyalty_cards_report.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Card Number', 'Customer', 'Email', 'Total Points', 'Used Points', 'Remaining', 'Status', 'Created'])
+    for card in LoyaltyCard.objects.select_related('user').all():
+        writer.writerow([
+            card.card_number,
+            card.user.name if card.user else 'N/A',
+            card.user.email if card.user else 'N/A',
+            card.total_points,
+            card.used_points,
+            card.remaining_points,
+            card.status,
+            card.created_at.strftime('%d-%m-%Y'),
+        ])
+    return response
+
+
+@login_required
+def loyalty_transactions(request):
+    card = LoyaltyCard.objects.filter(user=request.user).first()
+    if not card:
+        return JsonResponse({'transactions': []})
+    transactions = LoyaltyTransaction.objects.filter(card=card).order_by('-created_at')
+    return JsonResponse({
+        'transactions': [{
+            'id': t.id,
+            'order_number': t.order_number,
+            'earned_points': t.earned_points,
+            'redeemed_points': t.redeemed_points,
+            'remaining_balance': t.remaining_balance,
+            'transaction_type': t.transaction_type,
+            'created_at': t.created_at.strftime('%d-%m-%Y %I:%M %p'),
+        } for t in transactions],
+    })
