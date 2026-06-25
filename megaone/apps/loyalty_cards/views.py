@@ -14,6 +14,10 @@ from .utils import generate_loyalty_card_pdf, generate_loyalty_card_image, gener
 
 @login_required
 def my_loyalty_card(request):
+    # Only online registered customers get loyalty cards
+    if request.user.is_staff or request.user.is_superuser or getattr(request.user, 'is_kitchen', False):
+        messages.error(request, "Loyalty cards are only available for customers.")
+        return redirect('/')
     card = LoyaltyCard.objects.filter(user=request.user).first()
     if not card:
         card = LoyaltyCard.objects.create(user=request.user, status='ACTIVE')
