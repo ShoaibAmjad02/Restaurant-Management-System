@@ -2,7 +2,6 @@ import io
 import json
 import pathlib
 import qrcode
-import math
 from io import BytesIO
 from django.conf import settings
 from django.core.files.base import ContentFile
