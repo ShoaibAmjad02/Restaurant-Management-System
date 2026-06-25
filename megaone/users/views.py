@@ -1305,10 +1305,10 @@ def download_loyalty_pdf(request, card_number):
     try:
         card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
         if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
-            generate_qr_code_image(card)
+            generate_qr_code_image(card, request)
             card.refresh_from_db()
         if not card.card_pdf or not card.card_pdf.storage.exists(card.card_pdf.name):
-            card = generate_loyalty_card_pdf(card)
+            card = generate_loyalty_card_pdf(card, request)
         card.card_pdf.open('rb')
         response = FileResponse(card.card_pdf, as_attachment=True, filename=f"loyalty_card_{card.card_number}.pdf")
         response['Content-Type'] = 'application/pdf'
@@ -1324,10 +1324,10 @@ def download_loyalty_image(request, card_number):
     try:
         card = get_object_or_404(LoyaltyCard, card_number=card_number, user=request.user)
         if not card.qr_code_image or not card.qr_code_image.storage.exists(card.qr_code_image.name):
-            generate_qr_code_image(card)
+            generate_qr_code_image(card, request)
             card.refresh_from_db()
         if not card.card_image or not card.card_image.storage.exists(card.card_image.name):
-            card = generate_loyalty_card_image(card)
+            card = generate_loyalty_card_image(card, request)
         card.card_image.open('rb')
         response = FileResponse(card.card_image, as_attachment=True, filename=f"loyalty_card_{card.card_number}.png")
         response['Content-Type'] = 'image/png'
