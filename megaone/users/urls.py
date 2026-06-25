@@ -92,4 +92,22 @@ urlpatterns = [
     path("<int:pk>/", user_detail_view, name="detail"),
     path("~redirect/", user_redirect_view, name="redirect"),
     path("update/", user_update_view, name="update"),
+
+    # Loyalty Card
+    path("loyalty-card/", views.loyalty_card_view, name="loyalty_card_view"),
+    path("loyalty-card/history/", views.loyalty_transactions, name="loyalty_transactions"),
+    path("loyalty-card/pdf/<str:card_number>/", views.download_loyalty_pdf, name="download_loyalty_pdf"),
+    path("loyalty-card/image/<str:card_number>/", views.download_loyalty_image, name="download_loyalty_image"),
+    path("loyalty-card/data/", views.loyalty_card_data, name="loyalty_card_data"),
+    path("loyalty-card/checkout-info/", views.loyalty_checkout_info, name="loyalty_checkout_info"),
+    path("loyalty-card/checkout-validate/", views.loyalty_checkout_validate, name="loyalty_checkout_validate"),
+    path("loyalty-card/verify-qr/<str:qr_token>/", views.verify_loyalty_qr, name="verify_loyalty_qr"),
+
+    # Admin Loyalty
+    path("loyalty-card/admin/list/", views.admin_loyalty_list, name="admin_loyalty_list"),
+    path("loyalty-card/admin/card/<str:card_number>/", views.admin_loyalty_detail, name="admin_loyalty_detail"),
+    path("loyalty-card/admin/card/<str:card_number>/toggle/", views.admin_toggle_card_status, name="admin_toggle_card_status"),
+    path("loyalty-card/admin/card/<str:card_number>/reset/", views.admin_reset_points, name="admin_reset_points"),
+    path("loyalty-card/admin/reports/", views.admin_loyalty_reports, name="admin_loyalty_reports"),
+    path("loyalty-card/admin/export-csv/", views.admin_export_loyalty_csv, name="admin_export_loyalty_csv"),
 ]
