@@ -452,14 +452,19 @@ renderCart();
 
 // Payment flow
 let selectedPayment = null;
+let selectedSecondary = null;
 let loyaltyPointsData = null;
 
 document.getElementById("checkout-btn").addEventListener("click", function(e) {
     e.preventDefault();
     if (cart.length === 0) { alert("Cart is empty"); return; }
     selectedPayment = null;
+    selectedSecondary = null;
     document.getElementById("payNowBtn").disabled = true;
     document.getElementById("paymentError").style.display = "none";
+    document.getElementById("loyaltyBreakdownSection").style.display = "none";
+    document.getElementById("secondaryPaymentSection").style.display = "none";
+    document.getElementById("loyaltyPointsInput").value = "0";
 
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
     document.getElementById("paymentCartCount").innerText = cart.reduce((c, i) => c + i.qty, 0);
@@ -474,9 +479,7 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
 
     // Fetch loyalty card info
     const loyaltyDisplay = document.getElementById("loyaltyPointsDisplay");
-    const loyaltyInsufficient = document.getElementById("loyaltyInsufficient");
     loyaltyDisplay.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
-    loyaltyInsufficient.style.display = "none";
 
     fetch("{% url 'users:loyalty_checkout_info' %}")
     .then(r => r.json())
@@ -510,6 +513,7 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
 
 function selectPayment(method) {
     selectedPayment = method;
+    selectedSecondary = null;
     document.querySelectorAll(".payment-option").forEach(el => {
         el.style.borderColor = "rgba(255,255,255,.1)";
         el.style.background = "rgba(255,255,255,.04)";
@@ -521,38 +525,114 @@ function selectPayment(method) {
     el.style.background = bgColor;
 
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    let pct = method === "card" ? 5 : method === "cash" ? 18 : 0;
-    const tax = subtotal * pct / 100;
-    let total = subtotal + tax;
 
+    if (method === "loyalty") {
+        document.getElementById("paymentTaxDisplay").style.display = "none";
+        document.getElementById("loyaltyBreakdownSection").style.display = "block";
+        document.getElementById("secondaryPaymentSection").style.display = "none";
+        document.querySelectorAll(".secondary-option").forEach(el2 => {
+            el2.style.borderColor = "rgba(255,255,255,.1)";
+            el2.style.background = "rgba(255,255,255,.04)";
+        });
+
+        if (loyaltyPointsData && loyaltyPointsData.has_card) {
+            const avail = loyaltyPointsData.remaining_points;
+            const maxUse = Math.min(avail, subtotal);
+            document.getElementById("loyaltyAvailablePts").innerText = avail;
+            document.getElementById("loyaltyPointsInput").max = maxUse;
+            document.getElementById("loyaltyPointsInput").value = maxUse > 0 ? maxUse : 0;
+            updateLoyaltyCalc();
+        } else {
+            document.getElementById("loyaltyAvailablePts").innerText = "0";
+            document.getElementById("loyaltyPointsInput").value = 0;
+            document.getElementById("loyaltyPointsInput").disabled = true;
+            document.getElementById("payNowBtn").disabled = true;
+        }
+        return;
+    }
+
+    document.getElementById("loyaltyBreakdownSection").style.display = "none";
+    document.getElementById("secondaryPaymentSection").style.display = "none";
     document.getElementById("paymentTaxDisplay").style.display = "flex";
+    let pct = method === "card" ? 5 : 18;
+    const tax = subtotal * pct / 100;
     document.getElementById("paymentTaxDisplay").querySelector("span:first-child").innerText = "Tax (" + pct + "%)";
     document.getElementById("paymentTaxAmount").innerText = "Rs " + tax.toFixed(0);
-
-    const loyaltyInsufficient = document.getElementById("loyaltyInsufficient");
-    if (method === "loyalty") {
-        if (loyaltyPointsData && loyaltyPointsData.has_card) {
-            const pts = loyaltyPointsData.remaining_points;
-            if (pts <= 0) {
-                document.getElementById("paymentGrandTotal").innerHTML = 'Rs 0 <small style="color:#ef4444">(no points)</small>';
-                document.getElementById("payNowBtn").disabled = true;
-                return;
-            }
-            const pointsUsed = Math.min(pts, subtotal);
-            const remainingDue = subtotal - pointsUsed;
-            let summary = "Rs " + remainingDue.toFixed(0);
-            if (remainingDue > 0) {
-                summary += ' <small style="color:#f59e0b">(using ' + pointsUsed + ' pts)</small>';
-            }
-            document.getElementById("paymentGrandTotal").innerHTML = summary;
-            document.getElementById("payNowBtn").disabled = false;
-            loyaltyInsufficient.style.display = "none";
-            return;
-        }
-    }
-    loyaltyInsufficient.style.display = "none";
-    document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0);
+    document.getElementById("paymentGrandTotal").innerText = "Rs " + (subtotal + tax).toFixed(0);
     document.getElementById("payNowBtn").disabled = false;
+}
+
+function updateLoyaltyCalc() {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const avail = loyaltyPointsData ? loyaltyPointsData.remaining_points : 0;
+    const input = document.getElementById("loyaltyPointsInput");
+    const errorEl = document.getElementById("loyaltyPointsError");
+    let val = parseInt(input.value) || 0;
+    const maxAllowed = Math.min(avail, subtotal);
+
+    if (val < 0) { val = 0; input.value = 0; }
+    if (val > avail) {
+        errorEl.style.display = "block";
+        errorEl.innerText = "You only have " + avail + " loyalty points available.";
+        val = avail;
+        input.value = avail;
+    } else if (val > subtotal) {
+        val = subtotal;
+        input.value = subtotal;
+        errorEl.style.display = "none";
+    } else {
+        errorEl.style.display = "none";
+    }
+
+    const used = val;
+    const remaining = subtotal - used;
+    let secondaryTax = 0;
+    let secondaryPct = 0;
+    let finalPayable = remaining;
+
+    if (remaining > 0) {
+        document.getElementById("secondaryPaymentSection").style.display = "block";
+        document.getElementById("paymentGrandTotal").innerText = "Rs " + remaining.toFixed(0);
+        if (selectedSecondary === "card") { secondaryPct = 5; }
+        else if (selectedSecondary === "cash") { secondaryPct = 18; }
+        else { secondaryPct = 18; }
+        secondaryTax = Math.round(remaining * secondaryPct / 100);
+        finalPayable = remaining + secondaryTax;
+        document.getElementById("loyaltyTaxDisplay").style.display = "flex";
+        document.getElementById("loyaltyCalcTax").innerText = "Rs " + secondaryTax;
+        document.getElementById("paymentGrandTotal").innerText = "Rs " + finalPayable.toFixed(0);
+        if (!selectedSecondary) {
+            document.getElementById("payNowBtn").disabled = true;
+        } else {
+            document.getElementById("payNowBtn").disabled = false;
+        }
+    } else {
+        document.getElementById("secondaryPaymentSection").style.display = "none";
+        document.getElementById("loyaltyTaxDisplay").style.display = "none";
+        document.getElementById("paymentGrandTotal").innerText = "Rs 0";
+        document.getElementById("payNowBtn").disabled = false;
+    }
+
+    document.getElementById("loyaltyCalcTotal").innerText = "Rs " + subtotal.toFixed(0);
+    document.getElementById("loyaltyCalcUsed").innerText = "-Rs " + used;
+    document.getElementById("loyaltyCalcRemaining").innerText = "Rs " + (remaining > 0 ? remaining : 0);
+    document.getElementById("loyaltyCalcFinal").innerText = "Rs " + finalPayable;
+}
+
+document.getElementById("loyaltyPointsInput").addEventListener("input", updateLoyaltyCalc);
+
+function selectSecondary(method) {
+    selectedSecondary = method;
+    document.querySelectorAll(".secondary-option").forEach(el2 => {
+        el2.style.borderColor = "rgba(255,255,255,.1)";
+        el2.style.background = "rgba(255,255,255,.04)";
+    });
+    const el2 = document.querySelector(`.secondary-option[data-secondary="${method}"]`);
+    const borderColor2 = method === "card" ? "#3b82f6" : method === "cash" ? "#22c55e" : "#a855f7";
+    const bgColor2 = method === "card" ? "rgba(59,130,246,.1)" : method === "cash" ? "rgba(34,197,94,.1)" : "rgba(168,85,247,.1)";
+    el2.style.borderColor = borderColor2;
+    el2.style.background = bgColor2;
+    updateLoyaltyCalc();
 }
 
 function processPayment() {
@@ -568,8 +648,9 @@ function processPayment() {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const body = { cart: cart, payment_method: selectedPayment, timezone: tz };
     if (selectedPayment === "loyalty" && loyaltyPointsData && loyaltyPointsData.has_card) {
-        body.use_loyalty_points = loyaltyPointsData.remaining_points;
+        body.use_loyalty_points = parseInt(document.getElementById("loyaltyPointsInput").value) || 0;
         body.loyalty_card_number = loyaltyPointsData.card_number;
+        body.secondary_payment_method = selectedSecondary || "cash";
     }
     fetch(endpoint, {
         method: "POST",
