@@ -108,9 +108,9 @@ def food_delivery_login(request):
                 )
                 if created or not card.qr_code_image or not card.card_pdf:
                     try:
-                        generate_qr_code_image(card)
-                        generate_loyalty_card_pdf(card)
-                        generate_loyalty_card_image(card)
+                        generate_qr_code_image(card, request)
+                        generate_loyalty_card_pdf(card, request)
+                        generate_loyalty_card_image(card, request)
                     except Exception:
                         pass
                 # First-time redirect to loyalty card page (using DB flag)
@@ -1279,13 +1279,13 @@ def loyalty_card_view(request):
     qr_ok = card.qr_code_image and card.qr_code_image.storage.exists(card.qr_code_image.name)
     if not qr_ok:
         try:
-            generate_qr_code_image(card)
+            generate_qr_code_image(card, request)
         except Exception:
             pass
     if not card.card_pdf or not card.card_image:
         try:
-            generate_loyalty_card_pdf(card)
-            generate_loyalty_card_image(card)
+            generate_loyalty_card_pdf(card, request)
+            generate_loyalty_card_image(card, request)
         except Exception:
             pass
     show_welcome = not card.first_card_popup_shown
