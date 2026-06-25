@@ -4,7 +4,7 @@ import uuid
 import subprocess
 import traceback
 import qrcode
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import QuerySet, Sum, Q, Count
@@ -25,7 +25,7 @@ from django.utils.dateformat import DateFormat
 from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
-from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard
+from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
