@@ -170,6 +170,7 @@ class LoyaltyCard(models.Model):
         db_table = 'loyalty_cards_loyaltycard'
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         if not self.card_number:
             while True:
                 cnum = f"LC{get_random_string(10).upper()}"
@@ -180,6 +181,18 @@ class LoyaltyCard(models.Model):
             self.qr_token = get_random_string(32)
         self.remaining_points = self.total_points - self.used_points
         super().save(*args, **kwargs)
+        if is_new and self.total_points == 0:
+            self.total_points = 50
+            self.remaining_points = 50
+            self.save(update_fields=['total_points', 'remaining_points'])
+            LoyaltyTransaction.objects.create(
+                card=self,
+                order_number="WELCOME",
+                earned_points=50,
+                redeemed_points=0,
+                remaining_balance=50,
+                transaction_type='EARN'
+            )
 
     def add_points(self, points, order_number=""):
         if points < 0:
