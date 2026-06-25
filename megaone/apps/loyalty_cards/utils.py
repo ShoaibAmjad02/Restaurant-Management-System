@@ -1,16 +1,12 @@
-import io
 import json
 import qrcode
 from io import BytesIO
-from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from reportlab.lib.units import mm
-from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.colors import HexColor
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
-from reportlab.graphics.shapes import Drawing, Rect
-from reportlab.graphics import renderPDF
 from PIL import Image, ImageDraw, ImageFont
 
 
