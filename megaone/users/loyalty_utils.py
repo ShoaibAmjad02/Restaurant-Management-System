@@ -216,70 +216,68 @@ def _draw_pdf_qr_section(c, card, request=None):
 
 
 def generate_loyalty_card_image(card, request=None):
-    cw = int(CARD_WIDTH)
-    ch = int(CARD_HEIGHT)
+    cw = PNG_CARD_WIDTH
+    ch = PNG_CARD_HEIGHT
     img = Image.new("RGB", (cw, ch))
     draw = ImageDraw.Draw(img)
 
     _draw_gradient_background_pil(draw, cw, ch, BLACK_TOP, BLACK_BOT)
-    draw.rounded_rectangle([6, 6, cw - 6, ch - 6], radius=12, outline=ORANGE, width=2)
-    draw.rounded_rectangle([8, 8, cw - 8, ch - 8], radius=10, outline=YELLOW, width=1)
+    draw.rounded_rectangle([10, 10, cw - 10, ch - 10], radius=20, outline=ORANGE, width=4)
+    draw.rounded_rectangle([16, 16, cw - 16, ch - 16], radius=16, outline=YELLOW, width=2)
 
     try:
-        title_font = ImageFont.truetype("arial.ttf", 14)
-        subtitle_font = ImageFont.truetype("arial.ttf", 9)
-        cardno_font = ImageFont.truetype("arial.ttf", 11)
-        customer_font = ImageFont.truetype("arial.ttf", 10)
-        email_font = ImageFont.truetype("arial.ttf", 8)
-        label_font = ImageFont.truetype("arial.ttf", 6)
-        value_font = ImageFont.truetype("arial.ttf", 10)
-        small_font = ImageFont.truetype("arial.ttf", 5)
-        points_label_font = ImageFont.truetype("arial.ttf", 8)
+        title_font = ImageFont.truetype("arial.ttf", 28)
+        subtitle_font = ImageFont.truetype("arial.ttf", 18)
+        cardno_font = ImageFont.truetype("arial.ttf", 22)
+        customer_font = ImageFont.truetype("arial.ttf", 20)
+        email_font = ImageFont.truetype("arial.ttf", 16)
+        value_font = ImageFont.truetype("arial.ttf", 22)
+        small_font = ImageFont.truetype("arial.ttf", 12)
+        points_label_font = ImageFont.truetype("arial.ttf", 16)
     except Exception:
         title_font = ImageFont.load_default()
         subtitle_font = ImageFont.load_default()
         cardno_font = ImageFont.load_default()
         customer_font = ImageFont.load_default()
         email_font = ImageFont.load_default()
-        label_font = ImageFont.load_default()
         value_font = ImageFont.load_default()
         small_font = ImageFont.load_default()
         points_label_font = ImageFont.load_default()
 
-    draw.text((14, 10), "LOGO", fill=ORANGE, font=title_font)
-    draw.text((14, 26), "PREMIUM LOYALTY CARD", fill=WHITE, font=subtitle_font)
+    draw.text((30, 22), "LOGO", fill=ORANGE, font=title_font)
+    draw.text((30, 56), "PREMIUM LOYALTY CARD", fill=WHITE, font=subtitle_font)
 
     name = card.user.name if card.user else "Customer"
     email = card.user.email if card.user else ""
-    draw.text((14, 42), name, fill=WHITE, font=customer_font)
-    draw.text((14, 54), email, fill=GRAY, font=email_font)
+    draw.text((30, 88), name, fill=WHITE, font=customer_font)
+    draw.text((30, 114), email, fill=GRAY, font=email_font)
 
-    draw.text((14, 68), card.card_number, fill=YELLOW, font=cardno_font)
+    draw.text((30, 146), card.card_number, fill=YELLOW, font=cardno_font)
 
-    y = 84
-    draw.text((14, y), "POINTS BALANCE", fill=ORANGE, font=points_label_font)
-    y += 14
+    y = 184
+    draw.text((30, y), "POINTS BALANCE", fill=ORANGE, font=points_label_font)
+    y += 30
 
     pts = [
         ("TOTAL", str(card.total_points), YELLOW),
         ("REMAINING", str(card.remaining_points), WHITE),
     ]
-    px = 14
+    px = 30
     for label, val, col in pts:
         draw.text((px, y), val, fill=col, font=value_font)
-        draw.text((px, y + 12), label, fill=GRAY, font=small_font)
-        px += 36
+        draw.text((px, y + 28), label, fill=GRAY, font=small_font)
+        px += 80
 
     qr_pil = _get_qr_pil_image(card, request)
     qr_resized = qr_pil.resize((PNG_QR_SIZE, PNG_QR_SIZE), Image.LANCZOS)
-    qr_x = cw - PNG_QR_SIZE - 14
+    qr_x = cw - PNG_QR_SIZE - 30
     qr_y = int((ch - PNG_QR_SIZE) / 2)
 
-    white_bg = Image.new("RGB", (PNG_QR_SIZE + 8, PNG_QR_SIZE + 8), "white")
-    white_bg.paste(qr_resized, (4, 4))
-    img.paste(white_bg, (qr_x - 4, qr_y - 4))
+    white_bg = Image.new("RGB", (PNG_QR_SIZE + 12, PNG_QR_SIZE + 12), "white")
+    white_bg.paste(qr_resized, (6, 6))
+    img.paste(white_bg, (qr_x - 6, qr_y - 6))
 
-    draw.text((qr_x, qr_y + PNG_QR_SIZE + 4), timezone.now().strftime("%d-%m-%Y"), fill=DIM, font=small_font)
+    draw.text((qr_x, qr_y + PNG_QR_SIZE + 10), timezone.now().strftime("%d-%m-%Y"), fill=DIM, font=small_font)
 
     buf = BytesIO()
     img.save(buf, format="PNG")
