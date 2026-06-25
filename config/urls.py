@@ -20,7 +20,7 @@ urlpatterns = [
     # Your stuff: custom urls includes go here
 
     path("food-delivery/", include("apps.food_delivery.urls", namespace="food-delivery")),
-    path("loyalty/", include("apps.loyalty_cards.urls", namespace="loyalty_cards")),
+
 
     # QR Menu Access (root level)
     path("menu/", qr_menu_view, name="qr_menu_view"),
