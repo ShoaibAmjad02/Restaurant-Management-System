@@ -485,19 +485,26 @@ function selectPayment(method) {
 
     const loyaltyInsufficient = document.getElementById("loyaltyInsufficient");
     if (method === "loyalty") {
-        if (loyaltyPointsData && loyaltyPointsData.remaining_points < subtotal) {
-            total = subtotal;
-            document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0) + " (shortfall)";
-            loyaltyInsufficient.style.display = "block";
-            document.getElementById("payNowBtn").disabled = true;
-            return;
-        } else {
+        if (loyaltyPointsData && loyaltyPointsData.has_card) {
+            const pts = loyaltyPointsData.remaining_points;
+            if (pts <= 0) {
+                document.getElementById("paymentGrandTotal").innerHTML = 'Rs 0 <small style="color:#ef4444">(no points)</small>';
+                document.getElementById("payNowBtn").disabled = true;
+                return;
+            }
+            const pointsUsed = Math.min(pts, subtotal);
+            const remainingDue = subtotal - pointsUsed;
+            let summary = "Rs " + remainingDue.toFixed(0);
+            if (remainingDue > 0) {
+                summary += ' <small style="color:#f59e0b">(using ' + pointsUsed + ' pts)</small>';
+            }
+            document.getElementById("paymentGrandTotal").innerHTML = summary;
+            document.getElementById("payNowBtn").disabled = false;
             loyaltyInsufficient.style.display = "none";
+            return;
         }
-    } else {
-        loyaltyInsufficient.style.display = "none";
     }
-
+    loyaltyInsufficient.style.display = "none";
     document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0);
     document.getElementById("payNowBtn").disabled = false;
 }

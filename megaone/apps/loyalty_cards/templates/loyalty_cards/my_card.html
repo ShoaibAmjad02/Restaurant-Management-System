@@ -201,19 +201,32 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-heig
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// AJAX live update
+// Real-time loyalty card data refresh
 function refreshCardData() {
     fetch("{% url 'loyalty_cards:card_data' %}")
     .then(r => r.json())
     .then(data => {
         if (data.has_card) {
-            document.querySelector('.stat-total').innerText = data.total_points;
-            document.querySelector('.stat-used').innerText = data.used_points;
-            document.querySelector('.stat-remaining').innerText = data.remaining_points;
+            document.querySelectorAll('.stat-total').forEach(el => el.innerText = data.total_points);
+            document.querySelectorAll('.stat-used').forEach(el => el.innerText = data.used_points);
+            document.querySelectorAll('.stat-remaining').forEach(el => el.innerText = data.remaining_points);
+            // Update card detail values
+            const details = document.querySelectorAll('.card-detail .card-value');
+            details.forEach(el => {
+                const text = el.innerText.trim();
+                if (!isNaN(parseInt(text))) {
+                    // Numeric values - update points fields
+                    const label = el.previousElementSibling ? el.previousElementSibling.innerText.trim() : '';
+                    if (label === 'Total Points') el.innerText = data.total_points;
+                    if (label === 'Used Points') el.innerText = data.used_points;
+                    if (label === 'Remaining Points') el.innerText = data.remaining_points;
+                }
+            });
         }
     });
 }
-setInterval(refreshCardData, 30000);
+refreshCardData();
+setInterval(refreshCardData, 15000);
 </script>
 </body>
 </html>

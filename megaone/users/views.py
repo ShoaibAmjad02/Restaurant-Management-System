@@ -420,7 +420,7 @@ def invoice_pdf(request, uuid_token):
     if invoice.user:
         from apps.loyalty_cards.models import LoyaltyCard
         if LoyaltyCard.objects.filter(user=invoice.user).exists():
-            loyalty_height = 35 * mm
+            loyalty_height = 45 * mm
 
     header_height = 65 * mm
     item_per_height = 9 * mm
@@ -596,12 +596,14 @@ def invoice_pdf(request, uuid_token):
     pdf.setFillColor(DARK)
 
     # ==========================
-    # LOYALTY CARD INFO
+    # LOYALTY CARD INFO (Previous Balance → Earned → Used → Final)
     # ==========================
     if invoice.user:
         from apps.loyalty_cards.models import LoyaltyCard
         lcard = LoyaltyCard.objects.filter(user=invoice.user).first()
         if lcard:
+            previous_balance = lcard.total_points - (invoice.loyalty_points_earned or 0)
+            final_balance = lcard.remaining_points
             y -= 5 * mm
             pdf.setFont("Helvetica-Bold", 7)
             pdf.setFillColor(HexColor("#f59e0b"))
@@ -611,22 +613,28 @@ def invoice_pdf(request, uuid_token):
             pdf.setFont("Helvetica", 6)
             loyalty_fields = [
                 ("Card #", lcard.card_number),
-                ("Total Points", str(lcard.total_points)),
-                ("Used Points", str(lcard.used_points)),
-                ("Remaining Points", str(lcard.remaining_points)),
+                ("Previous Points", str(previous_balance)),
             ]
             for label, val in loyalty_fields:
                 pdf.drawString(MARGIN, y, label)
                 pdf.drawRightString(right, y, val)
                 y -= 3.5 * mm
             if invoice.loyalty_points_earned > 0:
-                pdf.drawString(MARGIN, y, "This Order Earned")
+                pdf.drawString(MARGIN, y, "Earned This Order")
                 pdf.drawRightString(right, y, f"+{invoice.loyalty_points_earned} pts")
                 y -= 3.5 * mm
             if invoice.is_loyalty_payment and invoice.loyalty_points_used > 0:
-                pdf.drawString(MARGIN, y, "This Order Used")
+                pdf.drawString(MARGIN, y, "Used This Order")
                 pdf.drawRightString(right, y, f"-{int(invoice.loyalty_points_used)} pts")
                 y -= 3.5 * mm
+            pdf.setFont("Helvetica-Bold", 6)
+            pdf.drawString(MARGIN, y, "Final Balance")
+            pdf.drawRightString(right, y, f"{final_balance} pts")
+            pdf.setFont("Helvetica", 6)
+            pdf.setFillColor(GRAY)
+            pdf.drawString(MARGIN, y - 3 * mm, f"Total: {lcard.total_points} | Used: {lcard.used_points} | Remaining: {lcard.remaining_points}")
+            pdf.setFillColor(DARK)
+            y -= 5 * mm
             pdf.line(MARGIN, y, right, y)
             y -= 4 * mm
 
