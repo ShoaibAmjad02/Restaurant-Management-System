@@ -195,6 +195,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
+                {% include 'food-delivery/menu_banner.html' %}
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel">
                         <div class="row">
@@ -367,6 +368,10 @@
 </div>
 
 {% endblock content %}
+
+{% block modal %}
+{% include 'food-delivery/offers_popup.html' %}
+{% endblock modal %}
 
 {% block javascript %}
 <script>
