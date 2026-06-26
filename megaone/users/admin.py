@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import UserAdminChangeForm
 from .forms import UserAdminCreationForm
-from .models import User, RestaurantTable, Invoice, KitchenOrder, LoyaltyCard, LoyaltyTransaction, QRTableOffer
+from .models import User, RestaurantTable, Invoice, KitchenOrder, LoyaltyCard, LoyaltyTransaction, QRTableOffer, TimeBasedOffer, TodayDeal
 
 if settings.DJANGO_ADMIN_FORCE_ALLAUTH:
     # Force the `admin` sign in process to go through the `django-allauth` workflow:
@@ -93,5 +93,44 @@ class QRTableOfferAdmin(admin.ModelAdmin):
         ("Schedule", {
             "fields": ("start_datetime", "end_datetime"),
             "description": "Offer automatically activates at start and deactivates at end.",
+        }),
+    )
+
+
+@admin.register(TimeBasedOffer)
+class TimeBasedOfferAdmin(admin.ModelAdmin):
+    list_display = ["title", "discount_percentage", "is_active", "start_date", "end_date", "usage_count"]
+    list_filter = ["is_active"]
+    search_fields = ["title"]
+    readonly_fields = ["usage_count"]
+    fieldsets = (
+        (None, {
+            "fields": ("title", "description", "discount_percentage", "is_active"),
+        }),
+        ("Media", {
+            "fields": ("banner_image", "background_color", "popup_image"),
+        }),
+        ("Schedule", {
+            "fields": (("start_date", "start_time"), ("end_date", "end_time")),
+            "description": "Offer automatically activates during this period.",
+        }),
+    )
+
+
+@admin.register(TodayDeal)
+class TodayDealAdmin(admin.ModelAdmin):
+    list_display = ["title", "is_active", "start_date", "end_date"]
+    list_filter = ["is_active"]
+    search_fields = ["title"]
+    fieldsets = (
+        (None, {
+            "fields": ("title", "description", "is_active"),
+        }),
+        ("Media", {
+            "fields": ("deal_image", "deal_banner"),
+        }),
+        ("Schedule", {
+            "fields": (("start_date", "start_time"), ("end_date", "end_time")),
+            "description": "Deal automatically activates during this period.",
         }),
     )

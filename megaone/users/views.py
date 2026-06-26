@@ -25,7 +25,7 @@ from django.utils.dateformat import DateFormat
 from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
-from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction, QRTableOffer
+from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction, QRTableOffer, TimeBasedOffer, TodayDeal
 from .loyalty_utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
 
 from reportlab.pdfgen import canvas
@@ -795,6 +795,15 @@ def admin_dashboard(request):
     loyalty_points_earned = LoyaltyCard.objects.aggregate(total=Sum('total_points'))['total'] or 0
     loyalty_points_redeemed = LoyaltyCard.objects.aggregate(total=Sum('used_points'))['total'] or 0
 
+    # Offer & Deal stats
+    total_offers = TimeBasedOffer.objects.count()
+    active_offers = TimeBasedOffer.objects.filter(is_active=True).count()
+    expired_offers = TimeBasedOffer.objects.filter(is_active=False).count()
+    total_deals = TodayDeal.objects.count()
+    active_deals = TodayDeal.objects.filter(is_active=True).count()
+    offer_usage = Invoice.objects.aggregate(total=Sum('qr_offer_discount_amount'))['total'] or 0
+    offer_discount_given = Invoice.objects.filter(qr_offer_discount_amount__gt=0).count()
+
     pending_count = KitchenOrder.objects.filter(status="pending").count()
     preparing_count = KitchenOrder.objects.filter(status="preparing").count()
     ready_count = KitchenOrder.objects.filter(status="ready").count()
@@ -849,6 +858,13 @@ def admin_dashboard(request):
         "loyalty_active": loyalty_active,
         "loyalty_points_earned": loyalty_points_earned,
         "loyalty_points_redeemed": loyalty_points_redeemed,
+        "total_offers": total_offers,
+        "active_offers": active_offers,
+        "expired_offers": expired_offers,
+        "total_deals": total_deals,
+        "active_deals": active_deals,
+        "offer_usage": offer_usage,
+        "offer_discount_given": offer_discount_given,
     })
 
 

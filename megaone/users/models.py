@@ -1,5 +1,6 @@
 import uuid
 import io
+import datetime
 import qrcode
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
@@ -32,6 +33,77 @@ class QRTableOffer(models.Model):
 
     def __str__(self):
         return f"QR Offer: {self.discount_percentage}% ({'Active' if self.is_active else 'Inactive'})"
+
+
+class TimeBasedOffer(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    banner_image = models.ImageField(upload_to="offer_banners/", blank=True, null=True)
+    background_color = models.CharField(max_length=20, default="#f59e0b")
+    popup_image = models.ImageField(upload_to="offer_popups/", blank=True, null=True)
+    start_date = models.DateField()
+    start_time = models.TimeField()
+    end_date = models.DateField()
+    end_time = models.TimeField()
+    is_active = models.BooleanField(default=False)
+    usage_count = models.IntegerField(default=0, help_text="Number of times this offer has been applied")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def check_and_update_status(self):
+        now = tz_utils.now()
+        start = tz_utils.make_aware(
+            datetime.datetime.combine(self.start_date, self.start_time)
+        )
+        end = tz_utils.make_aware(
+            datetime.datetime.combine(self.end_date, self.end_time)
+        )
+        should_be_active = start <= now <= end
+        if should_be_active and not self.is_active:
+            self.is_active = True
+            self.save(update_fields=["is_active"])
+        elif not should_be_active and self.is_active:
+            self.is_active = False
+            self.save(update_fields=["is_active"])
+        return self.is_active
+
+    def __str__(self):
+        return f"{self.title} ({self.discount_percentage}%)"
+
+
+class TodayDeal(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    deal_image = models.ImageField(upload_to="deal_images/", blank=True, null=True)
+    deal_banner = models.ImageField(upload_to="deal_banners/", blank=True, null=True)
+    start_date = models.DateField()
+    start_time = models.TimeField()
+    end_date = models.DateField()
+    end_time = models.TimeField()
+    is_active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def check_and_update_status(self):
+        now = tz_utils.now()
+        start = tz_utils.make_aware(
+            datetime.datetime.combine(self.start_date, self.start_time)
+        )
+        end = tz_utils.make_aware(
+            datetime.datetime.combine(self.end_date, self.end_time)
+        )
+        should_be_active = start <= now <= end
+        if should_be_active and not self.is_active:
+            self.is_active = True
+            self.save(update_fields=["is_active"])
+        elif not should_be_active and self.is_active:
+            self.is_active = False
+            self.save(update_fields=["is_active"])
+        return self.is_active
+
+    def __str__(self):
+        return self.title
 
 
 class User(AbstractBaseUser, PermissionsMixin):
