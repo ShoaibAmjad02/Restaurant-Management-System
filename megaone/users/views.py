@@ -475,7 +475,7 @@ def invoice_pdf(request, uuid_token):
 
     header_height = 65 * mm
     item_per_height = 9 * mm
-    summary_height = 40 * mm
+    summary_height = 50 * mm
     qr_height = 40 * mm
     footer_height = 15 * mm
 
