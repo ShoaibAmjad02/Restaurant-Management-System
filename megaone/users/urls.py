@@ -116,4 +116,18 @@ urlpatterns = [
     path("offers/active-data/", views.active_offer_data, name="active_offer_data"),
     path("deals/active-data/", views.active_deal_data, name="active_deal_data"),
     path("offers/banner-data/", views.offer_banner_data, name="offer_banner_data"),
+
+    # Offer CRUD
+    path("offers/", views.offer_list, name="offer_list"),
+    path("offers/add/", views.offer_add, name="offer_add"),
+    path("offers/<int:pk>/", views.offer_detail, name="offer_detail"),
+    path("offers/<int:pk>/edit/", views.offer_edit, name="offer_edit"),
+    path("offers/<int:pk>/delete/", views.offer_delete, name="offer_delete"),
+
+    # Deal CRUD
+    path("deals/", views.deal_list, name="deal_list"),
+    path("deals/add/", views.deal_add, name="deal_add"),
+    path("deals/<int:pk>/", views.deal_detail, name="deal_detail"),
+    path("deals/<int:pk>/edit/", views.deal_edit, name="deal_edit"),
+    path("deals/<int:pk>/delete/", views.deal_delete, name="deal_delete"),
 ]
