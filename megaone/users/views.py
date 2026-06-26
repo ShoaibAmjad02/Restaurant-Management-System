@@ -1730,3 +1730,179 @@ def offer_banner_data(request):
             "end_timestamp": int(end_dt.timestamp()),
         }
     return JsonResponse(data)
+
+
+# =========================
+# OFFER CRUD VIEWS
+# =========================
+@staff_member_required
+def offer_list(request):
+    offers = TimeBasedOffer.objects.all().order_by("-created_at")
+    total_offers = offers.count()
+    active_offers = offers.filter(is_active=True).count()
+    expired_offers = total_offers - active_offers
+    usage_count = Invoice.objects.filter(qr_offer_discount_amount__gt=0).count()
+    return render(request, "admin/offer_list.html", {
+        "offers": offers,
+        "total_offers": total_offers,
+        "active_offers": active_offers,
+        "expired_offers": expired_offers,
+        "usage_count": usage_count,
+        "active_page": "offers",
+    })
+
+
+@staff_member_required
+def offer_add(request):
+    if request.method == "POST":
+        try:
+            offer = TimeBasedOffer(
+                title=request.POST.get("title"),
+                description=request.POST.get("description", ""),
+                discount_percentage=request.POST.get("discount_percentage", 0),
+                background_color=request.POST.get("background_color", "#f59e0b"),
+                is_active=request.POST.get("is_active") == "1",
+                start_date=request.POST.get("start_date"),
+                start_time=request.POST.get("start_time"),
+                end_date=request.POST.get("end_date"),
+                end_time=request.POST.get("end_time"),
+            )
+            if "banner_image" in request.FILES:
+                offer.banner_image = request.FILES["banner_image"]
+            if "popup_image" in request.FILES:
+                offer.popup_image = request.FILES["popup_image"]
+            offer.save()
+            messages.success(request, "Offer created successfully.")
+            return redirect("users:offer_list")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return render(request, "admin/offer_form.html", {"active_page": "offers"})
+
+
+@staff_member_required
+def offer_edit(request, pk):
+    offer = get_object_or_404(TimeBasedOffer, pk=pk)
+    if request.method == "POST":
+        try:
+            offer.title = request.POST.get("title")
+            offer.description = request.POST.get("description", "")
+            offer.discount_percentage = request.POST.get("discount_percentage", 0)
+            offer.background_color = request.POST.get("background_color", "#f59e0b")
+            offer.is_active = request.POST.get("is_active") == "1"
+            offer.start_date = request.POST.get("start_date")
+            offer.start_time = request.POST.get("start_time")
+            offer.end_date = request.POST.get("end_date")
+            offer.end_time = request.POST.get("end_time")
+            if "banner_image" in request.FILES:
+                offer.banner_image = request.FILES["banner_image"]
+            if "popup_image" in request.FILES:
+                offer.popup_image = request.FILES["popup_image"]
+            offer.save()
+            messages.success(request, "Offer updated successfully.")
+            return redirect("users:offer_list")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return render(request, "admin/offer_form.html", {"offer": offer, "active_page": "offers"})
+
+
+@staff_member_required
+def offer_detail(request, pk):
+    offer = get_object_or_404(TimeBasedOffer, pk=pk)
+    return render(request, "admin/offer_detail.html", {"offer": offer, "active_page": "offers"})
+
+
+@staff_member_required
+def offer_delete(request, pk):
+    offer = get_object_or_404(TimeBasedOffer, pk=pk)
+    if request.method == "POST":
+        try:
+            offer.delete()
+            messages.success(request, "Offer deleted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return redirect("users:offer_list")
+
+
+# =========================
+# DEAL CRUD VIEWS
+# =========================
+@staff_member_required
+def deal_list(request):
+    deals = TodayDeal.objects.all().order_by("-created_at")
+    total_deals = deals.count()
+    active_deals = deals.filter(is_active=True).count()
+    expired_deals = total_deals - active_deals
+    return render(request, "admin/deal_list.html", {
+        "deals": deals,
+        "total_deals": total_deals,
+        "active_deals": active_deals,
+        "expired_deals": expired_deals,
+        "active_page": "deals",
+    })
+
+
+@staff_member_required
+def deal_add(request):
+    if request.method == "POST":
+        try:
+            deal = TodayDeal(
+                title=request.POST.get("title"),
+                description=request.POST.get("description", ""),
+                is_active=request.POST.get("is_active") == "1",
+                start_date=request.POST.get("start_date"),
+                start_time=request.POST.get("start_time"),
+                end_date=request.POST.get("end_date"),
+                end_time=request.POST.get("end_time"),
+            )
+            if "deal_image" in request.FILES:
+                deal.deal_image = request.FILES["deal_image"]
+            if "deal_banner" in request.FILES:
+                deal.deal_banner = request.FILES["deal_banner"]
+            deal.save()
+            messages.success(request, "Deal created successfully.")
+            return redirect("users:deal_list")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return render(request, "admin/deal_form.html", {"active_page": "deals"})
+
+
+@staff_member_required
+def deal_edit(request, pk):
+    deal = get_object_or_404(TodayDeal, pk=pk)
+    if request.method == "POST":
+        try:
+            deal.title = request.POST.get("title")
+            deal.description = request.POST.get("description", "")
+            deal.is_active = request.POST.get("is_active") == "1"
+            deal.start_date = request.POST.get("start_date")
+            deal.start_time = request.POST.get("start_time")
+            deal.end_date = request.POST.get("end_date")
+            deal.end_time = request.POST.get("end_time")
+            if "deal_image" in request.FILES:
+                deal.deal_image = request.FILES["deal_image"]
+            if "deal_banner" in request.FILES:
+                deal.deal_banner = request.FILES["deal_banner"]
+            deal.save()
+            messages.success(request, "Deal updated successfully.")
+            return redirect("users:deal_list")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return render(request, "admin/deal_form.html", {"deal": deal, "active_page": "deals"})
+
+
+@staff_member_required
+def deal_detail(request, pk):
+    deal = get_object_or_404(TodayDeal, pk=pk)
+    return render(request, "admin/deal_detail.html", {"deal": deal, "active_page": "deals"})
+
+
+@staff_member_required
+def deal_delete(request, pk):
+    deal = get_object_or_404(TodayDeal, pk=pk)
+    if request.method == "POST":
+        try:
+            deal.delete()
+            messages.success(request, "Deal deleted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+    return redirect("users:deal_list")
