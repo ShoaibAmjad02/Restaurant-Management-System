@@ -84,5 +84,14 @@ class LoyaltyTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(QRTableOffer)
 class QRTableOfferAdmin(admin.ModelAdmin):
-    list_display = ["discount_percentage", "is_active", "start_datetime", "end_datetime", "created_at"]
+    list_display = ["discount_percentage", "is_active", "start_datetime", "end_datetime", "updated_at"]
     list_filter = ["is_active"]
+    fieldsets = (
+        (None, {
+            "fields": ("is_active", "discount_percentage"),
+        }),
+        ("Schedule", {
+            "fields": ("start_datetime", "end_datetime"),
+            "description": "Offer automatically activates at start and deactivates at end.",
+        }),
+    )
