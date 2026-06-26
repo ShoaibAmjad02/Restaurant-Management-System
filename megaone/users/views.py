@@ -25,7 +25,7 @@ from django.utils.dateformat import DateFormat
 from datetime import datetime, timedelta, timezone as dt_timezone
 
 from menu.models import Food, Category
-from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction
+from .models import User, Invoice, InvoiceItem, KitchenOrder, KitchenOrderItem, RestaurantTable, LoyaltyCard, LoyaltyTransaction, QRTableOffer
 from .loyalty_utils import generate_qr_code_image, generate_loyalty_card_pdf, generate_loyalty_card_image
 
 from reportlab.pdfgen import canvas
@@ -198,17 +198,32 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         price = float(item["price"])
         subtotal_amount += qty * price
 
+    # ---------- QR Table Offer ----------
+    qr_offer_discount_pct = 0
+    qr_offer_discount_amt = 0
+    is_qr_table_order = table_no is not None and user is None
+    if is_qr_table_order and payment_method != "loyalty":
+        offer = QRTableOffer.objects.first()
+        if offer:
+            offer.check_and_update_status()
+            if offer.is_active:
+                qr_offer_discount_pct = float(offer.discount_percentage)
+                qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
+
+    # ---------- Loyalty ----------
     is_loyalty = payment_method == "loyalty"
     loyalty_points_used = 0
     loyalty_card = None
-    remaining_amount = subtotal_amount
+    remaining_amount = subtotal_amount - qr_offer_discount_amt
+    if remaining_amount < 0:
+        remaining_amount = 0
     if is_loyalty and user:
         try:
             loyalty_card = LoyaltyCard.objects.get(user=user, status='ACTIVE')
             available = int(loyalty_card.remaining_points)
             requested = int(use_loyalty_points) if use_loyalty_points else available
-            loyalty_points_used = max(0, min(requested, available, int(subtotal_amount)))
-            remaining_amount = subtotal_amount - loyalty_points_used
+            loyalty_points_used = max(0, min(requested, available, int(remaining_amount)))
+            remaining_amount = remaining_amount - loyalty_points_used
             if remaining_amount < 0:
                 remaining_amount = 0
         except LoyaltyCard.DoesNotExist:
@@ -243,6 +258,8 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         customer_session_id=customer_session,
         is_loyalty_payment=is_loyalty,
         loyalty_points_used=loyalty_points_used,
+        qr_offer_discount_percentage=qr_offer_discount_pct,
+        qr_offer_discount_amount=qr_offer_discount_amt,
     )
 
     for item in cart:
@@ -602,11 +619,20 @@ def invoice_pdf(request, uuid_token):
     tax_amount = float(invoice.tax_amount) if invoice.tax_amount else round(subtotal * 0.05, 2)
     grand_total = float(invoice.total_amount)
     sub_amt = float(invoice.subtotal_amount) if invoice.subtotal_amount else subtotal
+    qr_disc_pct = float(invoice.qr_offer_discount_percentage) if invoice.qr_offer_discount_percentage else 0
+    qr_disc_amt = float(invoice.qr_offer_discount_amount) if invoice.qr_offer_discount_amount else 0
 
     pdf.setFont("Helvetica", 8)
     pdf.drawString(MARGIN, y, "Subtotal")
     pdf.drawRightString(right, y, f"Rs {sub_amt:.0f}")
     y -= 5 * mm
+
+    if qr_disc_pct > 0 and qr_disc_amt > 0:
+        pdf.setFont("Helvetica", 7)
+        pdf.setFillColor(HexColor("#f59e0b"))
+        pdf.drawString(MARGIN, y, f"QR Table Offer ({qr_disc_pct:.0f}%)")
+        pdf.drawRightString(right, y, f"-Rs {qr_disc_amt:.0f}")
+        y -= 5 * mm
 
     pdf.setFont("Helvetica", 7)
     pdf.setFillColor(GRAY)

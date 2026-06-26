@@ -11,6 +11,29 @@ from django.conf import settings
 from .managers import UserManager
 
 
+class QRTableOffer(models.Model):
+    is_active = models.BooleanField(default=False)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def check_and_update_status(self):
+        now = tz_utils.now()
+        if self.start_datetime <= now <= self.end_datetime:
+            if not self.is_active:
+                self.is_active = True
+                self.save(update_fields=["is_active"])
+        elif now > self.end_datetime:
+            if self.is_active:
+                self.is_active = False
+                self.save(update_fields=["is_active"])
+
+    def __str__(self):
+        return f"QR Offer: {self.discount_percentage}% ({'Active' if self.is_active else 'Inactive'})"
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
@@ -78,6 +101,8 @@ class Invoice(models.Model):
     loyalty_points_used = models.IntegerField(default=0, help_text="Loyalty points used for payment")
     loyalty_points_earned = models.IntegerField(default=0, help_text="Loyalty points earned from this order")
     loyalty_points_processed = models.BooleanField(default=False, help_text="Prevent duplicate point processing")
+    qr_offer_discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="QR Table Offer discount %")
+    qr_offer_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="QR Table Offer discount amount")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
