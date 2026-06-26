@@ -198,17 +198,24 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         price = float(item["price"])
         subtotal_amount += qty * price
 
-    # ---------- QR Table Offer ----------
+    # ---------- Offer Discount ----------
     qr_offer_discount_pct = 0
     qr_offer_discount_amt = 0
-    is_qr_table_order = table_no is not None and user is None
-    if is_qr_table_order and payment_method != "loyalty":
-        offer = QRTableOffer.objects.first()
-        if offer:
-            offer.check_and_update_status()
-            if offer.is_active:
-                qr_offer_discount_pct = float(offer.discount_percentage)
-                qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
+
+    if payment_method != "loyalty":
+        time_offer = TimeBasedOffer.objects.filter(is_active=True).first()
+        if time_offer:
+            qr_offer_discount_pct = float(time_offer.discount_percentage)
+            qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
+        else:
+            is_qr_table_order = table_no is not None and user is None
+            if is_qr_table_order:
+                qr_offer = QRTableOffer.objects.first()
+                if qr_offer:
+                    qr_offer.check_and_update_status()
+                    if qr_offer.is_active:
+                        qr_offer_discount_pct = float(qr_offer.discount_percentage)
+                        qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
 
     # ---------- Loyalty ----------
     is_loyalty = payment_method == "loyalty"
@@ -1649,3 +1656,77 @@ def loyalty_transactions(request):
             'created_at': t.created_at.strftime('%d-%m-%Y %I:%M %p'),
         } for t in transactions],
     })
+
+
+# =========================
+# OFFERS & DEALS API
+# =========================
+def active_offer_data(request):
+    offer = TimeBasedOffer.objects.filter(is_active=True).first()
+    if not offer:
+        return JsonResponse({"active": False})
+    now = timezone.now()
+    end_dt = timezone.make_aware(
+        datetime.combine(offer.end_date, offer.end_time)
+    )
+    return JsonResponse({
+        "active": True,
+        "id": offer.id,
+        "title": offer.title,
+        "description": offer.description or "",
+        "discount_percentage": float(offer.discount_percentage),
+        "banner_image": offer.banner_image.url if offer.banner_image else "",
+        "background_color": offer.background_color or "#f59e0b",
+        "popup_image": offer.popup_image.url if offer.popup_image else "",
+        "end_date": offer.end_date.strftime("%d-%m-%Y"),
+        "end_time": offer.end_time.strftime("%I:%M %p"),
+        "end_timestamp": int(end_dt.timestamp()),
+    })
+
+
+def active_deal_data(request):
+    deal = TodayDeal.objects.filter(is_active=True).first()
+    if not deal:
+        return JsonResponse({"active": False})
+    now = timezone.now()
+    end_dt = timezone.make_aware(
+        datetime.combine(deal.end_date, deal.end_time)
+    )
+    return JsonResponse({
+        "active": True,
+        "id": deal.id,
+        "title": deal.title,
+        "description": deal.description or "",
+        "deal_image": deal.deal_image.url if deal.deal_image else "",
+        "deal_banner": deal.deal_banner.url if deal.deal_banner else "",
+        "end_date": deal.end_date.strftime("%d-%m-%Y"),
+        "end_time": deal.end_time.strftime("%I:%M %p"),
+        "end_timestamp": int(end_dt.timestamp()),
+    })
+
+
+def offer_banner_data(request):
+    offer = TimeBasedOffer.objects.filter(is_active=True).first()
+    deal = TodayDeal.objects.filter(is_active=True).first()
+    data = {"offer": None, "deal": None}
+    if offer:
+        end_dt = timezone.make_aware(
+            datetime.combine(offer.end_date, offer.end_time)
+        )
+        data["offer"] = {
+            "title": offer.title,
+            "discount_percentage": float(offer.discount_percentage),
+            "background_color": offer.background_color or "#f59e0b",
+            "end_timestamp": int(end_dt.timestamp()),
+        }
+    if deal:
+        end_dt = timezone.make_aware(
+            datetime.combine(deal.end_date, deal.end_time)
+        )
+        data["deal"] = {
+            "title": deal.title,
+            "description": deal.description or "",
+            "deal_banner": deal.deal_banner.url if deal.deal_banner else "",
+            "end_timestamp": int(end_dt.timestamp()),
+        }
+    return JsonResponse(data)

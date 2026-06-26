@@ -111,4 +111,9 @@ urlpatterns = [
     path("loyalty-card/admin/card/<str:card_number>/reset/", views.admin_reset_points, name="admin_reset_points"),
     path("loyalty-card/admin/reports/", views.admin_loyalty_reports, name="admin_loyalty_reports"),
     path("loyalty-card/admin/export-csv/", views.admin_export_loyalty_csv, name="admin_export_loyalty_csv"),
+
+    # Offers & Deals API
+    path("offers/active-data/", views.active_offer_data, name="active_offer_data"),
+    path("deals/active-data/", views.active_deal_data, name="active_deal_data"),
+    path("offers/banner-data/", views.offer_banner_data, name="offer_banner_data"),
 ]
