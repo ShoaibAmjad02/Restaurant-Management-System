@@ -128,6 +128,12 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0c0e1a 0%
             <span class="summary-label">Subtotal</span>
             <span class="summary-value">Rs {{ subtotal|floatformat:0 }}</span>
         </div>
+        {% if invoice.qr_offer_discount_percentage and invoice.qr_offer_discount_amount %}
+        <div class="summary-row">
+            <span class="summary-label" style="color:#f59e0b">QR Table Offer ({{ invoice.qr_offer_discount_percentage|floatformat:0 }}%)</span>
+            <span class="summary-value" style="color:#f59e0b">-Rs {{ invoice.qr_offer_discount_amount|floatformat:0 }}</span>
+        </div>
+        {% endif %}
         <div class="summary-row">
             <span class="summary-label">Tax ({{ tax_pct }}%)</span>
             <span class="summary-value">Rs {{ tax|floatformat:0 }}</span>
