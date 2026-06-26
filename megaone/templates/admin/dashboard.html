@@ -87,6 +87,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
         <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
         <a href="{% url 'users:admin_loyalty_list' %}"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
+        <div class="menu-label">Offers</div>
+        <a href="/admin/users/timebasedoffer/" target="_blank"><i class="bi bi-megaphone"></i><span>Time-Based Offers</span></a>
+        <a href="/admin/users/todaydeal/" target="_blank"><i class="bi bi-fire"></i><span>Today's Deals</span></a>
         <div class="menu-label">Operations</div>
         <a href="{% url 'users:kitchen_users_page' %}"><i class="bi bi-people"></i><span>Kitchen Users</span></a>
         <a href="{% url 'users:mysql_backup' %}"><i class="bi bi-database"></i><span>Backup</span></a>
