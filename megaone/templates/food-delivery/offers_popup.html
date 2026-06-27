@@ -62,21 +62,16 @@
     display: block; width: 100%; padding: 14px; border: none;
     border-radius: 12px; font-size: 16px; font-weight: 700;
     cursor: pointer; transition: 0.2s; text-align: center;
+    text-decoration: none;
 }
-.offer-popup-btn.claim {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #000; margin-bottom: 10px;
+.offer-popup-btn.view-deal {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
 }
-.offer-popup-btn.claim:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(245,158,11,0.3); }
-.offer-popup-btn.close-btn {
-    background: transparent; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);
-}
-.offer-popup-btn.close-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.offer-popup-btn.view-deal:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59,130,246,0.3); }
 
-/* Deal popup */
 .deal-popup-modal .offer-popup-banner { height: 180px; }
 
-/* Carousel for both active */
 .offers-carousel .carousel-item { padding: 0; }
 .offers-carousel .carousel-indicators { bottom: -8px; }
 .offers-carousel .carousel-indicators button {
@@ -84,6 +79,26 @@
     background: #475569; border: none;
 }
 .offers-carousel .carousel-indicators button.active { background: #f59e0b; }
+
+.deal-product-list {
+    list-style: none; padding: 0; margin: 0 0 16px;
+}
+.deal-product-list li {
+    padding: 6px 0; font-size: 14px; color: #e2e8f0;
+    display: flex; align-items: center; gap: 8px;
+}
+.deal-product-list li::before {
+    content: "\2713"; color: #22c55e; font-weight: 700;
+}
+.deal-product-list li.free::before {
+    content: "\2605"; color: #f59e0b;
+}
+.deal-price-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff; font-weight: 800; font-size: 28px;
+    padding: 4px 20px; border-radius: 12px; margin-bottom: 16px;
+}
 </style>
 
 <div class="offer-popup-overlay" id="offerPopupOverlay">
@@ -161,9 +176,7 @@ function buildOfferHTML(data) {
         + '<h3 class="offer-popup-title">' + data.title + '</h3>'
         + '<p class="offer-popup-desc">' + data.description + '</p>'
         + '<div class="offer-popup-timer" id="countdownContainer"><div class="offer-popup-timer-item"><span class="num" id="cdHours">00</span><span class="lbl">Hours</span></div><div class="offer-popup-timer-item"><span class="num" id="cdMinutes">00</span><span class="lbl">Minutes</span></div><div class="offer-popup-timer-item"><span class="num" id="cdSeconds">00</span><span class="lbl">Seconds</span></div></div>'
-        + '<button class="offer-popup-btn claim" onclick="dismissOfferPopup()">&#127881; Claim Offer</button>'
-        + '<button class="offer-popup-btn close-btn" onclick="dismissOfferPopup()">Close</button>'
-        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Offer ends ' + data.end_date + ' at ' + data.end_time + '</p>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Valid Until: ' + data.end_date + ' at ' + data.end_time + '</p>'
         + '</div>';
 }
 
@@ -171,15 +184,32 @@ function buildDealHTML(data) {
     var img = data.deal_image
         ? '<img src="' + data.deal_image + '" class="offer-popup-banner" alt="' + data.title + '">'
         : '<div class="offer-popup-banner" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff">&#127860;</div>';
+
+    var productsHtml = '';
+    if (data.products && data.products.length > 0) {
+        productsHtml = '<ul class="deal-product-list">';
+        data.products.forEach(function(p) {
+            var cls = p.free ? ' class="free"' : '';
+            var name = p.free ? p.name + ' <span style="color:#22c55e;font-size:12px">(FREE)</span>' : p.name;
+            productsHtml += '<li' + cls + '>' + name + '</li>';
+        });
+        productsHtml += '</ul>';
+    }
+
+    var priceHtml = data.combo_price
+        ? '<div class="deal-price-tag">Rs ' + data.combo_price + '</div>'
+        : '';
+
     return '<div class="offer-popup-body">'
         + img
         + '<div style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-weight:700;font-size:13px;padding:4px 14px;border-radius:20px;margin-bottom:12px">&#9889; Today\'s Deal</div>'
         + '<h3 class="offer-popup-title" style="color:#60a5fa">' + data.title + '</h3>'
         + '<p class="offer-popup-desc">' + data.description + '</p>'
+        + productsHtml
+        + priceHtml
         + '<div class="offer-popup-timer" id="dealCountdownContainer"><div class="offer-popup-timer-item"><span class="num" id="dealCdHours">00</span><span class="lbl">Hours</span></div><div class="offer-popup-timer-item"><span class="num" id="dealCdMinutes">00</span><span class="lbl">Minutes</span></div><div class="offer-popup-timer-item"><span class="num" id="dealCdSeconds">00</span><span class="lbl">Seconds</span></div></div>'
-        + '<button class="offer-popup-btn claim" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff" onclick="dismissOfferPopup()">&#127860; Order Now</button>'
-        + '<button class="offer-popup-btn close-btn" onclick="dismissOfferPopup()">Close</button>'
-        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Deal ends ' + data.end_date + ' at ' + data.end_time + '</p>'
+        + '<a href="/users/deals/' + data.id + '/public/" class="offer-popup-btn view-deal">&#128073; View Deal</a>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Valid Until: ' + data.end_date + ' at ' + data.end_time + '</p>'
         + '</div>';
 }
 
