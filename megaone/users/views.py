@@ -2003,6 +2003,7 @@ def deal_edit(request, pk):
             deal.end_date = request.POST.get("end_date")
             deal.end_time = request.POST.get("end_time")
             deal.combo_price = request.POST.get("combo_price") or None
+            deal.discount_percentage = request.POST.get("discount_percentage") or None
             deal.free_product_id = request.POST.get("free_product") or None
             if "deal_image" in request.FILES:
                 deal.deal_image = request.FILES["deal_image"]
