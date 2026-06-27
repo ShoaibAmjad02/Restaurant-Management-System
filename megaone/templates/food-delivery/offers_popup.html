@@ -176,7 +176,8 @@ function buildOfferHTML(data) {
         + '<h3 class="offer-popup-title">' + data.title + '</h3>'
         + '<p class="offer-popup-desc">' + data.description + '</p>'
         + '<div class="offer-popup-timer" id="countdownContainer"><div class="offer-popup-timer-item"><span class="num" id="cdHours">00</span><span class="lbl">Hours</span></div><div class="offer-popup-timer-item"><span class="num" id="cdMinutes">00</span><span class="lbl">Minutes</span></div><div class="offer-popup-timer-item"><span class="num" id="cdSeconds">00</span><span class="lbl">Seconds</span></div></div>'
-        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Valid Until: ' + data.end_date + ' at ' + data.end_time + '</p>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:8px 0 0">Start: ' + data.start_time + '</p>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:2px 0 0">End: ' + data.end_date + ' at ' + data.end_time + '</p>'
         + '</div>';
 }
 
