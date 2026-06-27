@@ -1802,7 +1802,15 @@ def active_deal_data(request):
 
 def offer_banner_data(request):
     offer = TimeBasedOffer.objects.filter(is_active=True).first()
+    if offer:
+        offer.check_and_update_status()
+        if not offer.is_active:
+            offer = None
     deal = TodayDeal.objects.filter(is_active=True).first()
+    if deal:
+        deal.check_and_update_status()
+        if not deal.is_active:
+            deal = None
     data = {"offer": None, "deal": None}
     if offer:
         end_dt = timezone.make_aware(
