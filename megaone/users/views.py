@@ -2058,7 +2058,7 @@ def deal_checkout(request, pk):
                 "image": p.image.url if p.image else "/static/food-delivery/img/item1.png",
                 "qty": 1,
             })
-        request.session["deal_checkout_cart"] = cart_data
+        request.session["deal_checkout_cart"] = json.dumps(cart_data)
         request.session["deal_checkout_id"] = deal.id
         return redirect("users:food_delivery_restaurant_detail")
     return redirect("users:public_deal_detail", pk=pk)
