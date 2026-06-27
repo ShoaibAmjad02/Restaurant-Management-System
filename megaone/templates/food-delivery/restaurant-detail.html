@@ -431,6 +431,13 @@ function changeQty(id, qty) {
     saveCart();
 }
 
+function getCartSubtotal() {
+    if (dealEffectiveTotal) {
+        return dealEffectiveTotal;
+    }
+    return cart.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
+}
+
 function renderCart() {
     let container = document.getElementById("cart-items");
     if (!container) return;
@@ -455,8 +462,7 @@ function renderCart() {
                 <div class="del-icon">
                     <a href="javascript:void(0)" onclick="removeItem(${item.id})"><i class="far fa-trash-alt"></i></a>
                 </div>
-            </div>
-        </div>`;
+            </div>`;
     });
     if (cart.length === 0) {
         container.innerHTML = `<div class="text-center p-3">Cart is empty</div>`;
