@@ -234,6 +234,10 @@ body{background:#0f172a;color:#e2e8f0}
 <span class="scroll-top-arrow"><i class="fas fa-angle-up"></i></span>
 {% endblock content %}
 
+{% block modal %}
+{% include 'food-delivery/offers_popup.html' %}
+{% endblock modal %}
+
 {% block javascript %}
 <script src="{% static '/vendor/js/bundle.min.js' %}"></script>
 <script src="{% static '/vendor/js/jquery.fancybox.min.js' %}"></script>
