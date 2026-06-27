@@ -1692,6 +1692,31 @@ def active_deal_data(request):
     end_dt = timezone.make_aware(
         datetime.combine(deal.end_date, deal.end_time)
     )
+    deal_products = deal.products.all()
+    products_data = []
+    original_total = 0
+    for p in deal_products:
+        products_data.append({
+            "id": p.id,
+            "name": p.name,
+            "price": float(p.price),
+            "image": p.image.url if p.image else "",
+        })
+        original_total += float(p.price)
+    if deal.free_product:
+        products_data.append({
+            "id": deal.free_product.id,
+            "name": deal.free_product.name + " (Free)",
+            "price": float(deal.free_product.price),
+            "image": deal.free_product.image.url if deal.free_product.image else "",
+            "free": True,
+        })
+        original_total += float(deal.free_product.price)
+    savings = 0
+    if deal.combo_price and original_total > 0:
+        savings = original_total - float(deal.combo_price)
+        if savings < 0:
+            savings = 0
     return JsonResponse({
         "active": True,
         "id": deal.id,
@@ -1699,6 +1724,10 @@ def active_deal_data(request):
         "description": deal.description or "",
         "deal_image": deal.deal_image.url if deal.deal_image else "",
         "deal_banner": deal.deal_banner.url if deal.deal_banner else "",
+        "products": products_data,
+        "combo_price": float(deal.combo_price) if deal.combo_price else None,
+        "original_total": original_total,
+        "savings": savings,
         "end_date": deal.end_date.strftime("%d-%m-%Y"),
         "end_time": deal.end_time.strftime("%I:%M %p"),
         "end_timestamp": int(end_dt.timestamp()),
@@ -1843,6 +1872,7 @@ def deal_list(request):
 
 @staff_member_required
 def deal_add(request):
+    products = Food.objects.all()
     if request.method == "POST":
         try:
             deal = TodayDeal(
@@ -1853,22 +1883,28 @@ def deal_add(request):
                 start_time=request.POST.get("start_time"),
                 end_date=request.POST.get("end_date"),
                 end_time=request.POST.get("end_time"),
+                combo_price=request.POST.get("combo_price") or None,
+                free_product_id=request.POST.get("free_product") or None,
             )
             if "deal_image" in request.FILES:
                 deal.deal_image = request.FILES["deal_image"]
             if "deal_banner" in request.FILES:
                 deal.deal_banner = request.FILES["deal_banner"]
             deal.save()
+            product_ids = request.POST.getlist("products")
+            if product_ids:
+                deal.products.set(Food.objects.filter(id__in=product_ids))
             messages.success(request, "Deal created successfully.")
             return redirect("users:deal_list")
         except Exception as e:
             messages.error(request, f"Error: {e}")
-    return render(request, "admin/deal_form.html", {"active_page": "deals"})
+    return render(request, "admin/deal_form.html", {"active_page": "deals", "products": products})
 
 
 @staff_member_required
 def deal_edit(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
+    products = Food.objects.all()
     if request.method == "POST":
         try:
             deal.title = request.POST.get("title")
@@ -1878,22 +1914,44 @@ def deal_edit(request, pk):
             deal.start_time = request.POST.get("start_time")
             deal.end_date = request.POST.get("end_date")
             deal.end_time = request.POST.get("end_time")
+            deal.combo_price = request.POST.get("combo_price") or None
+            deal.free_product_id = request.POST.get("free_product") or None
             if "deal_image" in request.FILES:
                 deal.deal_image = request.FILES["deal_image"]
             if "deal_banner" in request.FILES:
                 deal.deal_banner = request.FILES["deal_banner"]
             deal.save()
+            product_ids = request.POST.getlist("products")
+            if product_ids:
+                deal.products.set(Food.objects.filter(id__in=product_ids))
+            else:
+                deal.products.clear()
             messages.success(request, "Deal updated successfully.")
             return redirect("users:deal_list")
         except Exception as e:
             messages.error(request, f"Error: {e}")
-    return render(request, "admin/deal_form.html", {"deal": deal, "active_page": "deals"})
+    return render(request, "admin/deal_form.html", {"deal": deal, "active_page": "deals", "products": products})
 
 
 @staff_member_required
 def deal_detail(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
-    return render(request, "admin/deal_detail.html", {"deal": deal, "active_page": "deals"})
+    deal_products = deal.products.all()
+    original_total = sum(float(p.price) for p in deal_products)
+    if deal.free_product:
+        original_total += float(deal.free_product.price)
+    savings = 0
+    if deal.combo_price and original_total > 0:
+        savings = original_total - float(deal.combo_price)
+        if savings < 0:
+            savings = 0
+    return render(request, "admin/deal_detail.html", {
+        "deal": deal,
+        "deal_products": deal_products,
+        "original_total": original_total,
+        "savings": savings,
+        "active_page": "deals",
+    })
 
 
 @staff_member_required
