@@ -266,7 +266,10 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
     is_loyalty = payment_method == "loyalty"
     loyalty_points_used = 0
     loyalty_card = None
-    remaining_amount = effective_subtotal
+    if deal_obj:
+        remaining_amount = effective_subtotal
+    else:
+        remaining_amount = effective_subtotal - qr_offer_discount_amt
     if remaining_amount < 0:
         remaining_amount = 0
     if is_loyalty and user:

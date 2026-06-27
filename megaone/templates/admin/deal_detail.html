@@ -43,15 +43,19 @@
                     <div class="detail-label">Description</div>
                     <div class="detail-value">{{ deal.description|default:'No description' }}</div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="detail-label">Combo Price</div>
                     <div class="detail-value">{% if deal.combo_price %}Rs {{ deal.combo_price }}{% else %}N/A{% endif %}</div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <div class="detail-label">Discount %</div>
+                    <div class="detail-value">{% if deal.discount_percentage %}{{ deal.discount_percentage }}%{% else %}N/A{% endif %}</div>
+                </div>
+                <div class="col-md-3">
                     <div class="detail-label">Original Total</div>
                     <div class="detail-value" style="color:#94a3b8;text-decoration:line-through">Rs {{ original_total|floatformat:0 }}</div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="detail-label">Savings</div>
                     <div class="detail-value" style="color:#22c55e">{% if savings > 0 %}Rs {{ savings|floatformat:0 }}{% else %}N/A{% endif %}</div>
                 </div>
