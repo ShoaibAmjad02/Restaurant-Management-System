@@ -499,6 +499,19 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
         el.style.background = "rgba(255,255,255,.04)";
     });
 
+    // Fetch active offer discount info for display
+    window.activeOfferDiscount = 0;
+    window.activeOfferPct = 0;
+    fetch('/users/offers/active-data/')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.active) {
+            window.activeOfferPct = data.discount_percentage;
+            window.activeOfferDiscount = subtotal * data.discount_percentage / 100;
+        }
+    })
+    .catch(function() {});
+
     // Fetch loyalty card info
     const loyaltyDisplay = document.getElementById("loyaltyPointsDisplay");
     loyaltyDisplay.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking...';
