@@ -53,6 +53,8 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
 .status-preparing{background:rgba(59,130,246,.15);color:#3b82f6}
 .status-ready{background:rgba(249,115,22,.15);color:#f97316}
 .status-delivered{background:rgba(34,197,94,.15);color:#22c55e}
+.section-heading h4{font-size:18px;font-weight:600;color:#f1f5f9;margin:0 0 4px}
+.section-heading .section-divider{border-color:rgba(245,158,11,.3);margin:0 0 16px;opacity:1}
 .quick-action-btn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;text-align:center;transition:.2s;color:#e2e8f0;text-decoration:none;display:block}
 .quick-action-btn:hover{background:rgba(245,158,11,.1);border-color:#f59e0b;color:#f59e0b;transform:translateY(-3px)}
 .quick-action-btn i{font-size:28px;margin-bottom:8px;display:block}
@@ -109,7 +111,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Section -->
+    <div class="section-heading" data-aos="fade-up">
+        <h4><i class="bi bi-bar-chart-line me-2"></i>Stats</h4>
+        <hr class="section-divider">
+    </div>
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="0">
             <div class="stat-card gradient-revenue" data-bs-toggle="modal" data-bs-target="#revenueModal" style="cursor:pointer">
@@ -147,115 +153,123 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
             </div>
         </div>
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
-            <div class="stat-card gradient-tables">
-                <div class="stat-value">{{ tables_count }}</div>
-                <div class="stat-label">Tables</div>
-                <i class="bi bi-layout-three-columns stat-icon"></i>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
-            <div class="stat-card gradient-foods">
-                <div class="stat-value">{{ foods_count }}</div>
-                <div class="stat-label">Products</div>
-                <i class="bi bi-cup-hot stat-icon"></i>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
             <div class="stat-card gradient-customers">
                 <div class="stat-value">{{ customers_count }}</div>
                 <div class="stat-label">Customers</div>
                 <i class="bi bi-person-badge stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
             <div class="stat-card gradient-tax-total" data-bs-toggle="modal" data-bs-target="#taxModal" style="cursor:pointer">
                 <div class="stat-value">Rs {{ total_tax|floatformat:0 }}</div>
                 <div class="stat-label">Total Tax Collected</div>
                 <i class="bi bi-receipt-cutoff stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
             <div class="stat-card gradient-tax-card">
                 <div class="stat-value">Rs {{ card_tax|floatformat:0 }}</div>
                 <div class="stat-label">Card Tax (5%)</div>
                 <i class="bi bi-credit-card stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1000">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
             <div class="stat-card gradient-tax-cash">
                 <div class="stat-value">Rs {{ cash_tax|floatformat:0 }}</div>
                 <div class="stat-label">Cash Tax (18%)</div>
                 <i class="bi bi-cash stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1100">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
             <div class="stat-card gradient-active" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
                 <div class="stat-value">{{ loyalty_cards_count }}</div>
                 <div class="stat-label">Total Loyalty Cards</div>
                 <i class="bi bi-star stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1200">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1000">
             <div class="stat-card gradient-delivered" style="background:linear-gradient(135deg,#22c55e,#16a34a)">
                 <div class="stat-value">{{ loyalty_points_earned }}</div>
                 <div class="stat-label">Total Points Earned</div>
                 <i class="bi bi-graph-up-arrow stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1300">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1100">
             <div class="stat-card gradient-orders" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
                 <div class="stat-value">{{ loyalty_points_redeemed }}</div>
                 <div class="stat-label">Total Points Redeemed</div>
                 <i class="bi bi-graph-down-arrow stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1400">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1200">
             <div class="stat-card gradient-kitchen" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">
                 <div class="stat-value">{{ loyalty_active }}</div>
                 <div class="stat-label">Active Cards</div>
                 <i class="bi bi-check2-circle stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1500">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1300">
             <div class="stat-card" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
                 <div class="stat-value">{{ total_offers }}</div>
                 <div class="stat-label">Total Offers</div>
                 <i class="bi bi-megaphone stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1600">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1400">
             <div class="stat-card" style="background:linear-gradient(135deg,#22c55e,#16a34a)">
                 <div class="stat-value">{{ active_offers }}</div>
                 <div class="stat-label">Active Offers</div>
                 <i class="bi bi-check-circle stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1700">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1500">
             <div class="stat-card" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
                 <div class="stat-value">{{ expired_offers }}</div>
                 <div class="stat-label">Expired Offers</div>
                 <i class="bi bi-clock-history stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1800">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1600">
             <div class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#a855f7)">
                 <div class="stat-value">{{ total_deals }}</div>
                 <div class="stat-label">Today's Deals</div>
                 <i class="bi bi-fire stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1900">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1700">
             <div class="stat-card" style="background:linear-gradient(135deg,#14b8a6,#06b6d4)">
                 <div class="stat-value">{{ offer_discount_given }}</div>
                 <div class="stat-label">Offer Usage Count</div>
                 <i class="bi bi-graph-up stat-icon"></i>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="2000">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1800">
             <div class="stat-card" style="background:linear-gradient(135deg,#f97316,#ea580c)">
                 <div class="stat-value">Rs {{ offer_usage|floatformat:0 }}</div>
                 <div class="stat-label">Discount Given</div>
                 <i class="bi bi-cash-coin stat-icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Related to Inventory Section -->
+    <div class="section-heading" data-aos="fade-up">
+        <h4><i class="bi bi-box-seam me-2"></i>Stats Related to Inventory</h4>
+        <hr class="section-divider">
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="0">
+            <div class="stat-card gradient-tables">
+                <div class="stat-value">{{ tables_count }}</div>
+                <div class="stat-label">Tables</div>
+                <i class="bi bi-layout-three-columns stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card gradient-foods">
+                <div class="stat-value">{{ foods_count }}</div>
+                <div class="stat-label">Products</div>
+                <i class="bi bi-cup-hot stat-icon"></i>
             </div>
         </div>
     </div>

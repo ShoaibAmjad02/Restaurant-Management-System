@@ -137,6 +137,18 @@ def logout_view(request):
 
 
 # =========================
+# HOME PAGE
+# =========================
+def home_view(request):
+    active_offer = _get_active_time_offer()
+    active_deal = _get_active_deal()
+    return render(request, "index.html", {
+        "active_offer": active_offer,
+        "active_deal": active_deal,
+    })
+
+
+# =========================
 # QR MENU ACCESS
 # =========================
 @csrf_exempt
@@ -166,21 +178,72 @@ def qr_menu_view(request):
         return render(request, "food-delivery/qr_error.html", {"error": "Invalid QR code link."})
 
     products = Food.objects.filter(available=1)
+    active_offer = _get_active_time_offer()
+    active_deal = _get_active_deal()
 
     return render(request, "food-delivery/restaurant-detail.html", {
         "products": products,
         "table_no": table.table_no,
         "is_qr_customer": True,
+        "active_offer": active_offer,
+        "active_deal": active_deal,
     })
 
 
 @login_required(login_url='food-delivery:food_delivery_login')
 def food_delivery_restaurant_detail(request):
     products = Food.objects.filter(available=1)
+    active_offer = _get_active_time_offer()
+    active_deal = _get_active_deal()
     return render(request, 'food-delivery/restaurant-detail.html', {
         "products": products,
         "table_no": request.session.get("table_no"),
+        "active_offer": active_offer,
+        "active_deal": active_deal,
     })
+
+
+# =========================
+# OFFER HELPERS
+# =========================
+
+def _get_active_time_offer():
+    """Get active TimeBasedOffer by directly checking time range.
+    Does NOT rely on the is_active field (avoids stale-data issues).
+    Also updates is_active for future queries."""
+    now = timezone.now()
+    for offer in TimeBasedOffer.objects.all():
+        try:
+            start = timezone.make_aware(datetime.combine(offer.start_date, offer.start_time))
+            end = timezone.make_aware(datetime.combine(offer.end_date, offer.end_time))
+        except Exception:
+            continue
+        should_be_active = start <= now <= end
+        if should_be_active != offer.is_active:
+            offer.is_active = should_be_active
+            offer.save(update_fields=["is_active"])
+        if should_be_active:
+            return offer
+    return None
+
+
+def _get_active_deal():
+    """Get active TodayDeal by directly checking time range.
+    Does NOT rely on the is_active field."""
+    now = timezone.now()
+    for deal in TodayDeal.objects.all():
+        try:
+            start = timezone.make_aware(datetime.combine(deal.start_date, deal.start_time))
+            end = timezone.make_aware(datetime.combine(deal.end_date, deal.end_time))
+        except Exception:
+            continue
+        should_be_active = start <= now <= end
+        if should_be_active != deal.is_active:
+            deal.is_active = should_be_active
+            deal.save(update_fields=["is_active"])
+        if should_be_active:
+            return deal
+    return None
 
 
 # =========================
@@ -205,7 +268,8 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
     if deal_id:
         try:
             deal_obj = TodayDeal.objects.get(id=deal_id)
-            deal_obj.check_and_update_status()
+            if not deal_obj.is_active:
+                _get_active_deal()
             if not deal_obj.is_active:
                 deal_obj = None
         except TodayDeal.DoesNotExist:
@@ -217,12 +281,10 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
     qr_offer_discount_amt = 0
 
     if not deal_obj:
-        time_offer = TimeBasedOffer.objects.filter(is_active=True).first()
+        time_offer = _get_active_time_offer()
         if time_offer:
-            time_offer.check_and_update_status()
-            if time_offer.is_active:
-                qr_offer_discount_pct = float(time_offer.discount_percentage)
-                qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
+            qr_offer_discount_pct = float(time_offer.discount_percentage)
+            qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
         else:
             is_qr_table_order = table_no is not None and user is None
             if is_qr_table_order:
@@ -1729,11 +1791,8 @@ def loyalty_transactions(request):
 # OFFERS & DEALS API
 # =========================
 def active_offer_data(request):
-    offer = TimeBasedOffer.objects.filter(is_active=True).first()
+    offer = _get_active_time_offer()
     if not offer:
-        return JsonResponse({"active": False})
-    offer.check_and_update_status()
-    if not offer.is_active:
         return JsonResponse({"active": False})
     now = timezone.now()
     end_dt = timezone.make_aware(
@@ -1757,11 +1816,8 @@ def active_offer_data(request):
 
 
 def active_deal_data(request):
-    deal = TodayDeal.objects.filter(is_active=True).first()
+    deal = _get_active_deal()
     if not deal:
-        return JsonResponse({"active": False})
-    deal.check_and_update_status()
-    if not deal.is_active:
         return JsonResponse({"active": False})
     now = timezone.now()
     end_dt = timezone.make_aware(
@@ -1812,16 +1868,8 @@ def active_deal_data(request):
 
 
 def offer_banner_data(request):
-    offer = TimeBasedOffer.objects.filter(is_active=True).first()
-    if offer:
-        offer.check_and_update_status()
-        if not offer.is_active:
-            offer = None
-    deal = TodayDeal.objects.filter(is_active=True).first()
-    if deal:
-        deal.check_and_update_status()
-        if not deal.is_active:
-            deal = None
+    offer = _get_active_time_offer()
+    deal = _get_active_deal()
     data = {"offer": None, "deal": None}
     if offer:
         end_dt = timezone.make_aware(
@@ -2082,7 +2130,8 @@ def deal_delete(request, pk):
 # =========================
 def public_deal_detail(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
-    deal.check_and_update_status()
+    if not deal.is_active:
+        _get_active_deal()
     if not deal.is_active:
         return render(request, "food-delivery/deal_detail.html", {"deal": None, "error": "This deal is no longer active."})
     deal_products = deal.products.all()
@@ -2104,19 +2153,24 @@ def public_deal_detail(request, pk):
         pct = float(deal.discount_percentage)
         deal_price = round(original_total - (original_total * pct / 100), 2)
         savings = original_total - deal_price
+    active_offer = _get_active_time_offer()
+    active_deal = _get_active_deal()
     return render(request, "food-delivery/deal_detail.html", {
         "deal": deal,
         "deal_products": deal_products,
         "original_total": original_total,
         "savings": savings,
         "deal_price": deal_price,
+        "active_offer": active_offer,
+        "active_deal": active_deal,
     })
 
 
 @login_required(login_url='food-delivery:food_delivery_login')
 def deal_checkout(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
-    deal.check_and_update_status()
+    if not deal.is_active:
+        _get_active_deal()
     if not deal.is_active:
         messages.error(request, "This deal is no longer active.")
         return redirect("/")

@@ -112,9 +112,50 @@
 </div>
 
 <script>
-var offerPopupShown = sessionStorage.getItem('offerPopupShown');
+{% if active_offer %}
+var SERVER_ACTIVE_OFFER = {
+    active: true,
+    id: {{ active_offer.id }},
+    title: '{{ active_offer.title|escapejs }}',
+    description: '{{ active_offer.description|escapejs }}',
+    discount_percentage: {{ active_offer.discount_percentage }},
+    banner_image: '{% if active_offer.banner_image %}{{ active_offer.banner_image.url }}{% endif %}',
+    background_color: '{{ active_offer.background_color|default:"#f59e0b" }}',
+    popup_image: '{% if active_offer.popup_image %}{{ active_offer.popup_image.url }}{% endif %}',
+    start_date: '{{ active_offer.start_date|date:"d-m-Y" }}',
+    start_time: '{{ active_offer.start_time|time:"h:i A" }}',
+    end_date: '{{ active_offer.end_date|date:"d-m-Y" }}',
+    end_time: '{{ active_offer.end_time|time:"h:i A" }}',
+    end_timestamp: Math.floor(new Date('{{ active_offer.end_date|date:"Y-m-d" }}T{{ active_offer.end_time|time:"H:i:s" }}Z').getTime() / 1000),
+};
+{% else %}
+var SERVER_ACTIVE_OFFER = null;
+{% endif %}
+
+{% if active_deal %}
+var SERVER_ACTIVE_DEAL = {
+    active: true,
+    id: {{ active_deal.id }},
+    title: '{{ active_deal.title|escapejs }}',
+    end_timestamp: Math.floor(new Date('{{ active_deal.end_date|date:"Y-m-d" }}T{{ active_deal.end_time|time:"H:i:s" }}Z').getTime() / 1000),
+};
+{% else %}
+var SERVER_ACTIVE_DEAL = null;
+{% endif %}
 
 function fetchActiveOffers() {
+    var items = [];
+    if (SERVER_ACTIVE_OFFER) {
+        items.push({ type: 'offer', data: SERVER_ACTIVE_OFFER });
+    }
+    if (SERVER_ACTIVE_DEAL) {
+        items.push({ type: 'deal', data: SERVER_ACTIVE_DEAL });
+    }
+    if (items.length > 0) {
+        renderOfferPopup(items);
+        return;
+    }
+    // Fallback: fetch from API
     fetch('/users/offers/active-data/')
         .then(function(r) { return r.json(); })
         .then(function(offerData) {
@@ -124,7 +165,7 @@ function fetchActiveOffers() {
                     var items = [];
                     if (offerData.active) items.push({ type: 'offer', data: offerData });
                     if (dealData.active) items.push({ type: 'deal', data: dealData });
-                    if (items.length > 0 && !offerPopupShown) {
+                    if (items.length > 0) {
                         renderOfferPopup(items);
                     }
                 });
@@ -161,15 +202,13 @@ function renderOfferPopup(items) {
 
     var overlay = document.getElementById('offerPopupOverlay');
     overlay.classList.add('show');
-    offerPopupShown = '1';
-    sessionStorage.setItem('offerPopupShown', '1');
     startCountdowns();
 }
 
 function buildOfferHTML(data) {
     var banner = data.banner_image
         ? '<img src="' + data.banner_image + '" class="offer-popup-banner" alt="' + data.title + '">'
-        : '<div class="offer-popup-banner" style="background:' + data.background_color + ';display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff">&#127881;</div>';
+        : '<div class="offer-popup-banner" style="background:' + data.background_color + ';display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff"><div style="font-size:48px;margin-bottom:4px">&#127881;</div><div style="font-size:16px;font-weight:700">Special Restaurant Offer</div></div>';
     return '<div class="offer-popup-body">'
         + banner
         + '<div class="offer-popup-discount">' + data.discount_percentage + '% OFF</div>'
@@ -184,7 +223,7 @@ function buildOfferHTML(data) {
 function buildDealHTML(data) {
     var img = data.deal_image
         ? '<img src="' + data.deal_image + '" class="offer-popup-banner" alt="' + data.title + '">'
-        : '<div class="offer-popup-banner" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff">&#127860;</div>';
+        : '<div class="offer-popup-banner" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff"><div style="font-size:48px;margin-bottom:4px">&#127860;</div><div style="font-size:16px;font-weight:700">Special Restaurant Offer</div></div>';
 
     var productsHtml = '';
     if (data.products && data.products.length > 0) {

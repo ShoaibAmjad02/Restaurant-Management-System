@@ -6,11 +6,11 @@ from django.urls import include
 from django.urls import path
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
-from megaone.users.views import qr_menu_view
+from megaone.users.views import qr_menu_view, home_view
 
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="index.html"), name="home"),
+    path("", home_view, name="home"),
 
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
