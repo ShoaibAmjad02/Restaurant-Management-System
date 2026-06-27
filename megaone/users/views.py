@@ -1721,6 +1721,9 @@ def active_offer_data(request):
     offer = TimeBasedOffer.objects.filter(is_active=True).first()
     if not offer:
         return JsonResponse({"active": False})
+    offer.check_and_update_status()
+    if not offer.is_active:
+        return JsonResponse({"active": False})
     now = timezone.now()
     end_dt = timezone.make_aware(
         datetime.combine(offer.end_date, offer.end_time)
