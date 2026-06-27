@@ -2009,6 +2009,20 @@ def deal_checkout(request, pk):
     if not deal.is_active:
         messages.error(request, "This deal is no longer active.")
         return redirect("/")
-    return render(request, "food-delivery/restaurant-detail.html", {
-        "deal_checkout": deal.id,
-    })
+    if request.method == "POST":
+        deal_products = list(deal.products.all())
+        if deal.free_product:
+            deal_products.append(deal.free_product)
+        cart_data = []
+        for p in deal_products:
+            cart_data.append({
+                "id": p.id,
+                "name": p.name,
+                "price": float(p.price),
+                "image": p.image.url if p.image else "/static/food-delivery/img/item1.png",
+                "qty": 1,
+            })
+        request.session["deal_checkout_cart"] = cart_data
+        request.session["deal_checkout_id"] = deal.id
+        return redirect("users:food_delivery_restaurant_detail")
+    return redirect("users:public_deal_detail", pk=pk)
