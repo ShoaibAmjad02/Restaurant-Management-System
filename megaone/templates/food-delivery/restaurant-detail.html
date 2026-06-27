@@ -589,12 +589,22 @@ function selectPayment(method) {
 
     document.getElementById("loyaltyBreakdownSection").style.display = "none";
     document.getElementById("secondaryPaymentSection").style.display = "none";
+    // Show discount if active offer exists
+    var afterDiscount = subtotal;
+    if (window.activeOfferDiscount > 0) {
+        document.getElementById("paymentOfferDiscountDisplay").style.display = "flex";
+        document.getElementById("paymentOfferDiscountAmt").innerText = "-Rs " + window.activeOfferDiscount.toFixed(0);
+        afterDiscount = subtotal - window.activeOfferDiscount;
+    } else {
+        document.getElementById("paymentOfferDiscountDisplay").style.display = "none";
+    }
+
     document.getElementById("paymentTaxDisplay").style.display = "flex";
     let pct = method === "card" ? 5 : 18;
-    const tax = subtotal * pct / 100;
+    const tax = afterDiscount * pct / 100;
     document.getElementById("paymentTaxDisplay").querySelector("span:first-child").innerText = "Tax (" + pct + "%)";
     document.getElementById("paymentTaxAmount").innerText = "Rs " + tax.toFixed(0);
-    document.getElementById("paymentGrandTotal").innerText = "Rs " + (subtotal + tax).toFixed(0);
+    document.getElementById("paymentGrandTotal").innerText = "Rs " + (afterDiscount + tax).toFixed(0);
     document.getElementById("payNowBtn").disabled = false;
 }
 
