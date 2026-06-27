@@ -210,7 +210,8 @@ function buildDealHTML(data) {
         + priceHtml
         + '<div class="offer-popup-timer" id="dealCountdownContainer"><div class="offer-popup-timer-item"><span class="num" id="dealCdHours">00</span><span class="lbl">Hours</span></div><div class="offer-popup-timer-item"><span class="num" id="dealCdMinutes">00</span><span class="lbl">Minutes</span></div><div class="offer-popup-timer-item"><span class="num" id="dealCdSeconds">00</span><span class="lbl">Seconds</span></div></div>'
         + '<a href="/users/deals/' + data.id + '/public/" class="offer-popup-btn view-deal">&#128073; View Deal</a>'
-        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:12px 0 0">Valid Until: ' + data.end_date + ' at ' + data.end_time + '</p>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:8px 0 0">Start: ' + data.start_time + '</p>'
+        + '<p style="text-align:center;font-size:11px;color:#64748b;margin:2px 0 0">End: ' + data.end_date + ' at ' + data.end_time + '</p>'
         + '</div>';
 }
 
