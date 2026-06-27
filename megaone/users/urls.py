@@ -130,4 +130,8 @@ urlpatterns = [
     path("deals/<int:pk>/", views.deal_detail, name="deal_detail"),
     path("deals/<int:pk>/edit/", views.deal_edit, name="deal_edit"),
     path("deals/<int:pk>/delete/", views.deal_delete, name="deal_delete"),
+
+    # Public Deal Views
+    path("deals/<int:pk>/public/", views.public_deal_detail, name="public_deal_detail"),
+    path("deals/<int:pk>/checkout/", views.deal_checkout, name="deal_checkout"),
 ]
