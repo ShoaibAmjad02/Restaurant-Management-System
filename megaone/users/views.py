@@ -2039,7 +2039,7 @@ def public_deal_detail(request, pk):
     })
 
 
-@login_required
+@login_required(login_url='food-delivery:food_delivery_login')
 def deal_checkout(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
     if not deal.is_active:
