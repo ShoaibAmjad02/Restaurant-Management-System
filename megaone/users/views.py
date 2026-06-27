@@ -236,6 +236,10 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
                         qr_offer_discount_pct = float(qr_offer.discount_percentage)
                         qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
 
+    # For deals, use deal discount in place of offer discount
+    if deal_obj and deal_discount_amt > 0:
+        qr_offer_discount_amt = deal_discount_amt
+
     # ---------- Loyalty ----------
     is_loyalty = payment_method == "loyalty"
     loyalty_points_used = 0
