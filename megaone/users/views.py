@@ -198,34 +198,31 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         price = float(item["price"])
         subtotal_amount += qty * price
 
-    # ---------- Today's Deal Discount ----------
+    # ---------- Today's Deal ----------
     deal_obj = None
     deal_discount_amt = 0
     deal_id = request.session.pop("deal_checkout_id", None) if request else None
     if deal_id:
         try:
-            deal_obj = TodayDeal.objects.get(id=deal_id, is_active=True)
-            deal_products = list(deal_obj.products.all())
-            if deal_obj.free_product:
-                deal_products.append(deal_obj.free_product)
-            original_total = sum(float(p.price) for p in deal_products)
-            if deal_obj.combo_price and original_total > 0:
-                deal_discount_amt = original_total - float(deal_obj.combo_price)
-                if deal_discount_amt < 0:
-                    deal_discount_amt = 0
+            deal_obj = TodayDeal.objects.get(id=deal_id)
+            deal_obj.check_and_update_status()
+            if not deal_obj.is_active:
+                deal_obj = None
         except TodayDeal.DoesNotExist:
             pass
         request.session.pop("deal_checkout_cart", None)
 
-    # ---------- Offer Discount ----------
+    # ---------- Offer Discount (all payment methods, not just non-loyalty) ----------
     qr_offer_discount_pct = 0
     qr_offer_discount_amt = 0
 
-    if payment_method != "loyalty" and not deal_obj:
+    if not deal_obj:
         time_offer = TimeBasedOffer.objects.filter(is_active=True).first()
         if time_offer:
-            qr_offer_discount_pct = float(time_offer.discount_percentage)
-            qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
+            time_offer.check_and_update_status()
+            if time_offer.is_active:
+                qr_offer_discount_pct = float(time_offer.discount_percentage)
+                qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
         else:
             is_qr_table_order = table_no is not None and user is None
             if is_qr_table_order:
@@ -236,15 +233,40 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
                         qr_offer_discount_pct = float(qr_offer.discount_percentage)
                         qr_offer_discount_amt = round(subtotal_amount * qr_offer_discount_pct / 100, 2)
 
-    # For deals, use deal discount in place of offer discount
-    if deal_obj and deal_discount_amt > 0:
-        qr_offer_discount_amt = deal_discount_amt
+    # ---------- Apply Deal Pricing ----------
+    effective_subtotal = subtotal_amount
+    if deal_obj:
+        deal_products = list(deal_obj.products.all())
+        original_total = sum(float(p.price) for p in deal_products)
+        if deal_obj.free_product:
+            original_total += float(deal_obj.free_product.price)
+
+        if deal_obj.deal_type == 'combo_price' and deal_obj.combo_price:
+            combo = float(deal_obj.combo_price)
+            deal_discount_amt = original_total - combo
+            if deal_discount_amt < 0:
+                deal_discount_amt = 0
+            effective_subtotal = combo
+            qr_offer_discount_amt = deal_discount_amt
+        elif deal_obj.deal_type == 'free_product' and deal_obj.free_product:
+            free_price = float(deal_obj.free_product.price)
+            deal_discount_amt = free_price
+            effective_subtotal = original_total - free_price
+            qr_offer_discount_amt = deal_discount_amt
+        elif deal_obj.deal_type == 'percentage' and deal_obj.discount_percentage:
+            pct = float(deal_obj.discount_percentage)
+            deal_discount_amt = round(original_total * pct / 100, 2)
+            effective_subtotal = original_total - deal_discount_amt
+            qr_offer_discount_amt = deal_discount_amt
+        else:
+            effective_subtotal = original_total
+        qr_offer_discount_pct = 0
 
     # ---------- Loyalty ----------
     is_loyalty = payment_method == "loyalty"
     loyalty_points_used = 0
     loyalty_card = None
-    remaining_amount = subtotal_amount - qr_offer_discount_amt
+    remaining_amount = effective_subtotal
     if remaining_amount < 0:
         remaining_amount = 0
     if is_loyalty and user:
@@ -282,7 +304,7 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         customer_timezone=customer_timezone,
         tax_percentage=tax_pct,
         tax_amount=tax_amount,
-        subtotal_amount=subtotal_amount,
+        subtotal_amount=effective_subtotal,
         total_amount=grand_total,
         table_no=table_no,
         customer_session_id=customer_session,
@@ -297,10 +319,12 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
     for item in cart:
         qty = int(item["qty"])
         price = float(item["price"])
-        subtotal = qty * price
+        is_free = item.get("is_free", False)
+        display_price = 0 if is_free else price
+        subtotal = qty * display_price
         InvoiceItem.objects.create(
             invoice=invoice, product_name=item["name"],
-            price=price, quantity=qty, subtotal=subtotal,
+            price=display_price, quantity=qty, subtotal=subtotal,
         )
 
     order = KitchenOrder.objects.create(
