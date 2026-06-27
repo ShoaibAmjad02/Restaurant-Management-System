@@ -2112,5 +2112,6 @@ def clear_deal_cart(request):
     if request.method == "POST":
         request.session.pop("deal_checkout_cart", None)
         request.session.pop("deal_checkout_id", None)
+        request.session.pop("deal_effective_total", None)
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
