@@ -128,9 +128,19 @@ body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0c0e1a 0%
             <span class="summary-label">Subtotal</span>
             <span class="summary-value">Rs {{ subtotal|floatformat:0 }}</span>
         </div>
-        {% if invoice.qr_offer_discount_percentage and invoice.qr_offer_discount_amount %}
+        {% if invoice.deal %}
         <div class="summary-row">
-            <span class="summary-label" style="color:#f59e0b">QR Table Offer ({{ invoice.qr_offer_discount_percentage|floatformat:0 }}%)</span>
+            <span class="summary-label" style="color:#8b5cf6">Today's Deal: {{ invoice.deal.title }}</span>
+        </div>
+        {% endif %}
+        {% if invoice.deal_discount_amount and invoice.deal_discount_amount > 0 %}
+        <div class="summary-row">
+            <span class="summary-label" style="color:#f59e0b">Deal Discount</span>
+            <span class="summary-value" style="color:#f59e0b">-Rs {{ invoice.deal_discount_amount|floatformat:0 }}</span>
+        </div>
+        {% elif invoice.qr_offer_discount_percentage and invoice.qr_offer_discount_amount %}
+        <div class="summary-row">
+            <span class="summary-label" style="color:#f59e0b">Discount ({{ invoice.qr_offer_discount_percentage|floatformat:0 }}%)</span>
             <span class="summary-value" style="color:#f59e0b">-Rs {{ invoice.qr_offer_discount_amount|floatformat:0 }}</span>
         </div>
         {% endif %}
