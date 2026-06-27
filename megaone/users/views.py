@@ -2026,3 +2026,12 @@ def deal_checkout(request, pk):
         request.session["deal_checkout_id"] = deal.id
         return redirect("users:food_delivery_restaurant_detail")
     return redirect("users:public_deal_detail", pk=pk)
+
+
+@csrf_exempt
+def clear_deal_cart(request):
+    if request.method == "POST":
+        request.session.pop("deal_checkout_cart", None)
+        request.session.pop("deal_checkout_id", None)
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False}, status=400)
