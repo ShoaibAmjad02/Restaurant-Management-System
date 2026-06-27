@@ -677,25 +677,33 @@ def invoice_pdf(request, uuid_token):
     sub_amt = float(invoice.subtotal_amount) if invoice.subtotal_amount else subtotal
     qr_disc_pct = float(invoice.qr_offer_discount_percentage) if invoice.qr_offer_discount_percentage else 0
     qr_disc_amt = float(invoice.qr_offer_discount_amount) if invoice.qr_offer_discount_amount else 0
+    deal_disc_amt = float(invoice.deal_discount_amount) if invoice.deal_discount_amount else 0
+
+    if invoice.deal:
+        pdf.setFont("Helvetica", 7)
+        pdf.setFillColor(HexColor("#8b5cf6"))
+        pdf.drawString(MARGIN, y, invoice.deal.title[:25])
+        y -= 4 * mm
+        if deal_disc_amt > 0:
+            pdf.setFont("Helvetica", 6)
+            pdf.setFillColor(GRAY)
+            pdf.drawString(MARGIN, y, "Savings")
+            pdf.drawRightString(right, y, f"Rs {deal_disc_amt:.0f}")
+            y -= 4 * mm
+        pdf.setFillColor(DARK)
 
     pdf.setFont("Helvetica", 8)
     pdf.drawString(MARGIN, y, "Subtotal")
     pdf.drawRightString(right, y, f"Rs {sub_amt:.0f}")
     y -= 5 * mm
 
-    deal_disc_amt = float(invoice.deal_discount_amount) if invoice.deal_discount_amount else 0
-    if deal_disc_amt > 0:
-        pdf.setFont("Helvetica", 7)
-        pdf.setFillColor(HexColor("#8b5cf6"))
-        pdf.drawString(MARGIN, y, f"Deal Discount")
-        pdf.drawRightString(right, y, f"-Rs {deal_disc_amt:.0f}")
-        y -= 5 * mm
-    elif qr_disc_pct > 0 and qr_disc_amt > 0:
-        pdf.setFont("Helvetica", 7)
-        pdf.setFillColor(HexColor("#f59e0b"))
-        pdf.drawString(MARGIN, y, f"Discount ({qr_disc_pct:.0f}%)")
-        pdf.drawRightString(right, y, f"-Rs {qr_disc_amt:.0f}")
-        y -= 5 * mm
+    if not invoice.deal:
+        if qr_disc_pct > 0 and qr_disc_amt > 0:
+            pdf.setFont("Helvetica", 7)
+            pdf.setFillColor(HexColor("#f59e0b"))
+            pdf.drawString(MARGIN, y, f"Discount ({qr_disc_pct:.0f}%)")
+            pdf.drawRightString(right, y, f"-Rs {qr_disc_amt:.0f}")
+            y -= 5 * mm
 
     pdf.setFont("Helvetica", 7)
     pdf.setFillColor(GRAY)
