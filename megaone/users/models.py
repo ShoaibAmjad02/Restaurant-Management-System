@@ -178,6 +178,8 @@ class Invoice(models.Model):
     loyalty_points_processed = models.BooleanField(default=False, help_text="Prevent duplicate point processing")
     qr_offer_discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="QR Table Offer discount %")
     qr_offer_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="QR Table Offer discount amount")
+    deal = models.ForeignKey("TodayDeal", on_delete=models.SET_NULL, null=True, blank=True, help_text="Associated Today's Deal")
+    deal_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Today's Deal discount amount")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
