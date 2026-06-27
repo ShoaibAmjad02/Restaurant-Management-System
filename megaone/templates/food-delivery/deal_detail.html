@@ -130,7 +130,7 @@ body{background:#0f172a;color:#e2e8f0}
             <div class="timer-item"><span class="num" id="detCdSeconds">00</span><span class="lbl">Seconds</span></div>
         </div>
 
-        {% if deal.combo_price %}
+        {% if deal.deal_type == 'combo_price' and deal.combo_price %}
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="price-card text-center">
@@ -142,6 +142,48 @@ body{background:#0f172a;color:#e2e8f0}
                 <div class="price-card text-center">
                     <div class="label">Deal Price</div>
                     <div class="value deal">Rs {{ deal.combo_price }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">You Save</div>
+                    <div class="value savings">{% if savings > 0 %}Rs {{ savings|floatformat:0 }}{% else %}N/A{% endif %}</div>
+                </div>
+            </div>
+        </div>
+        {% elif deal.deal_type == 'free_product' and deal.free_product %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">Original Price</div>
+                    <div class="value original">Rs {{ original_total|floatformat:0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">You Pay</div>
+                    <div class="value deal">Rs {{ deal_price|floatformat:0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">Free Item</div>
+                    <div class="value savings">{{ deal.free_product.name }}</div>
+                </div>
+            </div>
+        </div>
+        {% elif deal.deal_type == 'percentage' and deal.discount_percentage %}
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">Original Price</div>
+                    <div class="value original">Rs {{ original_total|floatformat:0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="price-card text-center">
+                    <div class="label">{{ deal.discount_percentage }}% OFF</div>
+                    <div class="value deal">Rs {{ deal_price|floatformat:0 }}</div>
                 </div>
             </div>
             <div class="col-md-4">

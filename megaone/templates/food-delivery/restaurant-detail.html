@@ -502,7 +502,7 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
     document.getElementById("secondaryPaymentSection").style.display = "none";
     document.getElementById("loyaltyPointsInput").value = "0";
 
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const subtotal = getCartSubtotal();
     document.getElementById("paymentCartCount").innerText = cart.reduce((c, i) => c + i.qty, 0);
     document.getElementById("paymentSubtotal").innerText = "Rs " + subtotal.toFixed(0);
     document.getElementById("paymentTaxDisplay").style.display = "none";
@@ -560,6 +560,14 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
     new bootstrap.Modal(document.getElementById("paymentModal")).show();
 });
 
+function getDiscountedSubtotal() {
+    var subtotal = getCartSubtotal();
+    if (window.activeOfferDiscount > 0 && !dealEffectiveTotal) {
+        return subtotal - window.activeOfferDiscount;
+    }
+    return subtotal;
+}
+
 function selectPayment(method) {
     selectedPayment = method;
     selectedSecondary = null;
@@ -573,7 +581,8 @@ function selectPayment(method) {
     el.style.borderColor = borderColor;
     el.style.background = bgColor;
 
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    var subtotal = getCartSubtotal();
+    var afterDiscount = getDiscountedSubtotal();
 
     if (method === "loyalty") {
         document.getElementById("paymentTaxDisplay").style.display = "none";
@@ -586,7 +595,7 @@ function selectPayment(method) {
 
         if (loyaltyPointsData && loyaltyPointsData.has_card) {
             const avail = loyaltyPointsData.remaining_points;
-            const maxUse = Math.min(avail, subtotal);
+            const maxUse = Math.min(avail, afterDiscount);
             document.getElementById("loyaltyAvailablePts").innerText = avail;
             document.getElementById("loyaltyPointsInput").max = maxUse;
             document.getElementById("loyaltyPointsInput").value = maxUse > 0 ? maxUse : 0;
@@ -603,11 +612,9 @@ function selectPayment(method) {
     document.getElementById("loyaltyBreakdownSection").style.display = "none";
     document.getElementById("secondaryPaymentSection").style.display = "none";
     // Show discount if active offer exists
-    var afterDiscount = subtotal;
-    if (window.activeOfferDiscount > 0) {
+    if (window.activeOfferDiscount > 0 && !dealEffectiveTotal) {
         document.getElementById("paymentOfferDiscountDisplay").style.display = "flex";
         document.getElementById("paymentOfferDiscountAmt").innerText = "-Rs " + window.activeOfferDiscount.toFixed(0);
-        afterDiscount = subtotal - window.activeOfferDiscount;
     } else {
         document.getElementById("paymentOfferDiscountDisplay").style.display = "none";
     }
@@ -622,12 +629,13 @@ function selectPayment(method) {
 }
 
 function updateLoyaltyCalc() {
-    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    var subtotal = getCartSubtotal();
+    var afterOffer = getDiscountedSubtotal();
     const avail = loyaltyPointsData ? loyaltyPointsData.remaining_points : 0;
     const input = document.getElementById("loyaltyPointsInput");
     const errorEl = document.getElementById("loyaltyPointsError");
     let val = parseInt(input.value) || 0;
-    const maxAllowed = Math.min(avail, subtotal);
+    const maxAllowed = Math.min(avail, afterOffer);
 
     if (val < 0) { val = 0; input.value = 0; }
     if (val > avail) {
@@ -635,16 +643,16 @@ function updateLoyaltyCalc() {
         errorEl.innerText = "You only have " + avail + " loyalty points available.";
         val = avail;
         input.value = avail;
-    } else if (val > subtotal) {
-        val = subtotal;
-        input.value = subtotal;
+    } else if (val > afterOffer) {
+        val = afterOffer;
+        input.value = afterOffer;
         errorEl.style.display = "none";
     } else {
         errorEl.style.display = "none";
     }
 
     const used = val;
-    const remaining = subtotal - used;
+    const remaining = afterOffer - used;
     let secondaryTax = 0;
     let secondaryPct = 0;
     let finalPayable = remaining;
