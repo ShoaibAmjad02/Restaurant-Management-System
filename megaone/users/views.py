@@ -1752,10 +1752,23 @@ def offer_banner_data(request):
         end_dt = timezone.make_aware(
             datetime.combine(deal.end_date, deal.end_time)
         )
+        deal_products = deal.products.all()
+        original_total = sum(float(p.price) for p in deal_products)
+        if deal.free_product:
+            original_total += float(deal.free_product.price)
+        savings = 0
+        if deal.combo_price and original_total > 0:
+            savings = original_total - float(deal.combo_price)
+            if savings < 0:
+                savings = 0
         data["deal"] = {
+            "id": deal.id,
             "title": deal.title,
             "description": deal.description or "",
             "deal_banner": deal.deal_banner.url if deal.deal_banner else "",
+            "combo_price": float(deal.combo_price) if deal.combo_price else None,
+            "original_total": original_total,
+            "savings": savings,
             "end_timestamp": int(end_dt.timestamp()),
         }
     return JsonResponse(data)
