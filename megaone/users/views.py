@@ -2066,24 +2066,43 @@ def public_deal_detail(request, pk):
 @login_required(login_url='food-delivery:food_delivery_login')
 def deal_checkout(request, pk):
     deal = get_object_or_404(TodayDeal, pk=pk)
+    deal.check_and_update_status()
     if not deal.is_active:
         messages.error(request, "This deal is no longer active.")
         return redirect("/")
     if request.method == "POST":
         deal_products = list(deal.products.all())
-        if deal.free_product:
-            deal_products.append(deal.free_product)
+        original_total = sum(float(p.price) for p in deal_products)
+        free_product = deal.free_product
+        if free_product:
+            deal_products.append(free_product)
+            original_total += float(free_product.price)
+
         cart_data = []
+        effective_total = original_total
         for p in deal_products:
+            is_free = free_product and p.id == free_product.id
+            price = 0 if is_free else float(p.price)
             cart_data.append({
                 "id": p.id,
                 "name": p.name,
-                "price": float(p.price),
+                "price": price,
                 "image": p.image.url if p.image else "/static/food-delivery/img/item1.png",
                 "qty": 1,
+                "is_free": is_free,
             })
+
+        if deal.deal_type == 'combo_price' and deal.combo_price:
+            effective_total = float(deal.combo_price)
+        elif deal.deal_type == 'free_product' and free_product:
+            effective_total = original_total - float(free_product.price)
+        elif deal.deal_type == 'percentage' and deal.discount_percentage:
+            pct = float(deal.discount_percentage)
+            effective_total = round(original_total - (original_total * pct / 100), 2)
+
         request.session["deal_checkout_cart"] = json.dumps(cart_data)
         request.session["deal_checkout_id"] = deal.id
+        request.session["deal_effective_total"] = effective_total
         return redirect("users:food_delivery_restaurant_detail")
     return redirect("users:public_deal_detail", pk=pk)
 
