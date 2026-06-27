@@ -75,6 +75,9 @@ class TimeBasedOffer(models.Model):
 class TodayDeal(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    products = models.ManyToManyField("menu.Food", blank=True, related_name="deals")
+    free_product = models.ForeignKey("menu.Food", on_delete=models.SET_NULL, null=True, blank=True, related_name="free_deals")
+    combo_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Special combo price for the deal")
     deal_image = models.ImageField(upload_to="deal_images/", blank=True, null=True)
     deal_banner = models.ImageField(upload_to="deal_banners/", blank=True, null=True)
     start_date = models.DateField()
