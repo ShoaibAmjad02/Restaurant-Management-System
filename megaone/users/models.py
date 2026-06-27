@@ -78,6 +78,7 @@ class TodayDeal(models.Model):
     products = models.ManyToManyField("menu.Food", blank=True, related_name="deals")
     free_product = models.ForeignKey("menu.Food", on_delete=models.SET_NULL, null=True, blank=True, related_name="free_deals")
     combo_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Special combo price for the deal")
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Discount percentage for percentage-based deals")
     deal_image = models.ImageField(upload_to="deal_images/", blank=True, null=True)
     deal_banner = models.ImageField(upload_to="deal_banners/", blank=True, null=True)
     start_date = models.DateField()
@@ -87,6 +88,16 @@ class TodayDeal(models.Model):
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def deal_type(self):
+        if self.free_product:
+            return 'free_product'
+        elif self.combo_price:
+            return 'combo_price'
+        elif self.discount_percentage:
+            return 'percentage'
+        return None
 
     def check_and_update_status(self):
         now = tz_utils.now()
