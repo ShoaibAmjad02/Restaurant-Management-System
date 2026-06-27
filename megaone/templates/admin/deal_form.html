@@ -35,11 +35,37 @@
         <div class="row g-4">
             <div class="col-12">
                 <label>Deal Title</label>
-                <input type="text" name="title" class="form-control" value="{{ deal.title|default:'' }}" required placeholder="e.g. 1 Pizza + Free Drink">
+                <input type="text" name="title" class="form-control" value="{{ deal.title|default:'' }}" required placeholder="e.g. Pizza Combo">
             </div>
             <div class="col-12">
                 <label>Deal Description</label>
                 <textarea name="description" class="form-control" placeholder="Describe the deal...">{{ deal.description|default:'' }}</textarea>
+            </div>
+            <div class="col-md-6">
+                <label>Select Products (Combo Items)</label>
+                <select name="products" class="form-select" multiple style="min-height:120px">
+                    {% for product in products %}
+                    <option value="{{ product.id }}" {% if deal and product in deal.products.all %}selected{% endif %}>
+                        {{ product.name }} - Rs {{ product.price }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div style="font-size:12px;color:#64748b;margin-top:4px">Hold Ctrl/Cmd to select multiple products</div>
+            </div>
+            <div class="col-md-6">
+                <label>Free Product (Optional)</label>
+                <select name="free_product" class="form-select">
+                    <option value="">-- No Free Product --</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}" {% if deal and deal.free_product_id == product.id %}selected{% endif %}>
+                        {{ product.name }} - Rs {{ product.price }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label>Combo Price (Optional)</label>
+                <input type="number" name="combo_price" class="form-control" value="{{ deal.combo_price|default:'' }}" min="0" step="0.01" placeholder="e.g. 1250">
             </div>
             <div class="col-md-4">
                 <label>Active Status</label>
