@@ -2030,15 +2030,26 @@ def deal_detail(request, pk):
     if deal.free_product:
         original_total += float(deal.free_product.price)
     savings = 0
-    if deal.combo_price and original_total > 0:
-        savings = original_total - float(deal.combo_price)
+    deal_price = original_total
+    if deal.deal_type == 'combo_price' and deal.combo_price:
+        deal_price = float(deal.combo_price)
+        savings = original_total - deal_price
         if savings < 0:
             savings = 0
+    elif deal.deal_type == 'free_product' and deal.free_product:
+        free_price = float(deal.free_product.price)
+        deal_price = original_total - free_price
+        savings = free_price
+    elif deal.deal_type == 'percentage' and deal.discount_percentage:
+        pct = float(deal.discount_percentage)
+        deal_price = round(original_total - (original_total * pct / 100), 2)
+        savings = original_total - deal_price
     return render(request, "admin/deal_detail.html", {
         "deal": deal,
         "deal_products": deal_products,
         "original_total": original_total,
         "savings": savings,
+        "deal_price": deal_price,
         "active_page": "deals",
     })
 
