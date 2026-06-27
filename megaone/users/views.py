@@ -1977,3 +1977,38 @@ def deal_delete(request, pk):
         except Exception as e:
             messages.error(request, f"Error: {e}")
     return redirect("users:deal_list")
+
+
+# =========================
+# PUBLIC DEAL VIEWS
+# =========================
+def public_deal_detail(request, pk):
+    deal = get_object_or_404(TodayDeal, pk=pk)
+    if not deal.is_active:
+        return render(request, "food-delivery/deal_detail.html", {"deal": None, "error": "This deal is no longer active."})
+    deal_products = deal.products.all()
+    original_total = sum(float(p.price) for p in deal_products)
+    if deal.free_product:
+        original_total += float(deal.free_product.price)
+    savings = 0
+    if deal.combo_price and original_total > 0:
+        savings = original_total - float(deal.combo_price)
+        if savings < 0:
+            savings = 0
+    return render(request, "food-delivery/deal_detail.html", {
+        "deal": deal,
+        "deal_products": deal_products,
+        "original_total": original_total,
+        "savings": savings,
+    })
+
+
+@login_required
+def deal_checkout(request, pk):
+    deal = get_object_or_404(TodayDeal, pk=pk)
+    if not deal.is_active:
+        messages.error(request, "This deal is no longer active.")
+        return redirect("/")
+    return render(request, "food-delivery/restaurant-detail.html", {
+        "deal_checkout": deal.id,
+    })
