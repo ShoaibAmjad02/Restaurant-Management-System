@@ -1762,6 +1762,8 @@ def active_deal_data(request):
         "combo_price": float(deal.combo_price) if deal.combo_price else None,
         "original_total": original_total,
         "savings": savings,
+        "start_date": deal.start_date.strftime("%d-%m-%Y"),
+        "start_time": deal.start_time.strftime("%I:%M %p"),
         "end_date": deal.end_date.strftime("%d-%m-%Y"),
         "end_time": deal.end_time.strftime("%I:%M %p"),
         "end_timestamp": int(end_dt.timestamp()),
