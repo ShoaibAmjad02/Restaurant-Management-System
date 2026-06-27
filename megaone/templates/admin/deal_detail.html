@@ -43,6 +43,18 @@
                     <div class="detail-label">Description</div>
                     <div class="detail-value">{{ deal.description|default:'No description' }}</div>
                 </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Combo Price</div>
+                    <div class="detail-value">{% if deal.combo_price %}Rs {{ deal.combo_price }}{% else %}N/A{% endif %}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Original Total</div>
+                    <div class="detail-value" style="color:#94a3b8;text-decoration:line-through">Rs {{ original_total|floatformat:0 }}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="detail-label">Savings</div>
+                    <div class="detail-value" style="color:#22c55e">{% if savings > 0 %}Rs {{ savings|floatformat:0 }}{% else %}N/A{% endif %}</div>
+                </div>
                 <div class="col-md-3">
                     <div class="detail-label">Start Date</div>
                     <div class="detail-value">{{ deal.start_date|date:"d-m-Y" }}</div>
@@ -58,6 +70,21 @@
                 <div class="col-md-3">
                     <div class="detail-label">End Time</div>
                     <div class="detail-value">{{ deal.end_time|time:"g:i A" }}</div>
+                </div>
+                <div class="col-12">
+                    <div class="detail-label">Products Included</div>
+                    <div class="detail-value">
+                        <ul style="padding-left:20px;margin:0">
+                            {% for p in deal_products %}
+                            <li>{{ p.name }} - <span style="color:#94a3b8">Rs {{ p.price }}</span></li>
+                            {% empty %}
+                            <li style="color:#64748b">No products selected</li>
+                            {% endfor %}
+                            {% if deal.free_product %}
+                            <li style="color:#22c55e">{{ deal.free_product.name }} <span class="badge bg-success">FREE</span> - <span style="color:#94a3b8">Rs {{ deal.free_product.price }}</span></li>
+                            {% endif %}
+                        </ul>
+                    </div>
                 </div>
                 <div class="col-12">
                     <div class="detail-label">Created</div>
