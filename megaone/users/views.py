@@ -659,10 +659,17 @@ def invoice_pdf(request, uuid_token):
     pdf.drawRightString(right, y, f"Rs {sub_amt:.0f}")
     y -= 5 * mm
 
-    if qr_disc_pct > 0 and qr_disc_amt > 0:
+    deal_disc_amt = float(invoice.deal_discount_amount) if invoice.deal_discount_amount else 0
+    if deal_disc_amt > 0:
+        pdf.setFont("Helvetica", 7)
+        pdf.setFillColor(HexColor("#8b5cf6"))
+        pdf.drawString(MARGIN, y, f"Deal Discount")
+        pdf.drawRightString(right, y, f"-Rs {deal_disc_amt:.0f}")
+        y -= 5 * mm
+    elif qr_disc_pct > 0 and qr_disc_amt > 0:
         pdf.setFont("Helvetica", 7)
         pdf.setFillColor(HexColor("#f59e0b"))
-        pdf.drawString(MARGIN, y, f"QR Table Offer ({qr_disc_pct:.0f}%)")
+        pdf.drawString(MARGIN, y, f"Discount ({qr_disc_pct:.0f}%)")
         pdf.drawRightString(right, y, f"-Rs {qr_disc_amt:.0f}")
         y -= 5 * mm
 
@@ -1703,6 +1710,8 @@ def active_offer_data(request):
         "banner_image": offer.banner_image.url if offer.banner_image else "",
         "background_color": offer.background_color or "#f59e0b",
         "popup_image": offer.popup_image.url if offer.popup_image else "",
+        "start_date": offer.start_date.strftime("%d-%m-%Y"),
+        "start_time": offer.start_time.strftime("%I:%M %p"),
         "end_date": offer.end_date.strftime("%d-%m-%Y"),
         "end_time": offer.end_time.strftime("%I:%M %p"),
         "end_timestamp": int(end_dt.timestamp()),
