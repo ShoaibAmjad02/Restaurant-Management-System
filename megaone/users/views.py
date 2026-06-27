@@ -819,7 +819,7 @@ def invoice_verify(request, uuid_token):
 
     order = getattr(invoice, 'kitchen_order', None)
     items = invoice.items.all()
-    subtotal = sum(float(item.subtotal) for item in items)
+    subtotal = float(invoice.subtotal_amount) if invoice.subtotal_amount else sum(float(item.subtotal) for item in items)
     tax_pct = float(invoice.tax_percentage) if invoice.tax_percentage else 5
     tax = float(invoice.tax_amount) if invoice.tax_amount else round(subtotal * tax_pct / 100, 2)
 
