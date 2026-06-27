@@ -286,6 +286,8 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         loyalty_points_used=loyalty_points_used,
         qr_offer_discount_percentage=qr_offer_discount_pct,
         qr_offer_discount_amount=qr_offer_discount_amt,
+        deal=deal_obj,
+        deal_discount_amount=deal_discount_amt,
     )
 
     for item in cart:
