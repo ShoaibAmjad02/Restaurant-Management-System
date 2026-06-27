@@ -1749,6 +1749,9 @@ def active_deal_data(request):
     deal = TodayDeal.objects.filter(is_active=True).first()
     if not deal:
         return JsonResponse({"active": False})
+    deal.check_and_update_status()
+    if not deal.is_active:
+        return JsonResponse({"active": False})
     now = timezone.now()
     end_dt = timezone.make_aware(
         datetime.combine(deal.end_date, deal.end_time)
