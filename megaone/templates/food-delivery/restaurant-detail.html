@@ -380,6 +380,23 @@ const isQrCustomer = {{ is_qr_customer|yesno:'true,false' }};
 const cartKey = "qr_cart_" + (tableNo || "guest");
 let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
+// Check for deal checkout pre-populated cart
+{% if request.session.deal_checkout_cart %}
+(function() {
+    var dealCart = {{ request.session.deal_checkout_cart|safe }};
+    if (dealCart && dealCart.length > 0) {
+        cart = dealCart;
+        saveCart();
+        // Clean up session flag
+        fetch("/users/clear-deal-cart/", { method: "POST", headers: {"X-CSRFToken": "{{ csrf_token }}"} });
+        // Auto-open checkout after a short delay
+        setTimeout(function() {
+            document.getElementById("checkout-btn").click();
+        }, 800);
+    }
+})();
+{% endif %}
+
 function saveCart() {
     localStorage.setItem(cartKey, JSON.stringify(cart));
     renderCart();
