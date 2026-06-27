@@ -1971,6 +1971,7 @@ def deal_add(request):
                 end_date=request.POST.get("end_date"),
                 end_time=request.POST.get("end_time"),
                 combo_price=request.POST.get("combo_price") or None,
+                discount_percentage=request.POST.get("discount_percentage") or None,
                 free_product_id=request.POST.get("free_product") or None,
             )
             if "deal_image" in request.FILES:
