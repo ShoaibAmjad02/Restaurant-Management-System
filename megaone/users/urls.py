@@ -134,4 +134,5 @@ urlpatterns = [
     # Public Deal Views
     path("deals/<int:pk>/public/", views.public_deal_detail, name="public_deal_detail"),
     path("deals/<int:pk>/checkout/", views.deal_checkout, name="deal_checkout"),
+    path("clear-deal-cart/", views.clear_deal_cart, name="clear_deal_cart"),
 ]
