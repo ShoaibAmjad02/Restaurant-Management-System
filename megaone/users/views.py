@@ -198,11 +198,30 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card",
         price = float(item["price"])
         subtotal_amount += qty * price
 
+    # ---------- Today's Deal Discount ----------
+    deal_obj = None
+    deal_discount_amt = 0
+    deal_id = request.session.pop("deal_checkout_id", None) if request else None
+    if deal_id:
+        try:
+            deal_obj = TodayDeal.objects.get(id=deal_id, is_active=True)
+            deal_products = list(deal_obj.products.all())
+            if deal_obj.free_product:
+                deal_products.append(deal_obj.free_product)
+            original_total = sum(float(p.price) for p in deal_products)
+            if deal_obj.combo_price and original_total > 0:
+                deal_discount_amt = original_total - float(deal_obj.combo_price)
+                if deal_discount_amt < 0:
+                    deal_discount_amt = 0
+        except TodayDeal.DoesNotExist:
+            pass
+        request.session.pop("deal_checkout_cart", None)
+
     # ---------- Offer Discount ----------
     qr_offer_discount_pct = 0
     qr_offer_discount_amt = 0
 
-    if payment_method != "loyalty":
+    if payment_method != "loyalty" and not deal_obj:
         time_offer = TimeBasedOffer.objects.filter(is_active=True).first()
         if time_offer:
             qr_offer_discount_pct = float(time_offer.discount_percentage)
