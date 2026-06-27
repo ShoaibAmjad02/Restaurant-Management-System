@@ -384,7 +384,7 @@ let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 // Check for deal checkout pre-populated cart
 {% if request.session.deal_checkout_cart %}
 (function() {
-    var dealCart = JSON.parse('{{ request.session.deal_checkout_cart|safe }}');
+    var dealCart = JSON.parse('{{ request.session.deal_checkout_cart|escapejs }}');
     if (dealCart && dealCart.length > 0) {
         cart = dealCart;
         saveCart();
