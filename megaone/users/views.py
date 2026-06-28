@@ -460,7 +460,6 @@ def checkout_invoice(request):
         cart = data.get("cart", [])
         payment_method = data.get("payment_method", "card")
         customer_timezone = data.get("timezone", "UTC")
-<<<<<<< HEAD
         use_loyalty_points = data.get("use_loyalty_points")
         secondary_payment_method = data.get("secondary_payment_method")
         if not cart:
@@ -474,12 +473,6 @@ def checkout_invoice(request):
             use_loyalty_points=use_loyalty_points,
             secondary_payment_method=secondary_payment_method,
         )
-=======
-        if not cart:
-            return JsonResponse({"success": False, "message": "Cart is empty"}, status=400)
-
-        invoice = _create_order_from_cart(cart, request, user=request.user, payment_method=payment_method, customer_timezone=customer_timezone)
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         return JsonResponse({
             "success": True,
             "invoice_no": invoice.invoice_number,
