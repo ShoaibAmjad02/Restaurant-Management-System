@@ -4,6 +4,7 @@
 
 gunicorn==23.0.0  # https://github.com/benoitc/gunicorn
 Collectfasta==3.2.1  # https://github.com/jasongi/collectfasta
+whitenoise==6.8.2  # https://github.com/evansd/whitenoise
 
 # Django
 # ------------------------------------------------------------------------------

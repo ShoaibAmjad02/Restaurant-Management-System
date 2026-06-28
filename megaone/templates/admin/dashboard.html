@@ -53,8 +53,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
 .status-preparing{background:rgba(59,130,246,.15);color:#3b82f6}
 .status-ready{background:rgba(249,115,22,.15);color:#f97316}
 .status-delivered{background:rgba(34,197,94,.15);color:#22c55e}
+<<<<<<< HEAD
 .section-heading h4{font-size:18px;font-weight:600;color:#f1f5f9;margin:0 0 4px}
 .section-heading .section-divider{border-color:rgba(245,158,11,.3);margin:0 0 16px;opacity:1}
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 .quick-action-btn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;text-align:center;transition:.2s;color:#e2e8f0;text-decoration:none;display:block}
 .quick-action-btn:hover{background:rgba(245,158,11,.1);border-color:#f59e0b;color:#f59e0b;transform:translateY(-3px)}
 .quick-action-btn i{font-size:28px;margin-bottom:8px;display:block}
@@ -88,10 +91,13 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <a href="{% url 'users:product_list' %}"><i class="bi bi-box-seam"></i><span>Products</span></a>
         <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
         <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
+<<<<<<< HEAD
         <a href="{% url 'users:admin_loyalty_list' %}"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
         <div class="menu-label">Offers</div>
         <a href="{% url 'users:offer_list' %}"><i class="bi bi-megaphone"></i><span>Time-Based Offers</span></a>
         <a href="{% url 'users:deal_list' %}"><i class="bi bi-fire"></i><span>Today's Deals</span></a>
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         <div class="menu-label">Operations</div>
         <a href="{% url 'users:kitchen_users_page' %}"><i class="bi bi-people"></i><span>Kitchen Users</span></a>
         <a href="{% url 'users:mysql_backup' %}"><i class="bi bi-database"></i><span>Backup</span></a>
@@ -111,11 +117,15 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Stats Section -->
     <div class="section-heading" data-aos="fade-up">
         <h4><i class="bi bi-bar-chart-line me-2"></i>Stats</h4>
         <hr class="section-divider">
     </div>
+=======
+    <!-- Stats Cards -->
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="0">
             <div class="stat-card gradient-revenue" data-bs-toggle="modal" data-bs-target="#revenueModal" style="cursor:pointer">
@@ -153,31 +163,61 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
             </div>
         </div>
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
+<<<<<<< HEAD
+=======
+            <div class="stat-card gradient-tables">
+                <div class="stat-value">{{ tables_count }}</div>
+                <div class="stat-label">Tables</div>
+                <i class="bi bi-layout-three-columns stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
+            <div class="stat-card gradient-foods">
+                <div class="stat-value">{{ foods_count }}</div>
+                <div class="stat-label">Products</div>
+                <i class="bi bi-cup-hot stat-icon"></i>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             <div class="stat-card gradient-customers">
                 <div class="stat-value">{{ customers_count }}</div>
                 <div class="stat-label">Customers</div>
                 <i class="bi bi-person-badge stat-icon"></i>
             </div>
         </div>
+<<<<<<< HEAD
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="600">
+=======
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             <div class="stat-card gradient-tax-total" data-bs-toggle="modal" data-bs-target="#taxModal" style="cursor:pointer">
                 <div class="stat-value">Rs {{ total_tax|floatformat:0 }}</div>
                 <div class="stat-label">Total Tax Collected</div>
                 <i class="bi bi-receipt-cutoff stat-icon"></i>
             </div>
         </div>
+<<<<<<< HEAD
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="700">
+=======
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             <div class="stat-card gradient-tax-card">
                 <div class="stat-value">Rs {{ card_tax|floatformat:0 }}</div>
                 <div class="stat-label">Card Tax (5%)</div>
                 <i class="bi bi-credit-card stat-icon"></i>
             </div>
         </div>
+<<<<<<< HEAD
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="800">
+=======
+        <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="1000">
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             <div class="stat-card gradient-tax-cash">
                 <div class="stat-value">Rs {{ cash_tax|floatformat:0 }}</div>
                 <div class="stat-label">Cash Tax (18%)</div>
                 <i class="bi bi-cash stat-icon"></i>
+<<<<<<< HEAD
             </div>
         </div>
         <div class="col-xl-3 col-md-6" data-aos="fade-up" data-aos-delay="900">
@@ -248,10 +288,13 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
                 <div class="stat-value">Rs {{ offer_usage|floatformat:0 }}</div>
                 <div class="stat-label">Discount Given</div>
                 <i class="bi bi-cash-coin stat-icon"></i>
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             </div>
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Stats Related to Inventory Section -->
     <div class="section-heading" data-aos="fade-up">
         <h4><i class="bi bi-box-seam me-2"></i>Stats Related to Inventory</h4>
@@ -315,6 +358,49 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
             </table>
         </div>
     </div>
+=======
+    <!-- Recent Orders Table -->
+    <div class="table-card" data-aos="fade-up">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-clock-history me-2"></i>Recent Orders</h5>
+            <span class="badge bg-warning text-dark">{{ recent_orders|length }} entries</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table" id="recentOrdersTable">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Invoice</th>
+                        <th>Table</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><strong>{{ order.order_number }}</strong></td>
+                        <td>{{ order.invoice.invoice_number }}</td>
+                        <td>{{ order.table_no|default:"N/A" }}</td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td>Rs {{ order.invoice.total_amount|floatformat:0 }}</td>
+                        <td>{{ order.created_at|date:"d-m-Y h:i:s A" }}</td>
+                        <td>
+                            <a href="/users/invoice/{{ order.invoice.uuid_token }}/" target="_blank" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No orders yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
     <!-- Table Reports -->
     <div class="d-flex justify-content-between align-items-center mb-3" data-aos="fade-up">
@@ -349,8 +435,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <div class="col-md-3 col-6"><a href="{% url 'users:table_list' %}" class="quick-action-btn"><i class="bi bi-table"></i><span>Tables</span></a></div>
         <div class="col-md-3 col-6"><a href="{% url 'users:invoice_search_page' %}" class="quick-action-btn"><i class="bi bi-receipt"></i><span>Invoices</span></a></div>
         <div class="col-md-3 col-6"><a href="{% url 'users:kitchen_users_page' %}" class="quick-action-btn"><i class="bi bi-people"></i><span>Kitchen Staff</span></a></div>
+<<<<<<< HEAD
         <div class="col-md-3 col-6"><a href="{% url 'users:admin_loyalty_list' %}" class="quick-action-btn"><i class="bi bi-star"></i><span>Loyalty Cards</span></a></div>
         <div class="col-md-3 col-6"><a href="{% url 'users:admin_loyalty_reports' %}" class="quick-action-btn"><i class="bi bi-bar-chart"></i><span>Loyalty Reports</span></a></div>
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     </div>
 </div>
 

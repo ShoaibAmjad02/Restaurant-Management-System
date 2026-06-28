@@ -92,6 +92,7 @@ urlpatterns = [
     path("<int:pk>/", user_detail_view, name="detail"),
     path("~redirect/", user_redirect_view, name="redirect"),
     path("update/", user_update_view, name="update"),
+<<<<<<< HEAD
 
     # Loyalty Card
     path("loyalty-card/", views.loyalty_card_view, name="loyalty_card_view"),
@@ -135,4 +136,6 @@ urlpatterns = [
     path("deals/<int:pk>/public/", views.public_deal_detail, name="public_deal_detail"),
     path("deals/<int:pk>/checkout/", views.deal_checkout, name="deal_checkout"),
     path("clear-deal-cart/", views.clear_deal_cart, name="clear_deal_cart"),
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 ]

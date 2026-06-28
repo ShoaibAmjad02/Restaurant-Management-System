@@ -21,7 +21,6 @@ urlpatterns = [
 
     path("food-delivery/", include("apps.food_delivery.urls", namespace="food-delivery")),
 
-
     # QR Menu Access (root level)
     path("menu/", qr_menu_view, name="qr_menu_view"),
 

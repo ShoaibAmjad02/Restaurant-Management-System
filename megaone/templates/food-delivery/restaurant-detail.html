@@ -47,8 +47,11 @@
 .dropdown-title{padding:15px;color:#ff7b00;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;letter-spacing:1px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .table-badge{background:#ff7b00;color:#fff;padding:10px 25px;border-radius:50px;font-size:18px;font-weight:700;display:inline-block;margin-bottom:20px;}
+<<<<<<< HEAD
 .food-list.highlight{animation:highlightPulse 2s ease;border-left:4px solid #f59e0b;padding-left:15px}
 @keyframes highlightPulse{0%{background:rgba(245,158,11,.15)}50%{background:rgba(245,158,11,.08)}100%{background:transparent}}
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 </style>
 {% endblock css %}
 
@@ -129,7 +132,10 @@
                                 <div class="menu-links link">
                                     <ul>
                                         {% if user.is_authenticated %}
+<<<<<<< HEAD
                                         <li><a href="{% url 'users:loyalty_card_view' %}"><i class="lni lni-star"></i>My Loyalty Card</a></li>
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                                         <li><a href="{% url 'users:logout' %}"><i class="lni lni-lock"></i>Logout</a></li>
                                         {% else %}
                                         <li><a href="{% url 'food-delivery:food_delivery_login' %}"><i class="lni lni-key"></i>Login</a></li>
@@ -197,13 +203,20 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
+<<<<<<< HEAD
                 {% include 'food-delivery/menu_banner.html' %}
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                 <div class="tab-content" id="pills-tabContent">
                     <div class="tab-pane fade show active" id="pills-home" role="tabpanel">
                         <div class="row">
                             {% for product in products %}
                             <div class="col-md-6">
+<<<<<<< HEAD
                                 <div class="food-list ml-0" data-product-id="{{ product.id }}">
+=======
+                                <div class="food-list ml-0">
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                                     <div class="list-overlay"></div>
                                     <div class="rates d-flex justify-content-between">
                                         <div class="info">
@@ -280,7 +293,10 @@
                 <div id="paymentCartSummary" class="mb-3 p-3" style="background:rgba(255,255,255,.03);border-radius:12px">
                     <div class="d-flex justify-content-between mb-1"><span style="color:#94a3b8">Items in Cart</span><span id="paymentCartCount" class="fw-bold">0</span></div>
                     <div class="d-flex justify-content-between mb-1"><span style="color:#94a3b8">Subtotal</span><span id="paymentSubtotal" class="fw-bold">Rs 0</span></div>
+<<<<<<< HEAD
                     <div id="paymentOfferDiscountDisplay" class="d-flex justify-content-between mb-1" style="display:none"><span style="color:#f59e0b">Discount</span><span id="paymentOfferDiscountAmt" class="fw-bold" style="color:#f59e0b">-Rs 0</span></div>
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                     <div id="paymentTaxDisplay" class="d-flex justify-content-between mb-1" style="display:none!important"><span style="color:#94a3b8">Tax</span><span id="paymentTaxAmount" class="fw-bold" style="color:#f59e0b">Rs 0</span></div>
                     <hr style="border-color:rgba(255,255,255,.1)">
                     <div class="d-flex justify-content-between"><span class="fw-bold">Total</span><span id="paymentGrandTotal" class="fw-bold" style="color:#22c55e;font-size:18px">Rs 0</span></div>
@@ -302,6 +318,7 @@
                             <div style="font-size:13px;color:#f59e0b;font-weight:600;margin-top:6px"><i class="fas fa-hand-holding-usd me-1"></i>Pay at Table</div>
                         </div>
                     </div>
+<<<<<<< HEAD
                     <div class="col-6">
                         <div class="payment-option" data-method="loyalty" onclick="selectPayment('loyalty')" style="background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;text-align:center;cursor:pointer;transition:.2s;height:100%">
                             <div style="font-size:40px;margin-bottom:10px;color:#f59e0b"><i class="fas fa-star"></i></div>
@@ -358,6 +375,9 @@
                     </div>
                 </div>
 
+=======
+                </div>
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                 <div id="paymentError" class="mt-3" style="display:none"></div>
             </div>
             <div class="modal-footer border-0 pt-0">
@@ -372,10 +392,13 @@
 
 {% endblock content %}
 
+<<<<<<< HEAD
 {% block modal %}
 {% include 'food-delivery/offers_popup.html' %}
 {% endblock modal %}
 
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 {% block javascript %}
 <script>
 const tableNo = {{ table_no|default:'null' }};
@@ -433,6 +456,7 @@ function changeQty(id, qty) {
     saveCart();
 }
 
+<<<<<<< HEAD
 function getCartSubtotal() {
     if (dealEffectiveTotal) {
         return dealEffectiveTotal;
@@ -440,6 +464,8 @@ function getCartSubtotal() {
     return cart.reduce(function(s, i) { return s + i.price * i.qty; }, 0);
 }
 
+=======
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 function renderCart() {
     let container = document.getElementById("cart-items");
     if (!container) return;
@@ -464,7 +490,12 @@ function renderCart() {
                 <div class="del-icon">
                     <a href="javascript:void(0)" onclick="removeItem(${item.id})"><i class="far fa-trash-alt"></i></a>
                 </div>
+<<<<<<< HEAD
             </div>`;
+=======
+            </div>
+        </div>`;
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     });
     if (cart.length === 0) {
         container.innerHTML = `<div class="text-center p-3">Cart is empty</div>`;
@@ -488,6 +519,7 @@ document.addEventListener("click", function(e) {
 
 renderCart();
 
+<<<<<<< HEAD
 // ========================
 // AUTO-SCROLL TO SELECTED PRODUCT FROM HOMEPAGE
 // ========================
@@ -526,11 +558,16 @@ renderCart();
 let selectedPayment = null;
 let selectedSecondary = null;
 let loyaltyPointsData = null;
+=======
+// Payment flow
+let selectedPayment = null;
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
 document.getElementById("checkout-btn").addEventListener("click", function(e) {
     e.preventDefault();
     if (cart.length === 0) { alert("Cart is empty"); return; }
     selectedPayment = null;
+<<<<<<< HEAD
     selectedSecondary = null;
     document.getElementById("payNowBtn").disabled = true;
     document.getElementById("paymentError").style.display = "none";
@@ -539,10 +576,17 @@ document.getElementById("checkout-btn").addEventListener("click", function(e) {
     document.getElementById("loyaltyPointsInput").value = "0";
 
     const subtotal = getCartSubtotal();
+=======
+    document.getElementById("payNowBtn").disabled = true;
+    document.getElementById("paymentError").style.display = "none";
+
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     document.getElementById("paymentCartCount").innerText = cart.reduce((c, i) => c + i.qty, 0);
     document.getElementById("paymentSubtotal").innerText = "Rs " + subtotal.toFixed(0);
     document.getElementById("paymentTaxDisplay").style.display = "none";
     document.getElementById("paymentGrandTotal").innerText = "Rs " + subtotal.toFixed(0);
+<<<<<<< HEAD
 
     document.querySelectorAll(".payment-option").forEach(el => {
         el.style.borderColor = "rgba(255,255,255,.1)";
@@ -735,6 +779,12 @@ function selectSecondary(method) {
     document.querySelectorAll(".secondary-option").forEach(el2 => {
         el2.style.borderColor = "rgba(255,255,255,.1)";
         el2.style.background = "rgba(255,255,255,.04)";
+=======
+
+    document.querySelectorAll(".payment-option").forEach(el => {
+        el.style.borderColor = "rgba(255,255,255,.1)";
+        el.style.background = "rgba(255,255,255,.04)";
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     });
     const el2 = document.querySelector(`.secondary-option[data-secondary="${method}"]`);
     const borderColor2 = method === "card" ? "#3b82f6" : method === "cash" ? "#22c55e" : "#a855f7";
@@ -744,6 +794,7 @@ function selectSecondary(method) {
     updateLoyaltyCalc();
 }
 
+<<<<<<< HEAD
 function processPayment() {
     if (!selectedPayment) return;
     document.getElementById("paymentError").style.display = "none";
@@ -765,6 +816,47 @@ function processPayment() {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
         body: JSON.stringify(body)
+=======
+    new bootstrap.Modal(document.getElementById("paymentModal")).show();
+});
+
+function selectPayment(method) {
+    selectedPayment = method;
+    document.querySelectorAll(".payment-option").forEach(el => {
+        el.style.borderColor = "rgba(255,255,255,.1)";
+        el.style.background = "rgba(255,255,255,.04)";
+    });
+    const el = document.querySelector(`.payment-option[data-method="${method}"]`);
+    el.style.borderColor = method === "card" ? "#3b82f6" : "#22c55e";
+    el.style.background = method === "card" ? "rgba(59,130,246,.1)" : "rgba(34,197,94,.1)";
+
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const pct = method === "card" ? 5 : 18;
+    const tax = subtotal * pct / 100;
+    const total = subtotal + tax;
+    document.getElementById("paymentTaxDisplay").style.display = "flex";
+    document.getElementById("paymentTaxDisplay").querySelector("span:first-child").innerText = "Tax (" + pct + "%)";
+    document.getElementById("paymentTaxAmount").innerText = "Rs " + tax.toFixed(0);
+    document.getElementById("paymentGrandTotal").innerText = "Rs " + total.toFixed(0);
+    document.getElementById("payNowBtn").disabled = false;
+}
+
+function processPayment() {
+    if (!selectedPayment) return;
+    document.getElementById("paymentError").style.display = "none";
+    document.getElementById("payNowBtn").disabled = true;
+    document.getElementById("payNowBtn").innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+    const endpoint = isQrCustomer || !{{ user.is_authenticated|yesno:'true,false' }}
+        ? "{% url 'users:guest_checkout' %}"
+        : "{% url 'users:checkout_invoice' %}";
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify({ cart: cart, payment_method: selectedPayment, timezone: tz })
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     })
     .then(res => res.json())
     .then(data => {

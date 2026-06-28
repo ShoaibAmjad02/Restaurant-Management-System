@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Restaurant Management System — Project Summary
 
 ## 1. Project Overview
@@ -710,3 +711,16 @@ pytest
 - **Authentication Redirect**: `LOGIN_URL` changed from Django's default `account_login` (`/accounts/login/`) to the project's custom `food-delivery:food_delivery_login` (`/food-delivery/login/`). All `@login_required` decorators and auth middleware now use this custom login page
 - **My Loyalty Information Protection**: Unauthenticated users see "Please log in to view your loyalty information." and are redirected to the custom login page with `?next=` preserving the destination. After login, they return to the loyalty page
 - **Login Redirect Flow**: The `food_delivery_login` view reads `request.GET.next` and `request.POST.next`. The login template renders a hidden `next` input field. After successful authentication, users are redirected back to the originally requested page
+=======
+Restaurant Management and QR-Based Food Ordering System is a full-stack web application developed using Django, MySQL, HTML, CSS, Bootstrap, JavaScript, and AJAX. The system integrates online food ordering, QR-based table ordering, kitchen management, invoice generation, and administrative control into a single unified platform.
+
+The system supports both online and offline restaurant customers. Online customers can register, log in, browse menu items, place orders, generate invoices, and track order status in real time. Offline customers can scan a unique QR code placed on each restaurant table to access the digital menu, place orders directly from their table, and monitor order progress without requiring waiter assistance.
+
+Each restaurant table is assigned a unique QR code containing a secure table identifier. When scanned, customers are redirected to the restaurant menu where they can add items to their cart, complete checkout, and automatically create an order linked to their table number. A real-time order tracking system allows customers to monitor order statuses such as Pending, Preparing, Ready, and Delivered. Once an order is delivered, the system automatically generates and opens a thermal-style PDF invoice containing a traceable QR code for invoice verification.
+
+A dedicated kitchen dashboard enables kitchen staff to receive new orders instantly, monitor incoming requests, update order statuses, search orders by table number, invoice number, or order number, and manage the complete food preparation workflow. Sound notifications alert kitchen staff whenever a new order is received.
+
+The administrative dashboard provides centralized control over menu management, category management, table and QR code management, kitchen user management, invoice searching, revenue monitoring, order tracking, customer management, and database backup functionality. Administrators can generate QR codes for restaurant tables, manage kitchen staff accounts, filter revenue reports using date ranges, and monitor restaurant performance through an intuitive and professional interface.
+
+The system improves operational efficiency by automating restaurant workflows, eliminating manual order handling, reducing service delays, enhancing customer experience, enabling contactless ordering, and providing complete real-time monitoring and management capabilities through a secure and user-friendly platform.
+>>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49

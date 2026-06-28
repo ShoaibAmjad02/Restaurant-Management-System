@@ -1,7 +1,7 @@
 # ruff: noqa: ERA001, E501
 """Base settings to build other settings files upon."""
 
-
+import os
 from pathlib import Path
 
 import environ
@@ -46,15 +46,21 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
+# Railway provides MySQL env vars: MYSQLHOST, MYSQLPORT, MYSQLDATABASE,
+# MYSQLUSER, MYSQLPASSWORD. PyMySQL is used as the MySQL driver via
+# pymysql.install_as_MySQLdb() in config/__init__.py.
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cafe',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '3306',
+    DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": env.str("MYSQLDATABASE", default="railway"),
+        "USER": env.str("MYSQLUSER", default="root"),
+        "PASSWORD": env.str("MYSQLPASSWORD", default=""),
+        "HOST": env.str("MYSQLHOST", default="localhost"),
+        "PORT": env.str("MYSQLPORT", default="3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+        },
     }
 }
 
@@ -75,7 +81,7 @@ DJANGO_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    # "django.contrib.sites",
+    "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
