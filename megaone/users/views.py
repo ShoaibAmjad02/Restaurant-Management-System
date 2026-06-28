@@ -1493,6 +1493,9 @@ def mysql_backup(request):
 
 @login_required
 def loyalty_card_view(request):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please log in to view your loyalty information.")
+        return redirect(f"{reverse('food-delivery:food_delivery_login')}?next={reverse('users:loyalty_card_view')}")
     if request.user.is_staff or request.user.is_superuser or getattr(request.user, 'is_kitchen', False):
         messages.error(request, "Loyalty cards are only available for customers.")
         return redirect('/')
