@@ -1,11 +1,712 @@
-Restaurant Management and QR-Based Food Ordering System is a full-stack web application developed using Django, MySQL, HTML, CSS, Bootstrap, JavaScript, and AJAX. The system integrates online food ordering, QR-based table ordering, kitchen management, invoice generation, and administrative control into a single unified platform.
+# Restaurant Management System — Project Summary
 
-The system supports both online and offline restaurant customers. Online customers can register, log in, browse menu items, place orders, generate invoices, and track order status in real time. Offline customers can scan a unique QR code placed on each restaurant table to access the digital menu, place orders directly from their table, and monitor order progress without requiring waiter assistance.
+## 1. Project Overview
 
-Each restaurant table is assigned a unique QR code containing a secure table identifier. When scanned, customers are redirected to the restaurant menu where they can add items to their cart, complete checkout, and automatically create an order linked to their table number. A real-time order tracking system allows customers to monitor order statuses such as Pending, Preparing, Ready, and Delivered. Once an order is delivered, the system automatically generates and opens a thermal-style PDF invoice containing a traceable QR code for invoice verification.
+A full-stack restaurant management and QR-based food ordering system built with Django, MySQL, and Bootstrap. The platform supports online ordering, QR-based table ordering, kitchen display management, invoice generation, loyalty program, time-based offers/discounts, and an administrative dashboard — all unified in a single system.
 
-A dedicated kitchen dashboard enables kitchen staff to receive new orders instantly, monitor incoming requests, update order statuses, search orders by table number, invoice number, or order number, and manage the complete food preparation workflow. Sound notifications alert kitchen staff whenever a new order is received.
+Key capabilities:
+- Online customers: register, log in, browse menu, place orders, earn loyalty points, track orders in real time
+- Dine-in customers: scan table QR code, access digital menu, order without waiter assistance
+- Kitchen staff: receive orders instantly via kanban dashboard, update statuses, sound notifications
+- Administrators: manage products, tables, QR codes, kitchen users, offers, deals, loyalty cards, revenue analytics, database backups
 
-The administrative dashboard provides centralized control over menu management, category management, table and QR code management, kitchen user management, invoice searching, revenue monitoring, order tracking, customer management, and database backup functionality. Administrators can generate QR codes for restaurant tables, manage kitchen staff accounts, filter revenue reports using date ranges, and monitor restaurant performance through an intuitive and professional interface.
+---
 
-The system improves operational efficiency by automating restaurant workflows, eliminating manual order handling, reducing service delays, enhancing customer experience, enabling contactless ordering, and providing complete real-time monitoring and management capabilities through a secure and user-friendly platform.
+## 2. Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Python 3.12, Django 5.0.10 |
+| **Database** | MySQL 8.x (database: `cafe`) |
+| **Frontend** | HTML5, CSS3, Bootstrap 5, JavaScript (vanilla + jQuery) |
+| **Authentication** | django-allauth (email-only, no username) |
+| **Password Hashing** | Argon2 (primary), PBKDF2 (fallback) |
+| **Templates** | Django Template Language (DTL), crispy-forms (bootstrap5) |
+| **Icons** | Line Awesome (las, lar, las), LineIcons (lni), FontAwesome (fas, far, fab) |
+| **CSS/JS Libraries** | Slick carousel, Owl Carousel, Select2, NoUI Slider, GSAP TweenMax, Fancybox, Revolution Slider, DataTables, Chart.js, AOS, SweetAlert2, notify.min.js |
+| **PDF Generation** | ReportLab (thermal 60mm invoice PDFs) |
+| **QR Generation** | qrcode Python library |
+| **Cache/Session** | Redis (django-redis) |
+| **Storage (prod)** | AWS S3 (django-storages) |
+| **Email (prod)** | Anymail + Mailgun |
+| **Linting/Formatting** | ruff, djlint, pre-commit |
+| **Testing** | pytest, pytest-django, factory-boy, coverage |
+| **Infrastructure** | docker-compose (docs only), gunicorn (prod) |
+
+---
+
+## 3. Folder Structure
+
+```
+Restaurant Management System/
+├── manage.py                          # Django entry point
+├── pyproject.toml                     # Project config (pytest, mypy, ruff, djlint)
+├── .pre-commit-config.yaml            # Pre-commit hooks
+├── .editorconfig                      # Editor settings
+├── .gitignore                         # Git ignore rules
+├── docker-compose.docs.yml            # Docs-only Docker compose
+├── config/                            # Django project configuration
+│   ├── urls.py                        # Root URL dispatcher
+│   ├── wsgi.py                        # WSGI application
+│   └── settings/
+│       ├── base.py                    # Shared settings (all environments)
+│       ├── local.py                   # Local development settings
+│       ├── production.py              # Production settings (S3, SSL, Redis)
+│       └── test.py                    # Test settings (fast hashing, memory email)
+├── megaone/                           # Main Django app package
+│   ├── conftest.py                    # Pytest fixtures
+│   ├── apps/
+│   │   └── food_delivery/             # Food delivery app (static TemplateViews)
+│   │       ├── urls.py                # 6 URL patterns
+│   │       └── views.py               # 6 TemplateView-based views
+│   ├── users/                         # Core app (users, auth, orders, admin)
+│   │   ├── models.py                  # 11 models (User, Invoice, LoyaltyCard, etc.)
+│   │   ├── views.py                   # 60+ view functions/classes
+│   │   ├── urls.py                    # 75 URL patterns
+│   │   ├── admin.py                   # (empty — no admin registration)
+│   │   ├── adapters.py                # Allauth adapters
+│   │   ├── forms.py                   # Custom signup forms
+│   │   ├── managers.py                # Custom UserManager
+│   │   ├── middleware.py              # KeepMultipleSessions, UserTimezone
+│   │   ├── context_processors.py      # allauth_settings
+│   │   ├── loyalty_utils.py           # QR/PDF/image generation for loyalty cards
+│   │   └── tests/                     # Test suite (7 test files + factories)
+│   ├── templates/                     # All HTML templates
+│   │   ├── base.html                  # Master layout
+│   │   ├── index.html                 # Homepage
+│   │   ├── admin/                     # Admin panel templates (14 files)
+│   │   ├── food-delivery/             # Customer-facing templates (10 files)
+│   │   ├── kitchen/                   # Kitchen dashboard template
+│   │   ├── operator/                  # Operator dashboard template
+│   │   └── users/                     # User app templates (4 files)
+│   └── static/                        # Static assets
+│       └── food-delivery/
+│           ├── css/                   # 10 CSS files
+│           ├── js/                    # 10 JS files
+│           └── img/                   # Image assets
+├── menu/                              # Menu app (Food + Category models)
+│   ├── models.py                      # Category, Food (with is_popular)
+│   ├── admin.py                       # FoodAdmin (list_display, list_filter)
+│   ├── apps.py                        # AppConfig with signals
+│   └── migrations/                    # 5 migrations
+├── orders/                            # Orders app (legacy)
+│   ├── models.py                      # Cart, Order, OrderItem (unused in active flow)
+│   └── views.py                       # Basic admin dashboard + PDF (unused)
+├── requirements/                      # Pip requirements
+│   ├── base.txt                       # Core dependencies
+│   ├── local.txt                      # Dev dependencies
+│   └── production.txt                 # Production dependencies
+├── locale/                            # Translations
+│   ├── en_US/                         # English (source)
+│   ├── fr_FR/                         # French
+│   └── pt_BR/                         # Brazilian Portuguese
+└── staticfiles/                       # Collected static files (build output)
+```
+
+---
+
+## 4. Backend
+
+### 4.1 Models (16 models across 3 apps)
+
+#### `menu` app (2 models)
+| Model | Fields | Key Relationships |
+|-------|--------|-------------------|
+| `Category` | `name` | Referenced by Food |
+| `Food` | `category` (FK), `name`, `description`, `price`, `reward_points`, `image`, `available`, `is_popular`, `created_at`, `updated_at` | FK->Category; referened by Cart, OrderItem, TodayDeal (M2M + FK) |
+
+#### `orders` app (3 models — legacy/unused)
+| Model | Fields |
+|-------|--------|
+| `Cart` | `user` (FK), `food` (FK), `quantity`, `created_at` |
+| `Order` | `user` (FK), `total_amount`, `status`, `created_at` |
+| `OrderItem` | `order` (FK), `food` (FK), `quantity`, `price` |
+
+#### `megaone.users` app (11 models)
+| Model | Fields | Notes |
+|-------|--------|-------|
+| `User` | `email`, `name`, `phone`, `is_active`, `is_staff`, `is_operator`, `is_kitchen`, `timezone`, `date_joined` | Custom user model, email-based auth |
+| `RestaurantTable` | `table_no` (unique), `qr_code_image`, `qr_token`, `created_at` | QR code per table for dine-in ordering |
+| `QRTableOffer` | `is_active`, `discount_percentage`, `start_datetime`, `end_datetime` | Time-windowed discounts for QR customers |
+| `TimeBasedOffer` | `title`, `description`, `discount_percentage`, `banner_image`, `background_color`, `popup_image`, `start_date`, `start_time`, `end_date`, `end_time`, `is_active`, `usage_count` | Scheduled promotional offers |
+| `TodayDeal` | `title`, `description`, `products` (M2M), `free_product` (FK), `combo_price`, `discount_percentage`, `deal_image`, `deal_banner`, `start/end`, `is_active` | 3 types: combo_price, free_product, percentage |
+| `Invoice` | `uuid_token`, `user` (FK), `customer_name`, `customer_email`, `table_no`, `invoice_number`, `payment_method`, `tax_percentage`, `tax_amount`, `subtotal_amount`, `total_amount`, `customer_timezone`, `qr_code_image`, `is_loyalty_payment`, `loyalty_points_used/earned/processed`, `qr_offer_discount_%`/`amount`, `deal` (FK), `deal_discount_amount`, `created_at` | Central order record; QR for verification |
+| `InvoiceItem` | `invoice` (FK), `product_name`, `price`, `quantity`, `subtotal` | Line items per invoice |
+| `KitchenOrder` | `uuid_token`, `invoice` (O2O), `order_number`, `table_no`, `status` (pending/preparing/ready/delivered), `created_at` | Tracks kitchen workflow per invoice |
+| `KitchenOrderItem` | `order` (FK), `product_name`, `quantity` | Items in each kitchen order |
+| `LoyaltyCard` | `card_number`, `user` (FK), `total_points`, `used_points`, `remaining_points`, `qr_token`, `qr_code_image`, `card_pdf`, `card_image`, `status` (ACTIVE/BLOCKED), `first_card_popup_shown`, `created_at`, `updated_at` | Auto-created on login; 20 welcome points; generate card PDF/PNG |
+| `LoyaltyTransaction` | `card` (FK), `order_number`, `earned_points`, `redeemed_points`, `remaining_balance`, `transaction_type` (EARN/REDEEM), `created_at` | Point earn/redeem audit trail |
+
+### 4.2 Views/Controllers (60+ functions across 4 view files)
+
+#### `megaone/users/views.py` (57 functions)
+- **Auth**: `register_view`, `food_delivery_login`, `logout_view`
+- **Home**: `home_view` — fetches 6 popular products (or latest 6 active as fallback) + active offer/deal
+- **QR**: `qr_menu_view` — validates table QR tokens, stores session, renders menu
+- **Restaurant Detail**: `food_delivery_restaurant_detail` — `@login_required`, shows products
+- **Checkout**: `_create_order_from_cart` (private, core order engine), `guest_checkout` (`@csrf_exempt`, JSON POST), `checkout_invoice` (`@login_required` + `@require_POST`, JSON POST)
+- **Order Tracking**: `order_tracking` (page), `order_tracking_data` (JSON)
+- **Invoice PDF**: `_generate_invoice_qr_image`, `invoice_pdf` (ReportLab thermal 60mm), `secure_invoice_view`, `invoice_detail`
+- **Invoice Verify**: `invoice_verify` — QR scan verification page
+- **Admin Dashboard**: `admin_dashboard` (`@staff_member_required`), `revenue_filter`, `tax_analytics`
+- **Product Management** (4): `product_list`, `add_product`, `edit_product`, `delete_product` (all `@staff_member_required`)
+- **Search** (3): `search_invoice`, `search_users`, `search_order`
+- **Kitchen** (4): `kitchen_dashboard`, `update_order_status` (auto-earns loyalty on delivery), `kitchen_search_orders`, `my_orders`
+- **Kitchen User Management** (4): `create_kitchen`, `kitchen_list`, `edit_kitchen`, `delete_kitchen`
+- **Order Filters** (2): `orders_by_date`, `orders_by_status`
+- **Timezone**: `set_timezone`
+- **Admin Pages** (2): `invoice_search_page`, `kitchen_users_page`
+- **Table Management** (5): `table_list`, `add_table`, `edit_table`, `delete_table`, `generate_table_qr` (all `@staff_member_required`)
+- **MySQL Backup**: `mysql_backup` — runs mysqldump, returns SQL download
+- **Loyalty Card** (12): `loyalty_card_view` (auth-protected, auto-creates card), `download_loyalty_pdf`, `download_loyalty_image`, `loyalty_card_data`, `loyalty_checkout_info`, `loyalty_checkout_validate`, `verify_loyalty_qr`, `qr_loyalty_redirect`, `loyalty_transactions`, `admin_loyalty_list`, `admin_loyalty_detail`, `admin_toggle_card_status`, `admin_reset_points`, `admin_loyalty_reports`, `admin_export_loyalty_csv`
+- **Offers API** (3): `active_offer_data`, `active_deal_data`, `offer_banner_data`
+- **Offer CRUD** (5): `offer_list`, `offer_add`, `offer_edit`, `offer_detail`, `offer_delete`
+- **Deal CRUD** (5): `deal_list`, `deal_add`, `deal_edit`, `deal_detail`, `deal_delete`
+- **Public Deals** (3): `public_deal_detail`, `deal_checkout`, `clear_deal_cart`
+- **Class-based** (3): `UserDetailView(LoginRequiredMixin)`, `UserUpdateView(LoginRequiredMixin, SuccessMessageMixin)`, `UserRedirectView(LoginRequiredMixin)`
+
+#### `menu/views.py` — Empty (no functional views)
+
+#### `orders/views.py` — 2 legacy views (unused in active flow)
+
+#### `megaone/apps/food_delivery/views.py` — 6 TemplateView-based views (static pages)
+
+### 4.3 Services / Helpers
+
+| Service | File | Purpose |
+|---------|------|---------|
+| `_create_order_from_cart` | `users/views.py:252` | Core order creation engine (discounts, deals, loyalty, tax, Invoice/KitchenOrder creation) |
+| `_get_active_time_offer` | `users/views.py` | Finds first active TimeBasedOffer, auto-updates stale statuses |
+| `_get_active_deal` | `users/views.py` | Same for TodayDeal |
+| `_generate_invoice_qr_image` | `users/views.py` | QR code for invoice verification URL |
+| `generate_qr_code_image` | `users/loyalty_utils.py` | QR code for loyalty cards |
+| `generate_loyalty_card_pdf` | `users/loyalty_utils.py` | PDF document for loyalty cards |
+| `generate_loyalty_card_image` | `users/loyalty_utils.py` | PNG image for loyalty cards |
+| `Invoice.generate_qr_code` | `users/models.py:201` | Invoice QR generation |
+| `RestaurantTable.generate_qr_code` | `users/models.py:152` | Table QR generation |
+| `LoyaltyCard.add_points` | `users/models.py:310` | Earn points with EARN transaction |
+| `LoyaltyCard.redeem_points` | `users/models.py:325` | Redeem points with REDEEM transaction |
+
+### 4.4 Middleware (2 custom)
+
+| Middleware | File | Purpose |
+|-----------|------|---------|
+| `KeepMultipleSessionsMiddleware` | `users/middleware.py` | Prevents session overlap for multi-user devices |
+| `UserTimezoneMiddleware` | `users/middleware.py` | Sets `request.user.timezone` from user profile |
+
+### 4.5 Authentication
+
+- **Custom User Model**: `users.User` — email-based (no username), `USERNAME_FIELD = "email"`
+- **Backends**: `ModelBackend` + `allauth.account.auth_backends.AuthenticationBackend`
+- **Login URL**: `food-delivery:food_delivery_login` (`/food-delivery/login/`)
+- **Login Flow**: POST email + password to `users:login`; auto-creates LoyaltyCard for customers; handles `?next=` parameter; redirects staff→admin, kitchen→kitchen, customers→home (or loyalty welcome)
+- **Registration**: POST name + email + password to `users:register`; redirects to login
+- **Logout**: `/users/logout/`
+- **Password Policy**: Argon2 hashing; minimum length, common password, numeric, and similarity validators
+- **allauth**: Email-only, mandatory verification (`ACCOUNT_EMAIL_VERIFICATION = "mandatory"`), custom signup form
+
+### 4.6 Authorization
+
+| Decorator/Mixin | Usage |
+|-----------------|-------|
+| `@login_required` | Restaurant detail, checkout, loyalty card, kitchen dashboard, user profile |
+| `@staff_member_required` | Admin dashboard, product/tables/offers/deals CRUD, kitchen user mgmt, backup |
+| `LoginRequiredMixin` | UserDetailView, UserUpdateView, UserRedirectView |
+| `is_kitchen` check | Kitchen dashboard access (in addition to login_required) |
+| Manual auth check | `loyalty_card_view` checks `is_authenticated`, redirects to login with message |
+
+### 4.7 APIs (JSON Endpoints)
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/users/checkout/` | POST (JSON) | Authenticated checkout |
+| `/users/guest-checkout/` | POST (JSON) | Guest/QR checkout |
+| `/users/my-orders/` | GET | Last 10 orders for current user |
+| `/users/order-tracking-data/<invoice_no>/` | GET | Order status JSON for tracking |
+| `/users/search-order/` | GET | Search orders by number |
+| `/users/search-invoice/` | POST | Search invoices by email/number |
+| `/users/search-users/` | GET | List all users (staff) |
+| `/users/orders-by-status/` | GET | Filter orders by status |
+| `/users/orders-by-date/` | GET | Filter orders by date |
+| `/users/revenue-filter/` | GET | Revenue by date range |
+| `/users/tax-analytics/` | GET | Tax breakdown by date range |
+| `/users/offers/active-data/` | GET | Active offer JSON |
+| `/users/deals/active-data/` | GET | Active deal JSON |
+| `/users/offers/banner-data/` | GET | Combined offer+deal banner JSON |
+| `/users/loyalty-card/data/` | GET | Loyalty card JSON |
+| `/users/loyalty-card/history/` | GET | Transaction history JSON |
+| `/users/loyalty-card/checkout-info/` | GET | Points info for checkout modal |
+| `/users/loyalty-card/checkout-validate/` | POST | Validate loyalty payment |
+| `/users/loyalty-card/verify-qr/<token>/` | GET | Verify QR token |
+| `/users/kitchen/search-orders/` | GET | Search all orders (kitchen) |
+| `/users/kitchen/order/<id>/status/` | POST | Update order status |
+| `/users/operator_search_products/` | GET | Product search (operator) |
+| `/users/operator_search_invoice/` | GET | Invoice search (operator) |
+| `/users/set-timezone/` | POST | Save user timezone |
+
+---
+
+## 5. Database
+
+**Engine**: MySQL 8.x, database name: `cafe`
+
+### 5.1 Tables (16 models → ~16 tables)
+
+| Table | App | Relationships |
+|-------|-----|---------------|
+| `menu_category` | menu | PK for Food FK |
+| `menu_food` | menu | FK→category; M2M→TodayDeal; FK→Cart, OrderItem |
+| `orders_cart` | orders | FK→user, FK→food (legacy/unused) |
+| `orders_order` | orders | FK→user; has OrderItems (legacy/unused) |
+| `orders_orderitem` | orders | FK→order, FK→food (legacy/unused) |
+| `users_user` | users | Custom user; FK→Invoice, LoyaltyCard, Cart |
+| `users_restauranttable` | users | Unique table_no, qr_token |
+| `users_qrtableoffer` | users | Time-windowed QR discount |
+| `users_timebasedoffer` | users | Scheduled promotion |
+| `users_todaydeal` | users | M2M→Food; FK→Food (free_product) |
+| `users_invoice` | users | FK→user, FK→TodayDeal; O2O→KitchenOrder; has InvoiceItems |
+| `users_invoiceitem` | users | FK→Invoice |
+| `users_kitchenorder` | users | O2O→Invoice; has KitchenOrderItems |
+| `users_kitchenorderitem` | users | FK→KitchenOrder |
+| `loyalty_cards_loyaltycard` | users | FK→user; has LoyaltyTransactions |
+| `loyalty_cards_loyaltytransaction` | users | FK→LoyaltyCard |
+
+### 5.2 Key Relationships
+
+```
+User 1──N Invoice
+User 1──1 LoyaltyCard (auto-created)
+LoyaltyCard 1──N LoyaltyTransaction
+Invoice 1──N InvoiceItem
+Invoice 1──1 KitchenOrder
+KitchenOrder 1──N KitchenOrderItem
+Invoice N──1 TodayDeal (optional)
+Food N──M TodayDeal (optional)
+Food 1──1 Category
+Food 1──N Cart (legacy)
+Food 1──N OrderItem (legacy)
+RestaurantTable ──> Invoice (by table_no, no FK)
+```
+
+---
+
+## 6. Frontend
+
+### 6.1 Pages
+
+| URL | Template | Description |
+|-----|----------|-------------|
+| `/` | `index.html` | Homepage — hero slider, popular products, testimonials, app download, about |
+| `/users/restaurant-detail/` | `food-delivery/restaurant-detail.html` | Menu browsing with cart, checkout, payment modal |
+| `/food-delivery/login` | `food-delivery/login.html` | Login page with `?next=` support |
+| `/food-delivery/registration` | `food-delivery/registration.html` | Registration page |
+| `/food-delivery/accounts` | `food-delivery/accounts.html` | User account/profile page |
+| `/food-delivery/restaurant-detail` | `food-delivery/restaurant-detail.html` | Static restaurant detail (TemplateView, no cart logic) |
+| `/food-delivery/restaurant-listing` | `food-delivery/restaurant-listing.html` | Restaurant listing (static) |
+| `/users/order-tracking/<invoice_no>/` | `food-delivery/order_tracking.html` | Real-time order tracking with progress bar |
+| `/users/invoice/<uuid_token>/` | (PDF) | Thermal-style invoice PDF download |
+| `/users/invoice/<uuid_token>/verify/` | `food-delivery/invoice_verify.html` | Invoice verification via QR scan |
+| `/users/loyalty-card/` | `users/loyalty_card.html` | Customer loyalty card with transaction history |
+| `/users/kitchen/dashboard/` | `kitchen/dashboard.html` | Kitchen kanban display with live polling |
+| `/users/dashboard/` | `admin/dashboard.html` | Admin dashboard with KPIs, revenue, tables |
+| `/users/products/` | `admin/products.html` | Product list (admin) |
+| `/users/products/add/` | `admin/add_product.html` | Add product form (admin) |
+| `/users/products/<pk>/edit/` | `admin/edit_product.html` | Edit product form (admin) |
+| `/users/tables/` | `admin/tables.html` | Table management with QR codes (admin) |
+| `/users/invoices/` | `admin/invoices.html` | Invoice search (admin) |
+| `/users/kitchen-users/` | `admin/kitchen_users.html` | Kitchen staff management (admin) |
+| `/users/offers/` | `admin/offer_list.html` | Offer list (admin) |
+| `/users/offers/<pk>/` | `admin/offer_detail.html` | Offer detail (admin) |
+| `/users/offers/add/` and `/edit/` | `admin/offer_form.html` | Offer add/edit form (admin) |
+| `/users/deals/` | `admin/deal_list.html` | Deal list (admin) |
+| `/users/deals/<pk>/` | `admin/deal_detail.html` | Deal detail (admin) |
+| `/users/deals/add/` and `/edit/` | `admin/deal_form.html` | Deal add/edit form (admin) |
+| `/users/deals/<pk>/public/` | `food-delivery/deal_detail.html` | Public deal detail with countdown |
+| `/menu/?table=X&token=Y` | `food-delivery/restaurant-detail.html` | QR-scanned menu entry point |
+| `/404-1/`, `/404-2/`, `/404-3/` | `404-1.html`, etc. | Styled 404 pages (for demo) |
+
+### 6.2 Navigation
+
+**Homepage Header**: Logo | Browse Food | Download App | About Us | [Orders Dropdown] | [User Menu]
+- Browse Food → `/users/restaurant-detail/`
+- Orders Dropdown: authenticated users see last 10 orders with status + actions
+- User Menu: Login/Register (guest) or Account/Loyalty Card/Logout (authenticated)
+
+**Restaurant Detail Header**: Logo | Browse Food | Download App | About Us | [Cart] | [Orders Dropdown] | [User Menu]
+- Cart icon with badge count + minicart dropdown (localStorage-based)
+- Minicart: items with +/- quantity, remove, total, checkout button
+
+**Admin Sidebar**: Dashboard | Products | Tables | Invoices | Loyalty Cards | Time-Based Offers | Today's Deals | Kitchen Users | Backup | Logout
+
+### 6.3 Components
+
+| Component | Location | Description |
+|-----------|----------|-------------|
+| Offers Popup | `food-delivery/offers_popup.html` | Full-screen carousel with offer/deal slides, countdowns |
+| Menu Banner | `food-delivery/menu_banner.html` | Dynamic promotional banner on menu page |
+| Off-Canvas Side Menu | `index.html` | Mobile side navigation with animation |
+| Product Cards | `index.html` | Food cards with image, name, description, price, rating, Add to Cart |
+| Food List Items | `restaurant-detail.html` | Menu items with add-to-cart buttons |
+| Minicart Dropdown | `restaurant-detail.html` | Cart summary with quantity controls |
+| Payment Modal | `restaurant-detail.html` | Card/Cash/Loyalty payment selection with tax calculation |
+| Order Tracking Progress | `order_tracking.html` | 4-step status progress bar with animations |
+| Kanban Columns | `kitchen/dashboard.html` | Pending/Preparing/Ready/Delivered columns |
+| Invoice Cards | `admin/invoices.html` | Search results with status badges |
+| Table Cards | `admin/tables.html` | Table info with QR code and actions |
+| Stats Cards | `admin/dashboard.html` | KPI cards with revenue, counts, percentages |
+
+### 6.4 Layouts
+
+| Layout | File | Used By |
+|--------|------|---------|
+| Main Base | `base.html` | All customer-facing pages |
+| Admin Base | `admin/base_admin.html` | All admin pages |
+
+`base.html` provides: CSS/JS blocks, modal block, click sound, timezone detection
+`admin/base_admin.html` provides: sidebar navigation, Bootstrap 5 + DataTables + AOS
+
+---
+
+## 7. Admin Panel
+
+### 7.1 Dashboard (`/users/dashboard/`)
+- 18 KPI stat cards (revenue, orders, tax, loyalty, offers, deals)
+- Recent orders DataTable with status and actions
+- Per-table revenue reports
+- Quick action links
+- Revenue filter modal (date range)
+- Tax analytics modal (card vs cash breakdown)
+
+### 7.2 Product Management (`/users/products/`)
+- List all products with search, filter by availability/popularity
+- Add product form (category, name, description, price, reward points, image, available, popular)
+- Edit product form (same fields, pre-populated)
+- Delete product with confirmation
+
+### 7.3 Table Management (`/users/tables/`)
+- List all tables with QR code images
+- Add table (auto-generates QR)
+- Edit table number, regenerate QR
+- Delete table
+- Download QR code image
+
+### 7.4 Orders/Invoices (`/users/invoices/`)
+- Search by invoice number, email, customer name
+- Filter by order status
+- AJAX-based debounced search
+- Invoice cards with status badges, View/PDF links
+
+### 7.5 Kitchen Users (`/users/kitchen-users/`)
+- List kitchen staff with DataTable
+- Add kitchen user (name, email, password)
+- Edit kitchen user name
+- Delete kitchen user
+- All operations via AJAX with SweetAlert2 confirmations
+
+### 7.6 Time-Based Offers (`/users/offers/`)
+- List all offers with stats (total, active, expired, usage)
+- Add/edit offers (title, discount %, banner, popup image, start/end datetime)
+- View offer detail
+- Delete offer
+
+### 7.7 Today's Deals (`/users/deals/`)
+- List all deals with stats
+- Add/edit deals (type: combo, free product, percentage)
+- Multi-select products, optional free product
+- View deal detail with original/savings/deal price
+- Delete deal
+
+### 7.8 Loyalty Cards (`/users/loyalty-card/admin/list/`)
+- Search by name, email, card number
+- Filter by status (Active/Blocked)
+- DataTable with card info
+- Export CSV
+- Card detail with transaction history
+- Toggle Active/Blocked
+- Reset points (with confirmation)
+- Reports with Chart.js (bar + doughnut)
+
+### 7.9 Backup (`/users/mysql-backup/`)
+- One-click MySQL database dump download
+
+---
+
+## 8. User Features
+
+### 8.1 Registration
+- POST to `/users/register/` with name, email, password
+- Validates password match, email uniqueness
+- Redirects to login on success
+
+### 8.2 Login
+- POST to `/users/login/` with email + password
+- Supports `?next=` parameter for post-login redirect
+- Auto-creates LoyaltyCard for non-staff/non-kitchen users
+- Generates QR code, PDF, and PNG for new loyalty cards
+- Shows welcome popup for first-time card owners
+- Redirects based on role (staff→admin, kitchen→kitchen, customer→home or loyalty welcome)
+
+### 8.3 Logout
+- `/users/logout/` — clears session, redirects to `/`
+
+### 8.4 Profile
+- `/users/<pk>/` — User detail page (LoginRequired)
+- `/users/update/` — Edit name (LoginRequired)
+- `/food-delivery/accounts` — Account page with user info display
+
+### 8.5 Loyalty Information (`/users/loyalty-card/`)
+- **Auth-protected**: unauthenticated users see message "Please log in to view your loyalty information." and are redirected to login with `?next=`
+- Card preview with QR code, points balance, status
+- Action buttons: Download PDF, Download PNG
+- Transaction history table (Earn/Redeem)
+- Auto-refreshes points every 15 seconds via AJAX
+
+### 8.6 Restaurant Detail (`/users/restaurant-detail/`)
+- Full menu with product listing
+- Each product: name, description, price, Add to Cart button
+- Cart system (localStorage) with minicart dropdown
+- Quantity controls (+/-), remove, subtotal, total
+- Checkout with payment modal (Card 5% tax, Cash 18% tax, Loyalty Points)
+- Auto-scroll from homepage: `?product=X` parameter
+- Auto-add to cart and open minicart when redirected from homepage
+
+### 8.7 Product Browsing
+- Homepage: 6 popular product cards with image, name, description, price, Add to Cart button
+- Clicking Add to Cart while logged out → notify + redirect to login with `?next=`
+- Clicking Add to Cart while logged in → redirect to restaurant-detail with product pre-added and cart open
+
+### 8.8 Search
+- Admin: search invoices by number/email/name (AJAX debounced)
+- Admin: search users
+- Kitchen: search orders by table/invoice/order number
+- All product listing supports browser search via DataTables
+
+### 8.9 Categories
+- `Category` model exists with `name` field
+- Used as FK for Food products
+- Available in admin product add/edit forms
+- No dedicated category browsing page on frontend
+
+### 8.10 Checkout Flow
+1. User adds items to cart (localStorage)
+2. Clicks "Checkout" in minicart
+3. Payment modal opens with order summary
+4. User selects payment method (Card/Cash/Loyalty)
+5. If Loyalty: shows points balance, input for points to use, secondary payment if partial
+6. User clicks "Pay Now"
+7. POST to `/users/checkout/` (authenticated) or `/users/guest-checkout/` (guest)
+8. Backend: calculates discounts (offer/deal), tax (5% card / 18% cash / 0% loyalty), creates Invoice + KitchenOrder
+9. On success: clears cart, redirects to order tracking page
+
+### 8.11 Payment
+- **Card**: 5% tax, stored as `payment_method = "card"`
+- **Cash on Delivery**: 18% tax, stored as `payment_method = "cash"`
+- **Loyalty Points**: 0% tax, stored as `payment_method = "loyalty"` or `"loyalty+card"` / `"loyalty+cash"` for hybrid
+- Points validation via `/users/loyalty-card/checkout-validate/`
+- Loyalty points auto-earned on order delivery (based on `Food.reward_points`)
+
+---
+
+## 9. Cart System
+
+### 9.1 Current Implementation
+- **Storage**: Client-side `localStorage`
+- **Cart Key**: `qr_cart_<tableNo>` (e.g., `qr_cart_5` for table 5, `qr_cart_guest` for online users)
+- **Scope**: Cart exists only on the Restaurant Detail page (`restaurant-detail.html`)
+- **Data Structure**: Array of `{ id, name, price, image, qty }` objects
+- **Functions**: `addToCart()`, `removeItem()`, `changeQty()`, `saveCart()`, `renderCart()`, `getCartSubtotal()`
+
+### 9.2 Restaurant Detail Cart Behavior
+- Add to Cart button triggers `addToCart()` → saves to localStorage → re-renders minicart
+- Minicart shows: product image, name, price, quantity (+/-), remove button, total
+- Checkout button opens payment modal
+- On homepage redirect with `?product=X`: auto-adds product to cart, auto-opens minicart dropdown
+
+### 9.3 Homepage Cart Removal
+- Homepage has **no cart system** — no cart icon, no minicart, no payment modal
+- "Add to Cart" button on homepage cards redirects to Restaurant Detail page
+- If logged in: redirect directly to restaurant detail with product pre-added
+- If logged out: show message + redirect to login → after login → restaurant detail with product + cart
+
+---
+
+## 10. Homepage
+
+### 10.1 Browse Food Navigation
+- "Browse Food" link navigates to `/users/restaurant-detail/` (no longer scrolls to `#gallery-sec`)
+
+### 10.2 Popular Products
+- Displays exactly 6 products
+- First queries `Food.objects.filter(available=1, is_popular=True)[:6]`
+- If none marked popular, falls back to `Food.objects.filter(available=1).order_by("-created_at")[:6]`
+- Shows empty state only when database has zero active products
+
+### 10.3 Product Cards Design
+- Background: `#323436`
+- Border radius: `18px`
+- Border: `1px solid rgba(245,158,11,.15)` with hover glow to `rgba(245,158,11,.4)`
+- Box shadow with golden tint on hover
+- Smooth lift animation on hover (`translateY(-6px)`)
+- Equal height via flexbox
+- Layout: 3/row (desktop), 2/row (tablet), 1/row (mobile)
+- Each card: product image (200px height), product name (white), description (max 2 lines, `#94a3b8`), price (`#f59e0b`, 20px bold), 5-star rating, "Add to Cart" button (gold `#f59e0b`)
+
+### 10.4 Add to Cart Button Flow
+- **Not logged in**: notify "Please log in to add items to your cart." → redirect to `/food-delivery/login?next=/users/restaurant-detail/?product=X`
+- **Logged in**: redirect directly to `/users/restaurant-detail/?product=X` → product auto-added to cart → minicart opens
+
+---
+
+## 11. Authentication Flow
+
+### 11.1 Login Redirects
+- `LOGIN_URL` configured as `"food-delivery:food_delivery_login"` (`/food-delivery/login/`)
+- All `@login_required` decorators and `LoginRequiredMixin` use this custom login page
+- Django's default `/accounts/login/` is never used
+
+### 11.2 Protected Routes
+- `/users/restaurant-detail/` — `@login_required(login_url='food-delivery:food_delivery_login')`
+- `/users/checkout/` — `@login_required` + `@require_POST`
+- `/users/loyalty-card/` — manual auth check with message + redirect
+- `/users/kitchen/dashboard/` — `@login_required` + `is_kitchen` check
+- `/users/dashboard/` — `@staff_member_required`
+- `/users/products/` — `@staff_member_required`
+- `/users/tables/` — `@staff_member_required`
+- All admin pages — `@staff_member_required`
+- `UserDetailView`, `UserUpdateView`, `UserRedirectView` — `LoginRequiredMixin`
+
+### 11.3 `?next=` Parameter Handling
+- Login view reads `request.GET.get("next")` and `request.POST.get("next")`
+- Login template renders hidden `<input name="next">` when `request.GET.next` is present
+- After successful login, redirects to `next_url` if provided
+- Used by: loyalty card redirect, homepage Add to Cart redirect, deal checkout redirect
+
+---
+
+## 12. Routes Summary
+
+**Total named URL patterns**: ~87
+
+| Namespace | Patterns | Prefix |
+|-----------|----------|--------|
+| (root) | 9 | `/` |
+| `users` | 75 | `/users/` |
+| `food-delivery` | 6 | `/food-delivery/` |
+| (allauth) | ~10 | `/accounts/` |
+
+---
+
+## 13. Environment Variables
+
+The project uses `django-environ` but no `.env` files are included in the repository. The following variables are expected:
+
+| Variable | Default | Used In |
+|----------|---------|---------|
+| `DJANGO_DEBUG` | `False` | `base.py` |
+| `DJANGO_SECRET_KEY` | (required in prod) | `production.py` |
+| `DJANGO_ALLOWED_HOSTS` | (required in prod) | `production.py` |
+| `REDIS_URL` | `redis://localhost:6379/0` | `base.py` |
+| `DJANGO_EMAIL_BACKEND` | `smtp` | `base.py` |
+| `DATABASE_URL` | (MySQL defaults used) | (in settings) |
+| `AWS_ACCESS_KEY_ID` | (required in prod) | `production.py` |
+| `AWS_SECRET_ACCESS_KEY` | (required in prod) | `production.py` |
+| `AWS_STORAGE_BUCKET_NAME` | (required in prod) | `production.py` |
+| `MAILGUN_API_KEY` | (required in prod) | `production.py` |
+
+---
+
+## 14. Installation
+
+```bash
+# 1. Clone the repository
+git clone <repo-url>
+cd Restaurant Management System
+
+# 2. Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# 3. Install dependencies
+pip install -r requirements/local.txt
+
+# 4. Configure MySQL database
+# Create a database named 'cafe' (or update config/settings/base.py)
+
+# 5. Run migrations
+python manage.py migrate
+
+# 6. Create superuser
+python manage.py createsuperuser
+
+# 7. Run development server
+python manage.py runserver
+
+# 8. Run tests
+pytest
+```
+
+---
+
+## 15. Deployment Notes
+
+- **Production settings** in `config/settings/production.py` configure:
+  - AWS S3 for static/media files
+  - Mailgun for email via django-anymail
+  - Redis for cache (django-redis)
+  - SSL/HSTS with secure cookies
+  - Gunicorn as WSGI server
+  - Collectfasta for optimized static collection
+- **No Dockerfile** for the main application (only docs Docker Compose)
+- **No CI/CD pipeline** configured
+- Database must be MySQL; set credentials via `DATABASE_URL` or in settings
+- Redis is required for cache/sessions in production
+- Production `ALLOWED_HOSTS` and `SECRET_KEY` must be set via environment variables
+- Static files: `python manage.py collectstatic --noinput`
+
+---
+
+## 16. Known Issues
+
+- `allauth` settings produce deprecation warnings (`ACCOUNT_AUTHENTICATION_METHOD`, `ACCOUNT_EMAIL_REQUIRED`, `ACCOUNT_USERNAME_REQUIRED` are deprecated in favor of `ACCOUNT_LOGIN_METHODS` and `ACCOUNT_SIGNUP_FIELDS`)
+- MySQL unique constraints with conditions warning for allauth models (non-blocking)
+- `Category` model is not registered in Django admin
+- Models in `megaone.users` app are not registered in Django admin (managed via custom admin views)
+- `orders` app models (`Cart`, `Order`, `OrderItem`) are legacy and unused in the active ordering flow
+- No dedicated cart page exists (cart is only in the minicart dropdown on restaurant-detail.html)
+- No `.env` or `.env.example` file included in the repository
+- `compose/` and `.envs/` directories referenced by `docker-compose.docs.yml` are missing
+
+---
+
+## 17. Future Improvements
+
+- Register remaining models in Django admin for easier data management
+- Create a dedicated cart page with full cart management
+- Add category browsing/filtering to the restaurant detail page
+- Implement product search on the frontend menu page
+- Add pagination for large product catalogs
+- Migrate from deprecated allauth settings to new API
+- Add CI/CD pipeline (GitHub Actions)
+- Create Dockerfile for production deployment
+- Add stock/inventory management to Food model
+- Implement order cancellation by customers
+- Add email notifications for order status changes
+- Build mobile app (iOS/Android) for customers
+- Add multi-language support beyond the existing locale files
+- Implement real-time WebSocket for kitchen notifications instead of polling
+
+---
+
+## 18. Changelog
+
+### Latest Changes
+
+- **Browse Food navigation**: Now opens Restaurant Detail page (`/users/restaurant-detail/`) instead of scrolling to `#gallery-sec` on the homepage
+- **Homepage Popular Products**: Displays 6 dynamically loaded products from the database. Queries `is_popular=True` first, falls back to latest 6 active products if none are marked popular. Empty state only shows when no active products exist
+- **Product Cards**: Redesigned with `#323436` background, 18px border-radius, subtle golden glowing border, soft shadow, smooth hover lift animation. Equal height via flexbox. Responsive: 3/2/1 per row
+- **Homepage Cart Removed**: No cart icon, minicart, payment modal, or cart JavaScript on the homepage. Cart functionality exists only on the Restaurant Detail page
+- **Homepage Add to Cart**: Buttons present on cards. Logged-out users see a message and are redirected to login with `?next=`. Logged-in users go directly to Restaurant Detail where the selected product is auto-added to cart and the minicart opens automatically
+- **Authentication Redirect**: `LOGIN_URL` changed from Django's default `account_login` (`/accounts/login/`) to the project's custom `food-delivery:food_delivery_login` (`/food-delivery/login/`). All `@login_required` decorators and auth middleware now use this custom login page
+- **My Loyalty Information Protection**: Unauthenticated users see "Please log in to view your loyalty information." and are redirected to the custom login page with `?next=` preserving the destination. After login, they return to the loyalty page
+- **Login Redirect Flow**: The `food_delivery_login` view reads `request.GET.next` and `request.POST.next`. The login template renders a hidden `next` input field. After successful authentication, users are redirected back to the originally requested page
