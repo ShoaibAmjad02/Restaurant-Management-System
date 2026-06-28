@@ -208,7 +208,6 @@ def food_delivery_restaurant_detail(request):
 
 
 # =========================
-<<<<<<< HEAD
 # OFFER HELPERS
 # =========================
 
@@ -594,7 +593,6 @@ def invoice_pdf(request, uuid_token):
 
     width = 60 * mm
 
-<<<<<<< HEAD
     loyalty_height = 0
     if invoice.user:
         if LoyaltyCard.objects.filter(user=invoice.user).exists():
@@ -603,11 +601,6 @@ def invoice_pdf(request, uuid_token):
     header_height = 65 * mm
     item_per_height = 9 * mm
     summary_height = 50 * mm
-=======
-    header_height = 65 * mm
-    item_per_height = 9 * mm
-    summary_height = 40 * mm
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     qr_height = 40 * mm
     footer_height = 15 * mm
 
@@ -617,10 +610,7 @@ def invoice_pdf(request, uuid_token):
         + summary_height
         + qr_height
         + footer_height
-<<<<<<< HEAD
         + loyalty_height
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     )
 
     buffer = io.BytesIO()
