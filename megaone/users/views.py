@@ -137,7 +137,6 @@ def logout_view(request):
 
 
 # =========================
-<<<<<<< HEAD
 # HOME PAGE
 # =========================
 def home_view(request):
@@ -154,8 +153,6 @@ def home_view(request):
 
 
 # =========================
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 # QR MENU ACCESS
 # =========================
 @csrf_exempt
@@ -185,28 +182,21 @@ def qr_menu_view(request):
         return render(request, "food-delivery/qr_error.html", {"error": "Invalid QR code link."})
 
     products = Food.objects.filter(available=1)
-<<<<<<< HEAD
     active_offer = _get_active_time_offer()
     active_deal = _get_active_deal()
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
     return render(request, "food-delivery/restaurant-detail.html", {
         "products": products,
         "table_no": table.table_no,
         "is_qr_customer": True,
-<<<<<<< HEAD
         "active_offer": active_offer,
         "active_deal": active_deal,
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     })
 
 
 @login_required(login_url='food-delivery:food_delivery_login')
 def food_delivery_restaurant_detail(request):
     products = Food.objects.filter(available=1)
-<<<<<<< HEAD
     active_offer = _get_active_time_offer()
     active_deal = _get_active_deal()
     return render(request, 'food-delivery/restaurant-detail.html', {
@@ -214,11 +204,6 @@ def food_delivery_restaurant_detail(request):
         "table_no": request.session.get("table_no"),
         "active_offer": active_offer,
         "active_deal": active_deal,
-=======
-    return render(request, 'food-delivery/restaurant-detail.html', {
-        "products": products,
-        "table_no": request.session.get("table_no"),
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     })
 
 
@@ -272,11 +257,6 @@ def _get_active_deal():
 def _create_order_from_cart(cart, request, user=None, payment_method="card",
                             customer_timezone="UTC", use_loyalty_points=None,
                             secondary_payment_method=None):
-=======
-# CHECKOUT
-# =========================
-def _create_order_from_cart(cart, request, user=None, payment_method="card", customer_timezone="UTC"):
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     table_no = request.session.get("table_no")
     customer_session = request.session.get("customer_session_id") or str(uuid.uuid4())
 
@@ -286,7 +266,6 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
         price = float(item["price"])
         subtotal_amount += qty * price
 
-<<<<<<< HEAD
     # ---------- Today's Deal ----------
     deal_obj = None
     deal_discount_amt = 0
@@ -387,16 +366,10 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
     grand_total = remaining_amount + tax_amount
     if grand_total < 0:
         grand_total = 0
-=======
-    tax_pct = 5 if payment_method == "card" else 18
-    tax_amount = round(subtotal_amount * tax_pct / 100, 2)
-    grand_total = subtotal_amount + tax_amount
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
     invoice = Invoice.objects.create(
         user=user,
         invoice_number=f"INV-{uuid.uuid4().hex[:8].upper()}",
-<<<<<<< HEAD
         payment_method=store_method,
         customer_timezone=customer_timezone,
         tax_percentage=tax_pct,
@@ -411,34 +384,17 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
         qr_offer_discount_amount=qr_offer_discount_amt,
         deal=deal_obj,
         deal_discount_amount=deal_discount_amt,
-=======
-        payment_method=payment_method,
-        customer_timezone=customer_timezone,
-        tax_percentage=tax_pct,
-        tax_amount=tax_amount,
-        subtotal_amount=subtotal_amount,
-        total_amount=grand_total,
-        table_no=table_no,
-        customer_session_id=customer_session,
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     )
 
     for item in cart:
         qty = int(item["qty"])
         price = float(item["price"])
-<<<<<<< HEAD
         is_free = item.get("is_free", False)
         display_price = 0 if is_free else price
         subtotal = qty * display_price
         InvoiceItem.objects.create(
             invoice=invoice, product_name=item["name"],
             price=display_price, quantity=qty, subtotal=subtotal,
-=======
-        subtotal = qty * price
-        InvoiceItem.objects.create(
-            invoice=invoice, product_name=item["name"],
-            price=price, quantity=qty, subtotal=subtotal,
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         )
 
     order = KitchenOrder.objects.create(
@@ -448,7 +404,6 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
     order.order_number = f"ORD-{order.id}"
     order.save()
 
-<<<<<<< HEAD
     if loyalty_card and loyalty_points_used > 0:
         try:
             loyalty_card.redeem_points(loyalty_points_used, order_number=order.order_number)
@@ -463,16 +418,6 @@ def _create_order_from_cart(cart, request, user=None, payment_method="card", cus
     invoice.generate_qr_code(request)
     invoice.save()
 
-=======
-    for item in cart:
-        KitchenOrderItem.objects.create(
-            order=order, product_name=item["name"], quantity=int(item["qty"]),
-        )
-
-    invoice.generate_qr_code(request)
-    invoice.save()
-
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     return invoice
 
 
@@ -486,7 +431,6 @@ def guest_checkout(request):
         cart = data.get("cart", [])
         payment_method = data.get("payment_method", "card")
         customer_timezone = data.get("timezone", "UTC")
-<<<<<<< HEAD
         use_loyalty_points = data.get("use_loyalty_points")
         secondary_payment_method = data.get("secondary_payment_method")
         if not cart:
@@ -499,12 +443,6 @@ def guest_checkout(request):
             use_loyalty_points=use_loyalty_points,
             secondary_payment_method=secondary_payment_method,
         )
-=======
-        if not cart:
-            return JsonResponse({"success": False, "message": "Cart is empty"}, status=400)
-
-        invoice = _create_order_from_cart(cart, request, payment_method=payment_method, customer_timezone=customer_timezone)
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         return JsonResponse({
             "success": True,
             "invoice_no": invoice.invoice_number,

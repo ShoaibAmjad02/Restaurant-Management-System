@@ -1,7 +1,10 @@
-<<<<<<< HEAD
-from django.db.models.signals import post_save
+import os
+
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
+
+from megaone.users.models import RestaurantTable
 from .models import LoyaltyCard
 
 User = get_user_model()
@@ -25,13 +28,6 @@ def create_loyalty_card_for_user(sender, instance, created, **kwargs):
             generate_loyalty_card_image(card)
         except Exception:
             pass
-=======
-import os
-
-from django.db.models.signals import post_delete, pre_save
-from django.dispatch import receiver
-
-from megaone.users.models import RestaurantTable
 
 
 @receiver(post_delete, sender=RestaurantTable)
@@ -50,4 +46,3 @@ def delete_old_qr_on_update(sender, instance, **kwargs):
         return
     if old.qr_code_image and old.qr_code_image != instance.qr_code_image and os.path.isfile(old.qr_code_image.path):
         os.remove(old.qr_code_image.path)
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
