@@ -142,9 +142,13 @@ def logout_view(request):
 def home_view(request):
     active_offer = _get_active_time_offer()
     active_deal = _get_active_deal()
+    popular_products = Food.objects.filter(available=1, is_popular=True)[:6]
+    if not popular_products:
+        popular_products = Food.objects.filter(available=1).order_by("-created_at")[:6]
     return render(request, "index.html", {
         "active_offer": active_offer,
         "active_deal": active_deal,
+        "popular_products": popular_products,
     })
 
 

@@ -47,6 +47,8 @@
 .dropdown-title{padding:15px;color:#ff7b00;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.08);text-align:center;letter-spacing:1px;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .table-badge{background:#ff7b00;color:#fff;padding:10px 25px;border-radius:50px;font-size:18px;font-weight:700;display:inline-block;margin-bottom:20px;}
+.food-list.highlight{animation:highlightPulse 2s ease;border-left:4px solid #f59e0b;padding-left:15px}
+@keyframes highlightPulse{0%{background:rgba(245,158,11,.15)}50%{background:rgba(245,158,11,.08)}100%{background:transparent}}
 </style>
 {% endblock css %}
 
@@ -201,7 +203,7 @@
                         <div class="row">
                             {% for product in products %}
                             <div class="col-md-6">
-                                <div class="food-list ml-0">
+                                <div class="food-list ml-0" data-product-id="{{ product.id }}">
                                     <div class="list-overlay"></div>
                                     <div class="rates d-flex justify-content-between">
                                         <div class="info">
@@ -485,6 +487,40 @@ document.addEventListener("click", function(e) {
 });
 
 renderCart();
+
+// ========================
+// AUTO-SCROLL TO SELECTED PRODUCT FROM HOMEPAGE
+// ========================
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("product");
+    if (productId) {
+        const target = document.querySelector('.food-list[data-product-id="' + productId + '"]');
+        if (target) {
+            setTimeout(function() {
+                target.scrollIntoView({ behavior: "smooth", block: "center" });
+                target.classList.add("highlight");
+                setTimeout(function() { target.classList.remove("highlight"); }, 3000);
+                const btn = target.querySelector(".add-to-cart-btn");
+                if (btn) {
+                    addToCart(
+                        parseInt(btn.dataset.id),
+                        btn.dataset.name,
+                        parseFloat(btn.dataset.price),
+                        btn.dataset.image
+                    );
+                    setTimeout(function() {
+                        const cartToggle = document.querySelector(".header-shop-cart");
+                        if (cartToggle) {
+                            const minicart = cartToggle.querySelector(".minicart");
+                            if (minicart) minicart.style.display = "block";
+                        }
+                    }, 300);
+                }
+            }, 500);
+        }
+    }
+})();
 
 // Payment flow
 let selectedPayment = null;

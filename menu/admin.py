@@ -9,7 +9,13 @@ class FoodAdmin(admin.ModelAdmin):
         "id",
         "name",
         "price",
-        "available"
+        "available",
+        "is_popular",
+    )
+
+    list_filter = (
+        "is_popular",
+        "available",
     )
 
     search_fields = (

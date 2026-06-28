@@ -26,6 +26,7 @@ class Food(models.Model):
     )
 
     available = models.BooleanField(default=True)
+    is_popular = models.BooleanField(default=False, help_text="Mark as popular to show on homepage")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
