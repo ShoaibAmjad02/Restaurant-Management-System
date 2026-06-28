@@ -27,13 +27,10 @@ urlpatterns = [
     path("404-1/", TemplateView.as_view(template_name="404-1.html"), name="404-1"),
     path("404-2/", TemplateView.as_view(template_name="404-2.html"), name="404-2"),
     path("404-3/", TemplateView.as_view(template_name="404-3.html"), name="404-3"),
-    # Media cals
-    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
 
 if settings.DEBUG:
-    # This allows the error pages to be debugged during development, just visit
-    # these url in browser to see how these error pages look like.
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         path(
             "400/",

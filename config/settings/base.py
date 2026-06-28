@@ -50,7 +50,7 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 # MYSQLUSER, MYSQLPASSWORD. PyMySQL is used as the MySQL driver via
 # pymysql.install_as_MySQLdb() in config/__init__.py.
 
-    DATABASES = {
+DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": env.str("MYSQLDATABASE", default="railway"),

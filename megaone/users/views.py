@@ -744,7 +744,6 @@ def invoice_pdf(request, uuid_token):
     tax_amount = float(invoice.tax_amount) if invoice.tax_amount else round(subtotal * 0.05, 2)
     grand_total = float(invoice.total_amount)
     sub_amt = float(invoice.subtotal_amount) if invoice.subtotal_amount else subtotal
-<<<<<<< HEAD
     qr_disc_pct = float(invoice.qr_offer_discount_percentage) if invoice.qr_offer_discount_percentage else 0
     qr_disc_amt = float(invoice.qr_offer_discount_amount) if invoice.qr_offer_discount_amount else 0
     deal_disc_amt = float(invoice.deal_discount_amount) if invoice.deal_discount_amount else 0
@@ -761,15 +760,12 @@ def invoice_pdf(request, uuid_token):
             pdf.drawRightString(right, y, f"Rs {deal_disc_amt:.0f}")
             y -= 4 * mm
         pdf.setFillColor(DARK)
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
     pdf.setFont("Helvetica", 8)
     pdf.drawString(MARGIN, y, "Subtotal")
     pdf.drawRightString(right, y, f"Rs {sub_amt:.0f}")
     y -= 5 * mm
 
-<<<<<<< HEAD
     if not invoice.deal:
         if qr_disc_pct > 0 and qr_disc_amt > 0:
             pdf.setFont("Helvetica", 7)
@@ -778,8 +774,6 @@ def invoice_pdf(request, uuid_token):
             pdf.drawRightString(right, y, f"-Rs {qr_disc_amt:.0f}")
             y -= 5 * mm
 
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     pdf.setFont("Helvetica", 7)
     pdf.setFillColor(GRAY)
     pdf.drawString(MARGIN, y, f"Tax ({tax_pct:.0f}%)")
@@ -802,7 +796,6 @@ def invoice_pdf(request, uuid_token):
     pdf.setFillColor(DARK)
 
     # ==========================
-<<<<<<< HEAD
     # LOYALTY CARD INFO (Order Total → Loyalty Used → Paid By Cash → Remaining Balance)
     # ==========================
     if invoice.user:
@@ -850,8 +843,6 @@ def invoice_pdf(request, uuid_token):
             y -= 4 * mm
 
     # ==========================
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     # QR CODE (Bottom Center)
     # ==========================
     y -= 10 * mm
@@ -897,11 +888,7 @@ def invoice_verify(request, uuid_token):
 
     order = getattr(invoice, 'kitchen_order', None)
     items = invoice.items.all()
-<<<<<<< HEAD
     subtotal = float(invoice.subtotal_amount) if invoice.subtotal_amount else sum(float(item.subtotal) for item in items)
-=======
-    subtotal = sum(float(item.subtotal) for item in items)
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     tax_pct = float(invoice.tax_percentage) if invoice.tax_percentage else 5
     tax = float(invoice.tax_amount) if invoice.tax_amount else round(subtotal * tax_pct / 100, 2)
 
@@ -940,7 +927,6 @@ def admin_dashboard(request):
     tables_count = RestaurantTable.objects.count()
     kitchen_users_count = User.objects.filter(is_kitchen=True).count()
     customers_count = User.objects.filter(is_staff=False, is_kitchen=False, is_superuser=False).count()
-<<<<<<< HEAD
 
     # Loyalty stats
     from django.db.models import Sum
@@ -957,8 +943,6 @@ def admin_dashboard(request):
     active_deals = TodayDeal.objects.filter(is_active=True).count()
     offer_usage = Invoice.objects.aggregate(total=Sum('qr_offer_discount_amount'))['total'] or 0
     offer_discount_given = Invoice.objects.filter(qr_offer_discount_amount__gt=0).count()
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
 
     pending_count = KitchenOrder.objects.filter(status="pending").count()
     preparing_count = KitchenOrder.objects.filter(status="preparing").count()
@@ -1010,7 +994,6 @@ def admin_dashboard(request):
         "total_orders": invoices_count,
         "recent_orders": recent_orders,
         "table_reports": table_reports,
-<<<<<<< HEAD
         "loyalty_cards_count": loyalty_cards_count,
         "loyalty_active": loyalty_active,
         "loyalty_points_earned": loyalty_points_earned,
@@ -1022,8 +1005,6 @@ def admin_dashboard(request):
         "active_deals": active_deals,
         "offer_usage": offer_usage,
         "offer_discount_given": offer_discount_given,
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
     })
 
 
@@ -1108,10 +1089,7 @@ def add_product(request):
             category=category, name=request.POST.get("name"),
             description=request.POST.get("description"),
             price=request.POST.get("price"),
-<<<<<<< HEAD
             reward_points=request.POST.get("reward_points", 0),
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
             image=request.FILES.get("image"),
             available=request.POST.get("available") == "on",
         )
@@ -1128,10 +1106,7 @@ def edit_product(request, pk):
         product.name = request.POST.get("name")
         product.description = request.POST.get("description")
         product.price = request.POST.get("price")
-<<<<<<< HEAD
         product.reward_points = request.POST.get("reward_points", 0)
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         product.category = get_object_or_404(Category, id=request.POST.get("category_id"))
         product.available = request.POST.get("available") == "on"
         if request.FILES.get("image"):
@@ -1229,7 +1204,6 @@ def update_order_status(request, order_id):
             invoice = order.invoice
             invoice.generate_qr_code(request)
             invoice.save()
-<<<<<<< HEAD
 
             # Auto-earn loyalty points for delivered orders (online users only)
             if invoice.user and not invoice.loyalty_points_processed:
@@ -1249,8 +1223,6 @@ def update_order_status(request, order_id):
                         invoice.loyalty_points_earned = total_points
                         invoice.loyalty_points_processed = True
                         invoice.save()
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         except Exception:
             pass
 
@@ -1393,7 +1365,6 @@ def orders_by_status(request):
             "total_amount": float(o.invoice.total_amount),
         } for o in orders],
         "count": orders.count()
-<<<<<<< HEAD
     })
 
 
@@ -2255,125 +2226,3 @@ def clear_deal_cart(request):
         request.session.pop("deal_effective_total", None)
         return JsonResponse({"success": True})
     return JsonResponse({"success": False}, status=400)
-=======
-    })
-
-
-# =========================
-# MY ORDERS
-# =========================
-def my_orders(request):
-    if request.user.is_authenticated:
-        invoices = Invoice.objects.filter(user=request.user).select_related("kitchen_order").order_by("-id")[:10]
-    else:
-        session_id = request.session.get("customer_session_id")
-        if session_id:
-            invoices = Invoice.objects.filter(customer_session_id=session_id).select_related("kitchen_order").order_by("-id")[:10]
-        else:
-            invoices = Invoice.objects.none()
-    return JsonResponse({
-        "orders": [{
-            "invoice": i.invoice_number, "uuid_token": i.uuid_token,
-            "order_no": i.kitchen_order.order_number if i.kitchen_order else "",
-            "status": i.kitchen_order.status if i.kitchen_order else "pending",
-            "table_no": i.table_no,
-            "created_at": timezone.localtime(i.created_at).strftime("%d-%m-%Y %I:%M %p"),
-        } for i in invoices]
-    })
-
-
-# =========================
-# INVOICE SEARCH PAGE
-# =========================
-@staff_member_required
-def invoice_search_page(request):
-    return render(request, "admin/invoices.html")
-
-
-# =========================
-# KITCHEN USERS PAGE
-# =========================
-@staff_member_required
-def kitchen_users_page(request):
-    return render(request, "admin/kitchen_users.html")
-
-
-# =========================
-# TABLE MANAGEMENT
-# =========================
-@staff_member_required
-def table_list(request):
-    tables = RestaurantTable.objects.all().order_by("table_no")
-    return render(request, "admin/tables.html", {"tables": tables})
-
-
-@staff_member_required
-def add_table(request):
-    if request.method == "POST":
-        table_no = request.POST.get("table_no")
-        if not table_no:
-            messages.error(request, "Table number is required.")
-            return redirect("users:table_list")
-        if RestaurantTable.objects.filter(table_no=table_no).exists():
-            messages.error(request, f"Table {table_no} already exists.")
-            return redirect("users:table_list")
-        table = RestaurantTable.objects.create(table_no=table_no)
-        table.generate_qr_code(request)
-        table.save()
-        messages.success(request, f"Table {table_no} added successfully.")
-    return redirect("users:table_list")
-
-
-@staff_member_required
-def edit_table(request, pk):
-    if request.method == "POST":
-        table = get_object_or_404(RestaurantTable, pk=pk)
-        new_no = request.POST.get("table_no")
-        if new_no and str(new_no) != str(table.table_no):
-            if RestaurantTable.objects.filter(table_no=new_no).exists():
-                messages.error(request, f"Table {new_no} already exists.")
-                return redirect("users:table_list")
-            table.table_no = new_no
-        if request.POST.get("regenerate_qr"):
-            table.generate_qr_code(request)
-        table.save()
-        messages.success(request, "Table updated.")
-    return redirect("users:table_list")
-
-
-@staff_member_required
-def delete_table(request, pk):
-    table = get_object_or_404(RestaurantTable, pk=pk)
-    table.delete()
-    messages.success(request, f"Table deleted.")
-    return redirect("users:table_list")
-
-
-@staff_member_required
-def generate_table_qr(request, pk):
-    table = get_object_or_404(RestaurantTable, pk=pk)
-    table.generate_qr_code(request)
-    table.save()
-    messages.success(request, f"QR generated for Table {table.table_no}.")
-    return redirect("users:table_list")
-
-
-# =========================
-# MYSQL BACKUP
-# =========================
-
-
-@staff_member_required
-def mysql_backup(request):
-    db = settings.DATABASES["default"]
-    MYSQLDUMP_PATH = r"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe"
-    result = subprocess.run(
-        [MYSQLDUMP_PATH, f"--user={db['USER']}", f"--password={db['PASSWORD']}", db["NAME"]],
-        capture_output=True, text=True,
-    )
-    if result.returncode != 0:
-        return HttpResponse(result.stderr, status=500)
-    response = HttpResponse(result.stdout, content_type="application/sql")
-    response["Content-Disposition"] = 'attachment; filename="database_backup.sql"'
-    return response
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49

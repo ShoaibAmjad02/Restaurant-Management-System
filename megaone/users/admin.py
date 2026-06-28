@@ -66,9 +66,6 @@ class InvoiceAdmin(admin.ModelAdmin):
 class KitchenOrderAdmin(admin.ModelAdmin):
     list_display = ["order_number", "table_no", "status", "created_at"]
     search_fields = ["order_number", "table_no"]
-<<<<<<< HEAD
-
-
 @admin.register(LoyaltyCard)
 class LoyaltyCardAdmin(admin.ModelAdmin):
     list_display = ["card_number", "user", "total_points", "used_points", "remaining_points", "status", "created_at"]

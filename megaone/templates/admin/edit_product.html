@@ -49,10 +49,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
         <a href="{% url 'users:product_list' %}" class="active"><i class="bi bi-box-seam"></i><span>Products</span></a>
         <a href="{% url 'users:table_list' %}"><i class="bi bi-table"></i><span>Tables</span></a>
         <a href="{% url 'users:invoice_search_page' %}"><i class="bi bi-receipt"></i><span>Invoices</span></a>
-<<<<<<< HEAD
         <a href="{% url 'users:admin_loyalty_list' %}"><i class="bi bi-star"></i><span>Loyalty Cards</span></a>
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
         <div class="menu-label">Account</div>
         <a href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
     </div>
@@ -93,14 +90,11 @@ body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;overflow
                 </select>
             </div>
             <div class="mb-3">
-<<<<<<< HEAD
                 <label class="form-label">Reward Points</label>
                 <input type="number" name="reward_points" value="{{ product.reward_points|default:0 }}" class="form-control" min="0">
                 <small style="color:#64748b;font-size:11px">Points customer earns when this product is delivered</small>
             </div>
             <div class="mb-3">
-=======
->>>>>>> 427514fc76e9737ff20056f57476ad55c9defa49
                 <label class="form-label">Image</label>
                 <input type="file" name="image" class="form-control">
                 {% if product.image %}
